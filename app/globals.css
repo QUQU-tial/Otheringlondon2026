@@ -1,0 +1,298 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --othering-bg: #ffffff;
+  --othering-text: #1c1c1c;
+  --othering-accent: #fcffc0;
+}
+
+@keyframes othering-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.othering-enter {
+  opacity: 0;
+  animation: othering-fade-up 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .othering-enter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-poppins);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Smooth scrolling for native scrolling containers */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbars completely (always invisible) */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+  width: 0;
+  height: 0;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  display: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  display: none;
+}
+
+/* Responsive Panel Widths */
+.workspace-container {
+  display: flex;
+}
+
+/* Mobile: Stack vertically, both full width */
+@media (max-width: 859px) {
+  .workspace-container {
+    flex-direction: column;
+  }
+  
+  .panel-primary,
+  .panel-detail {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+/* Tablet/Desktop: side by side — ~47.6% : 52.4% (left : right), flex 10 : 11 */
+@media (min-width: 860px) {
+  .workspace-container {
+    flex-direction: row;
+  }
+
+  .panel-primary {
+    flex: 10 1 0%;
+    min-width: 0;
+    width: auto;
+  }
+
+  .panel-detail {
+    flex: 11 1 0%;
+    min-width: 0;
+    width: auto;
+  }
+}
+
+/* Align with left column horizontal padding (Tailwind px-[36px] on primary scroll area) */
+.panel-primary {
+  --panel-primary-inline-pad: 36px;
+}
+
+/* Scroll-triggered reveal animations */
+.reveal-content {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1000ms ease-out, transform 1000ms ease-out;
+}
+
+.reveal-content.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-image {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1000ms ease-out 200ms, transform 1000ms ease-out 200ms;
+}
+
+.reveal-image.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .reveal-content,
+  .reveal-image {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Rich text editor styles */
+.rich-text-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #999;
+  pointer-events: none;
+}
+
+.rich-text-editor a {
+  color: #000;
+  text-decoration: underline;
+}
+
+/* Hero title – 032c-style editorial refinements (font unchanged; line-height in inline style) */
+.hero-title {
+  letter-spacing: -0.096em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hero title hyphenation – balanced word breaks; avoid 1–2 char orphans when a word wraps */
+.hero-title-hyphenate {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphenate-character: "";
+  hyphenate-limit-chars: 4 3; /* min 4 before break, 3 after (progressive enhancement) */
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* Non-selected activity title hover: Morandi bar + tinted overlay text (vars from button) */
+.activity-list-item {
+  position: relative;
+  --activity-hover-bar: #e8e4df;
+  --activity-hover-fg: #1a1918;
+  /* Bleed bar to full width of .panel-primary (offset column padding) */
+  --activity-bleed: var(--panel-primary-inline-pad, 36px);
+  box-sizing: border-box;
+  width: calc(100% + 2 * var(--activity-bleed));
+  margin-inline: calc(-1 * var(--activity-bleed));
+  padding-inline: var(--activity-bleed);
+  /* Keep vertical padding constant to avoid layout shift on hover */
+  padding-block: 12px;
+  z-index: 0;
+}
+.activity-list-item::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0; /* match text height vertically */
+  width: 100%;
+  background-color: var(--activity-hover-bar);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 220ms ease-out;
+  z-index: -1; /* keep bar behind the text */
+}
+
+/* Dual-layer text: base (light grey) + hover (black), perfectly aligned */
+.activity-title-wrapper {
+  position: relative;
+  display: block; /* full width, avoid inline-box reflow on hover */
+}
+
+.activity-title-base,
+.activity-title-overlay {
+  display: block;
+  white-space: inherit;
+}
+
+.activity-title-base {
+  color: #e1e1e1;
+  z-index: 1;
+  position: relative;
+}
+
+.activity-title-overlay {
+  position: absolute;
+  inset: 0;
+  color: var(--activity-hover-fg);
+  pointer-events: none;
+  clip-path: inset(0 100% 0 0);
+  z-index: 2;
+  transition: clip-path 220ms ease-out;
+}
+
+.activity-list-item:hover .activity-title-overlay {
+  clip-path: inset(0 0 0 0);
+}
+.activity-list-item:hover::after {
+  transform: scaleX(1);
+}
+
+/* Programme switching (right panel) — calm editorial transition */
+.programme-switch {
+  will-change: opacity, transform;
+}
+.programme-switch-out {
+  opacity: 0.4;
+  transition: opacity 260ms ease-out;
+}
+.programme-switch-in .programme-anim {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: programmeFadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.programme-switch-in .programme-anim-title {
+  animation-delay: 0ms;
+}
+.programme-switch-in .programme-anim-image {
+  animation-delay: 140ms;
+}
+.programme-switch-in .programme-anim-meta {
+  animation-delay: 260ms;
+}
+
+@keyframes programmeFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .programme-switch-out {
+    opacity: 1;
+    transition: none;
+  }
+  .programme-switch-in .programme-anim {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
