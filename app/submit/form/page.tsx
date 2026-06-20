@@ -9,6 +9,7 @@ import { getCurrentUser, isSignupDuplicateEmailError, signUp } from "../../lib/a
 import { getCurrentProfile, lockUsername } from "../../lib/profiles";
 import { saveSubmission, getSubmissions } from "../../lib/storage";
 import { uploadImageToSupabase } from "../../lib/supabase";
+import { ACTIVITY_AREAS } from "../../lib/activity-areas";
 import {
   emptyForm,
   formToSubmission,
@@ -596,7 +597,22 @@ export default function SubmitFormPage() {
                     value={form.activity_location}
                     onChange={(e) => setForm((p) => ({ ...p, activity_location: e.target.value }))}
                     className={inputCls}
+                    placeholder="e.g. Peckham, Hackney, Shoreditch"
                   />
+                </FormRow>
+                <FormRow label="Activity area" required>
+                  <select
+                    value={form.activity_area}
+                    onChange={(e) => setForm((p) => ({ ...p, activity_area: e.target.value }))}
+                    className={inputCls}
+                  >
+                    <option value="">Select area…</option>
+                    {ACTIVITY_AREAS.map((area) => (
+                      <option key={area} value={area}>
+                        {area}
+                      </option>
+                    ))}
+                  </select>
                 </FormRow>
                 <FormRow label="Date" required>
                   <input

@@ -6,8 +6,14 @@ import { getActivities, type Activity } from "./lib/storage";
 import { getCurrentUser, signOut, onAuthStateChange, type User } from "./lib/auth";
 import { parseActivityDate, formatDisplayDateFromString } from "./lib/calendar";
 import { heroTitleBalancedBreaks } from "./lib/hero-title-breaks";
+import { stripHtml } from "./submit/form/form-helpers";
 import { MORANDI_HOVER_PALETTE } from "./lib/morandi-hover";
-import { PrimaryPanelFaq } from "./components/PrimaryPanelFaq";
+import { PrimaryPanelChrome } from "./components/PrimaryPanelChrome";
+import {
+  formatActivityCompactDate,
+  formatAuthorCredit,
+  sentenceCaseFirst,
+} from "./lib/activity-areas";
 
 export default function Home() {
   const router = useRouter();
@@ -18,6 +24,8 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuSearchQuery, setMenuSearchQuery] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
+  const leftScrollRef = useRef<HTMLDivElement>(null);
+  const rightScrollRef = useRef<HTMLDivElement>(null);
   /** Left list hover: new colour each hover (random, avoids repeating previous hover). */
   const activityHoverPaintRef = useRef<{ lastBar: string | null }>({ lastBar: null });
 
@@ -130,10 +138,15 @@ export default function Home() {
     return a.start.getTime() - b.start.getTime();
   });
 
+  const selectedWeekKey =
+    weekSections.find((s) => s.activities.some((a) => a.id === selectedActivityId))?.key ?? "";
+
   useEffect(() => {
     const loadActivities = async () => {
-      const loadedActivities = await getActivities();
-      setActivities(loadedActivities);
+      try {
+        const loadedActivities = await getActivities();
+        console.info("[Home] getActivities returned", loadedActivities.length);
+        setActivities(loadedActivities);
       
       // Check for activityId in URL params (from partners page navigation)
       const urlActivityId = searchParams.get('activityId');
@@ -149,6 +162,11 @@ export default function Home() {
         }
       } else {
         // No activities, clear selection
+        setSelectedActivityId("");
+      }
+      } catch (err) {
+        console.error("[Home] loadActivities failed", err);
+        setActivities([]);
         setSelectedActivityId("");
       }
     };
@@ -213,7 +231,34 @@ export default function Home() {
       }
     };
   }, [selectedActivityId]); // Re-run when activity changes to observe new content
-  
+
+  // Desktop: align author line with left week/date label before user scrolls
+  useEffect(() => {
+    if (!selectedActivityId || activities.length === 0) return;
+
+    const syncColumnAlignment = () => {
+      if (window.innerWidth < 860) return;
+
+      const leftScroll = leftScrollRef.current;
+      const rightScroll = rightScrollRef.current;
+      const authorEl = document.querySelector(".detail-author-line");
+      const dateEl = selectedWeekKey
+        ? document.getElementById(`week-label-${selectedWeekKey}`)
+        : null;
+
+      if (rightScroll) rightScroll.scrollTop = 0;
+
+      if (authorEl && dateEl && leftScroll) {
+        const delta =
+          dateEl.getBoundingClientRect().top - authorEl.getBoundingClientRect().top;
+        leftScroll.scrollTop += delta;
+      }
+    };
+
+    const raf = requestAnimationFrame(() => requestAnimationFrame(syncColumnAlignment));
+    return () => cancelAnimationFrame(raf);
+  }, [selectedActivityId, activities, selectedWeekKey]);
+
   // Auth state management
   useEffect(() => {
     // Get initial user
@@ -254,10 +299,6 @@ const handleMenuClose = () => {
     setSelectedActivityId(activityId);
     setMenuOpen(false);
     setMenuSearchQuery("");
-    requestAnimationFrame(() => {
-      const el = document.getElementById(`activity-${activityId}`);
-      el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
   };
 
   const handleLogin = () => {
@@ -281,16 +322,12 @@ const handleMenuClose = () => {
       <div className="workspace-container flex flex-col min-[860px]:flex-row h-full overflow-y-auto min-[860px]:overflow-hidden">
         {/* Panel / Primary */}
         <div 
-          className="panel-primary relative flex h-screen min-[860px]:h-full min-[860px]:min-w-0 min-[860px]:shrink flex-col gap-[12px] bg-[#1C1C1C] shrink-0 overflow-hidden"
+          className="panel-primary relative flex h-screen min-[860px]:h-full min-[860px]:min-w-0 min-[860px]:shrink flex-col gap-[12px] bg-black shrink-0"
         >
           {/* Panel / Primary Menu Bar */}
           <header 
-            className="flex shrink-0 items-center justify-between bg-[#1C1C1C] px-[36px] sticky top-0 z-10" 
-            style={{ 
-              fontFamily: "var(--font-inter)",
-              paddingTop: 'clamp(16px, 1.67vw, 24px)',
-              paddingBottom: 'clamp(8px, 0.83vw, 12px)'
-            }}
+            className="panel-column-header flex shrink-0 items-center justify-between bg-black px-[36px] sticky top-0 z-10" 
+            style={{ fontFamily: "var(--font-inter)" }}
           >
             <a 
               href="/"
@@ -302,7 +339,7 @@ const handleMenuClose = () => {
                 alt="OT Festival – Othering"
                 className="block"
                 style={{
-                  height: 'clamp(29px, 3vw, 38px)', // ~20% larger
+                  height: 'var(--site-logo-height, clamp(35px, 3.6vw, 46px))',
                   width: 'auto',
                 }}
               />
@@ -322,7 +359,7 @@ const handleMenuClose = () => {
                   </svg>
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-[8px] bg-[#2d2d2d] min-w-[240px] max-w-[320px] max-h-[min(90vh,480px)] overflow-y-auto flex flex-col z-50">
+                  <div className="absolute right-0 top-full mt-[8px] bg-black min-w-[240px] max-w-[320px] max-h-[min(90vh,480px)] overflow-y-auto flex flex-col z-50">
                     {/* Search activities */}
                     <div className="flex flex-col">
                       <div className="flex items-center gap-[10px] px-[16px] py-[12px] text-[#E1E1E1]">
@@ -437,7 +474,10 @@ const handleMenuClose = () => {
           </header>
 
           {/* Panel / Primary Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+          <div
+            ref={leftScrollRef}
+            className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide"
+          >
             <div className="flex flex-col px-[36px] gap-[30px] min-w-0" style={{ fontFamily: "var(--font-inter)" }}>
             {/* Activity List */}
             <ul className="flex flex-col gap-[12px]">
@@ -449,20 +489,16 @@ const handleMenuClose = () => {
                 </li>
               ) : (
                 <>
-                  {weekSections.map((section, index) => {
-                    const hideWeekLabel =
-                      section.label === "14–20 September, 2026" ||
-                      section.label === "14-20 September, 2026";
-                    return (
+                  {weekSections.map((section, index) => (
                     <React.Fragment key={section.key}>
-                      {!hideWeekLabel && (
-                        <li className={`${index > 0 ? "mt-[12px] " : ""}text-[10px] tracking-[0.08em] uppercase text-[#9A9A9A]`}>
-                          {section.label}
-                        </li>
-                      )}
+                      <li
+                        id={`week-label-${section.key}`}
+                        className={`${index > 0 ? "mt-[12px] " : ""}text-[10px] tracking-[0.08em] uppercase text-[#9A9A9A]`}
+                      >
+                        {section.label}
+                      </li>
                       {section.activities.map((activity, actIndex) => {
-                        const firstInSectionGap =
-                          hideWeekLabel && actIndex === 0 && index > 0 ? "mt-[12px]" : "";
+                        const firstInSectionGap = actIndex === 0 && index > 0 ? "mt-[12px]" : "";
                         if (selectedActivityId === activity.id) {
                           return (
                             <li
@@ -521,8 +557,7 @@ const handleMenuClose = () => {
                         );
                       })}
                     </React.Fragment>
-                    );
-                  })}
+                  ))}
                 </>
               )}
             </ul>
@@ -530,30 +565,8 @@ const handleMenuClose = () => {
             </div>
           </div>
 
-          {/* JOIN US Section */}
-          <div 
-            className="flex shrink-0 items-end justify-end bg-[#1C1C1C] px-[36px]" 
-            style={{
-              paddingTop: 'clamp(8px, 0.83vw, 12px)',
-              paddingBottom: 'clamp(20px, 1.67vw, 24px)'
-            }}
-          >
-            <a
-              href="/submit"
-              className="flex items-center gap-[12px] text-white uppercase transition-all duration-200 hover:opacity-70 group"
-              style={{ 
-                fontFamily: "var(--font-inter)",
-                fontSize: 'clamp(16px, 1.39vw, 20px)',
-                fontWeight: 500,
-                lineHeight: 'clamp(24px, 2.08vw, 30px)'
-              }}
-            >
-              <span>Join us</span>
-              <span className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none">→</span>
-            </a>
-          </div>
-
-          <PrimaryPanelFaq />
+          {/* JOIN US + FAQ float above list content */}
+          <PrimaryPanelChrome />
         </div>
 
         {/* Panel / Detail */}
@@ -562,16 +575,12 @@ const handleMenuClose = () => {
         >
           {/* Panel / Detail Menu Bar */}
           <header 
-            className="flex shrink-0 items-center justify-between bg-white sticky top-0 z-10 backdrop-blur-sm bg-white/95" 
-            style={{ 
-              fontFamily: "var(--font-inter)",
-              paddingTop: 'clamp(16px, 1.67vw, 24px)',
-              paddingBottom: 'clamp(8px, 0.83vw, 12px)'
-            }}
+            className="panel-column-header flex shrink-0 items-center justify-between bg-white sticky top-0 z-10 backdrop-blur-sm bg-white/95" 
+            style={{ fontFamily: "var(--font-inter)" }}
           >
             <a 
-              href="#" 
-              className="text-black capitalize transition-all duration-200 hover:opacity-70" 
+              href="/partners" 
+              className="text-black capitalize transition-all duration-200 hover:opacity-70"
               style={{ 
                 fontFamily: "var(--font-source-sans-3)",
                 fontSize: 'clamp(16px, 1.39vw, 20px)',
@@ -596,8 +605,34 @@ const handleMenuClose = () => {
           </header>
 
           {/* Panel / Detail Scrollable Content */}
-          <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div ref={rightScrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
             {selectedActivity ? (
+              <>
+              <p
+                className="detail-author-line reveal-content mb-[12px] text-[10px] tracking-[0.08em] text-[#9A9A9A]"
+                style={{ fontFamily: "var(--font-inter)" }}
+              >
+                {formatAuthorCredit(selectedActivity.author_name || selectedActivity.username)}
+                {formatActivityCompactDate(selectedActivity.activity_date) ? (
+                  <>
+                    {" · "}
+                    {formatActivityCompactDate(selectedActivity.activity_date)}
+                  </>
+                ) : null}
+                {(selectedActivity.activity_area || selectedActivity.activity_location) ? (
+                  <>
+                    {" · "}
+                    <a
+                      href={`/partners?area=${encodeURIComponent(selectedActivity.activity_area || "All Areas")}&activityId=${selectedActivity.id}`}
+                      className="transition-colors hover:text-red-600"
+                    >
+                      {sentenceCaseFirst(
+                        selectedActivity.activity_area || selectedActivity.activity_location
+                      )}
+                    </a>
+                  </>
+                ) : null}
+              </p>
               <div className="flex flex-col gap-[36px] pb-[60px]" style={{ fontFamily: "var(--font-inter)" }}>
               {/* Title Section Wrapper - 24px gap between title block and location/date */}
               <div className="flex flex-col gap-[24px]">
@@ -614,30 +649,6 @@ const handleMenuClose = () => {
                     {selectedActivity.activity_title.toLowerCase()}
                   </h2>
 
-                {/* Author Name */}
-                <div className="flex items-center gap-[4px]">
-                  <span 
-                    className="font-medium text-black capitalize" 
-                    style={{ 
-                      fontFamily: "var(--font-poppins)",
-                      fontSize: 'clamp(12px, 0.97vw, 14px)',
-                      lineHeight: 'normal'
-                    }}
-                  >
-                    by
-                  </span>
-                  <span 
-                    className="font-medium text-black capitalize" 
-                    style={{ 
-                      fontFamily: "var(--font-poppins)",
-                      fontSize: 'clamp(12px, 0.97vw, 14px)',
-                      lineHeight: 'normal'
-                    }}
-                  >
-                    {selectedActivity.author_name || selectedActivity.username}
-                  </span>
-                </div>
-
                 {/* Primary Image */}
                 {selectedActivity.primary_image && (selectedActivity.primary_image.startsWith('http') || selectedActivity.primary_image.startsWith('data:image')) ? (
                   <div className="reveal-image w-full">
@@ -653,6 +664,15 @@ const handleMenuClose = () => {
                       Image not available – please re-upload
                     </span>
                   </div>
+                )}
+
+                {stripHtml(selectedActivity.activity_description || "") && (
+                  <p
+                    className="line-clamp-3 text-[12px] font-normal leading-[1.55] text-[#9A9A9A]"
+                    style={{ fontFamily: "var(--font-inter)" }}
+                  >
+                    {stripHtml(selectedActivity.activity_description || "")}
+                  </p>
                 )}
               </div>
 
@@ -893,6 +913,7 @@ const handleMenuClose = () => {
               })()}
             </div>
             </div>
+            </>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-black/50" style={{ fontFamily: "var(--font-inter)", fontSize: '16px' }}>

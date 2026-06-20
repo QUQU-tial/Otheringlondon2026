@@ -137,7 +137,8 @@ export default function SubmitPreviewPage() {
                 <div>
                   <dt className="text-black/50">Location & date</dt>
                   <dd className="text-[#1C1C1C]">
-                    {data.activity_location || "—"} · {data.activity_date || "—"}
+                    {data.activity_location || "—"}
+                    {data.activity_area ? ` · ${data.activity_area}` : ""} · {data.activity_date || "—"}
                   </dd>
                 </div>
                 {isImageUrl(data.primary_image) ? (

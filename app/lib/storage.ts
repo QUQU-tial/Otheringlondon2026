@@ -37,6 +37,7 @@ export type Submission = {
   activity_type: string;
   activity_description: string;
   activity_location: string;
+  activity_area: string;
   activity_date: string;
 
   primary_image: File | string | null;
@@ -71,6 +72,7 @@ export type Activity = {
   activity_location: string;
   activity_date: string;
   activity_type: string;
+  activity_area: string;
   partner_name: string;
   website_link: string;
   body_text_1: string;
@@ -103,6 +105,7 @@ type ActivityRow = {
   activity_type: string | null;
   activity_description: string | null;
   activity_location: string | null;
+  activity_area: string | null;
   activity_date: string | null;
 
   primary_image: string | null;
@@ -270,8 +273,30 @@ export const saveSubmission = async (submission: Submission): Promise<void> => {
 };
 
 export const getActivities = async (): Promise<Activity[]> => {
-  const client = getClient();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let supabaseHost = "MISSING_URL";
+  try {
+    if (supabaseUrl) supabaseHost = new URL(supabaseUrl).host;
+  } catch {
+    supabaseHost = "INVALID_URL";
+  }
 
+  // Temporary production diagnostics — remove after verifying Vercel + RLS
+  console.info("[getActivities] env", {
+    supabaseHost,
+    hasAnonKey: hasKey,
+  });
+
+  const client = getSupabaseClient();
+  if (!client) {
+    console.error(
+      "[getActivities] Supabase client not configured (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing at build time)"
+    );
+    return [];
+  }
+
+  // Equivalent REST: GET /rest/v1/activities?select=*&status=eq.published&order=created_at.desc
   const { data, error } = await client
     .from("activities")
     .select("*")
@@ -280,17 +305,34 @@ export const getActivities = async (): Promise<Activity[]> => {
 
   if (error) {
     logSupabaseError("getActivities", error);
+    console.error("[getActivities] query error — rowCount: 0", error);
     return [];
   }
 
-  if (!data) {
-    return [];
+  const rawRows = (data as ActivityRow[] | null) ?? [];
+  console.info("[getActivities] raw Supabase rows", {
+    rowCount: rawRows.length,
+    ids: rawRows.map((r) => r.id),
+    statuses: rawRows.map((r) => r.status),
+    isDeleted: rawRows.map((r) => r.is_deleted),
+  });
+
+  if (rawRows.length === 0) {
+    console.warn(
+      "[getActivities] 0 rows returned. If Supabase table has published rows, check RLS policy: anonymous SELECT on status=published AND is_deleted=false."
+    );
   }
 
-  const list = (data as ActivityRow[])
+  const list = rawRows
     .filter((row) => row.is_deleted !== true)
     .map(mapRowToActivity);
-  return assignProgrammeWindowDates(list);
+
+  console.info("[getActivities] after map + is_deleted filter", { rowCount: list.length });
+
+  const withDates = assignProgrammeWindowDates(list);
+  console.info("[getActivities] final activities returned", { rowCount: withDates.length });
+
+  return withDates;
 };
 
 export const updateActivityStatus = async (
@@ -342,6 +384,7 @@ const mapRowToSubmission = (row: ActivityRow): Submission => ({
   activity_type: row.activity_type ?? "",
   activity_description: row.activity_description ?? "",
   activity_location: row.activity_location ?? "",
+  activity_area: row.activity_area ?? "",
   activity_date: row.activity_date ?? "",
 
   primary_image: row.primary_image ?? null,
@@ -385,6 +428,7 @@ const mapSubmissionToRow = (submission: Submission): ActivityRow => ({
   activity_type: submission.activity_type,
   activity_description: submission.activity_description,
   activity_location: submission.activity_location,
+  activity_area: submission.activity_area,
   activity_date: submission.activity_date,
 
   primary_image:
@@ -425,6 +469,7 @@ const mapRowToActivity = (row: ActivityRow): Activity => ({
   author_name: row.author_name ?? "",
   username: row.username ?? "",
   activity_location: row.activity_location ?? "",
+  activity_area: row.activity_area ?? "",
   activity_date: row.activity_date ?? "",
   activity_type: row.activity_type ?? "",
   partner_name: row.partner ?? row.organizer ?? "",

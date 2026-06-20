@@ -24,6 +24,7 @@ export type FormState = {
   activity_type: string;
   activity_description: string;
   activity_location: string;
+  activity_area: string;
   activity_date: string;
   primary_image: string | null;
   primary_image_alt: string;
@@ -53,6 +54,7 @@ export const emptyForm = (): FormState => ({
   activity_type: "",
   activity_description: "",
   activity_location: "",
+  activity_area: "",
   activity_date: "",
   primary_image: null,
   primary_image_alt: "",
@@ -100,6 +102,7 @@ export function isFormValidForSubmit(f: FormState): boolean {
   if (!f.activity_title.trim() || !f.author_name.trim() || !f.activity_type.trim()) return false;
   if (!stripHtml(f.activity_description)) return false;
   if (!f.activity_location.trim() || !f.activity_date.trim()) return false;
+  if (!f.activity_area.trim()) return false;
   if (!isImageUrl(f.primary_image)) return false;
   if (!stripHtml(f.body_text_1)) return false;
   if (!isImageUrl(f.additional_images_1)) return false;
@@ -129,6 +132,7 @@ export function submissionRowToForm(s: Submission): FormState {
     activity_type: s.activity_type || "",
     activity_description: s.activity_description === "—" ? "" : s.activity_description,
     activity_location: s.activity_location === "—" ? "" : s.activity_location,
+    activity_area: s.activity_area === "—" ? "" : (s.activity_area || ""),
     activity_date: s.activity_date === "—" ? "" : s.activity_date,
     primary_image: typeof s.primary_image === "string" ? s.primary_image : null,
     primary_image_alt: s.primary_image_alt || "",
@@ -193,6 +197,7 @@ export function formToSubmission(
     activity_type: orDash(f.activity_type),
     activity_description: orHtmlDash(f.activity_description),
     activity_location: orDash(f.activity_location),
+    activity_area: orDash(f.activity_area),
     activity_date: orDash(f.activity_date),
     primary_image: isImageUrl(f.primary_image) ? f.primary_image : null,
     primary_image_alt: orDash(f.primary_image_alt),

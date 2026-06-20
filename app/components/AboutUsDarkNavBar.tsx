@@ -85,7 +85,7 @@ export function AboutUsDarkNavBar() {
   return (
     <>
     <header
-      className="sticky top-0 z-10 flex min-h-[3.25rem] shrink-0 items-center justify-between gap-4 bg-[#1C1C1C] px-6 py-[clamp(14px,1.4vw,20px)] min-[860px]:px-9"
+      className="sticky top-0 z-10 flex min-h-[3.25rem] shrink-0 items-center justify-between gap-4 bg-black px-6 py-[clamp(14px,1.4vw,20px)] min-[860px]:px-9"
       style={{ fontFamily: "var(--font-inter)" }}
     >
       <Link
@@ -97,7 +97,7 @@ export function AboutUsDarkNavBar() {
         <img
           src="/othering-logo.png"
           alt="Othering"
-          className="block h-[clamp(26px,3vw,36px)] w-auto"
+          className="block h-[var(--site-logo-height,clamp(35px,3.6vw,46px))] w-auto"
         />
       </Link>
 
@@ -127,7 +127,7 @@ export function AboutUsDarkNavBar() {
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 top-full z-50 mt-[8px] flex max-h-[min(90vh,480px)] min-w-[240px] max-w-[320px] flex-col overflow-y-auto bg-[#2d2d2d]">
+          <div className="absolute right-0 top-full z-50 mt-[8px] flex max-h-[min(90vh,480px)] min-w-[240px] max-w-[320px] flex-col overflow-y-auto bg-black">
             <div className="flex flex-col">
               <div className="flex items-center gap-[10px] px-[16px] py-[12px] text-[#E1E1E1]">
                 <svg

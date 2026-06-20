@@ -56,7 +56,8 @@ Activity/submission data (single table for both drafts and published activities)
 | `author_name` | `text` | NOT NULL | Display author name |
 | `activity_type` | `text` | NOT NULL | Activity type |
 | `activity_description` | `text` | NOT NULL | HTML description |
-| `activity_location` | `text` | NOT NULL | Location |
+| `activity_location` | `text` | NOT NULL | Location (neighbourhood / venue) |
+| `activity_area` | `text` | NULL | Region: South London, East London, West London, or North London |
 | `activity_date` | `text` | NOT NULL | Date string |
 | `primary_image` | `text` | NULLABLE | Primary image URL (Supabase Storage) |
 | `primary_image_alt` | `text` | NULLABLE | Primary image alt text |
@@ -140,6 +141,7 @@ CREATE TABLE IF NOT EXISTS activities (
   activity_type TEXT NOT NULL,
   activity_description TEXT NOT NULL,
   activity_location TEXT NOT NULL,
+  activity_area TEXT,
   activity_date TEXT NOT NULL,
   primary_image TEXT,
   primary_image_alt TEXT,

@@ -24,8 +24,8 @@ export function StaticSiteShell({ children, variant = "default" }: StaticSiteShe
   const isAboutShell = variant === "about";
 
   const asideClasses = isAboutShell
-    ? "flex shrink-0 flex-col bg-[#1C1C1C] min-[860px]:min-w-0 min-[860px]:flex-[3] min-[860px]:shrink"
-    : "panel-primary flex shrink-0 flex-col bg-[#1C1C1C] min-[860px]:min-w-0 min-[860px]:shrink";
+    ? "flex shrink-0 flex-col bg-black min-[860px]:min-w-0 min-[860px]:flex-[3] min-[860px]:shrink"
+    : "panel-primary flex shrink-0 flex-col bg-black min-[860px]:min-w-0 min-[860px]:shrink";
 
   const mainClasses = isAboutShell
     ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-white text-[#1C1C1C] scrollbar-hide min-[860px]:flex-[7] min-[860px]:shrink"
@@ -40,7 +40,7 @@ export function StaticSiteShell({ children, variant = "default" }: StaticSiteShe
           ) : (
             <>
               <header
-                className="flex shrink-0 items-center justify-between bg-[#1C1C1C] px-9"
+                className="flex shrink-0 items-center justify-between bg-black px-9"
                 style={{
                   fontFamily: "var(--font-inter)",
                   paddingTop: "clamp(16px, 1.67vw, 24px)",
@@ -55,7 +55,7 @@ export function StaticSiteShell({ children, variant = "default" }: StaticSiteShe
                   <img
                     src="/othering-logo.png"
                     alt="Othering"
-                    className="block h-[clamp(29px,3vw,38px)] w-auto"
+                    className="block h-[var(--site-logo-height,clamp(35px,3.6vw,46px))] w-auto"
                   />
                 </Link>
               </header>

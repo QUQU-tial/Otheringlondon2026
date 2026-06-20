@@ -32,6 +32,7 @@ export default function EventDetailPage() {
             author_name: submission.author_name,
             username: submission.username,
             activity_location: submission.activity_location,
+            activity_area: submission.activity_area,
             activity_date: submission.activity_date,
             activity_type: submission.activity_type,
             partner_name: submission.partner || submission.organizer,

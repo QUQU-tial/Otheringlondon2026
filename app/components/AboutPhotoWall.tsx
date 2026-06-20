@@ -5,6 +5,15 @@ import { getActivities, type Activity } from "../lib/storage";
 
 const AUTO_MS = 5500;
 
+/** First slide on About us — editorial GIF (always index 0). */
+const ABOUT_FIRST_GIF =
+  "https://kyttwueejybalvhojfvf.supabase.co/storage/v1/object/sign/Yinzhe%20Qu/Stretched-Type-Repeater.gif?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8wOWVjZjI0OC04NGI3LTRmZTAtODkyNy1lOTQ3Zjg4ZmE0MjAiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJZaW56aGUgUXUvU3RyZXRjaGVkLVR5cGUtUmVwZWF0ZXIuZ2lmIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MTg4MzMxNSwiZXhwIjoxODEzNDE5MzE1fQ.zAzLaU898WSBknGmEr8suc3LyPPkfpfTFltFeMh5CaU";
+
+const ABOUT_FIRST_SLIDE = {
+  src: ABOUT_FIRST_GIF,
+  alt: "Stretched type repeater — GATHERING LONDON",
+} as const;
+
 function hasDisplayableImage(a: Activity): a is Activity & { primary_image: string } {
   const u = a.primary_image;
   return typeof u === "string" && (u.startsWith("http") || u.startsWith("data:image"));
@@ -19,7 +28,7 @@ type AboutPhotoWallProps = {
  * One image at a time; right/left arrows; auto-advance (pauses on hover).
  */
 export function AboutPhotoWall({ className = "" }: AboutPhotoWallProps) {
-  const [slides, setSlides] = useState<{ src: string; alt: string }[]>([]);
+  const [slides, setSlides] = useState<{ src: string; alt: string }[]>([ABOUT_FIRST_SLIDE]);
   const [index, setIndex] = useState(0);
   const [pause, setPause] = useState(false);
 
@@ -32,11 +41,11 @@ export function AboutPhotoWall({ className = "" }: AboutPhotoWallProps) {
       for (const a of list) {
         if (!hasDisplayableImage(a)) continue;
         const src = a.primary_image;
-        if (seen.has(src)) continue;
+        if (seen.has(src) || src === ABOUT_FIRST_GIF) continue;
         seen.add(src);
         out.push({ src, alt: a.activity_title || "Programme image" });
       }
-      setSlides(out);
+      setSlides([ABOUT_FIRST_SLIDE, ...out]);
     });
     return () => {
       cancelled = true;
@@ -101,7 +110,7 @@ export function AboutPhotoWall({ className = "" }: AboutPhotoWallProps) {
       aria-roledescription="carousel"
       aria-label="Programme images from the festival"
     >
-      <div className="relative mx-auto max-w-[min(100%,720px)]">
+      <div className="relative w-full">
         {shell}
 
         {len > 1 && (

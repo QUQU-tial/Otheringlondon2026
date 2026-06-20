@@ -8,7 +8,7 @@ type PrimaryButtonProps = {
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className">;
 
 const base =
-  "inline-flex items-center justify-center bg-[#1C1C1C] px-8 py-3 text-[13px] font-medium uppercase tracking-[0.08em] text-white transition-opacity duration-200 hover:opacity-85 disabled:pointer-events-none disabled:opacity-40 motion-reduce:transition-none";
+  "inline-flex items-center justify-center bg-black px-8 py-3 text-[13px] font-medium uppercase tracking-[0.08em] text-white transition-opacity duration-200 hover:opacity-85 disabled:pointer-events-none disabled:opacity-40 motion-reduce:transition-none";
 
 /** Filled primary control for programme actions */
 export function PrimaryButton({

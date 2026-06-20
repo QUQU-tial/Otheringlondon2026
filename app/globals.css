@@ -73,6 +73,24 @@ html {
 /* Responsive Panel Widths */
 .workspace-container {
   display: flex;
+  --hero-fs: clamp(96px, calc(-160px + 25vw), 240px);
+  --hero-lh: clamp(70.2px, calc(-116px + 18.26vw), 176px);
+  /* Half-leading when line-height < font-size — aligns cap height with detail title */
+  --hero-cap-inset: max(0px, calc((var(--hero-fs) - var(--hero-lh)) / 2));
+  --panel-header-pt: clamp(16px, 1.67vw, 24px);
+  --panel-header-pb: clamp(8px, 0.83vw, 12px);
+  --panel-header-logo-h: clamp(35px, 3.6vw, 46px);
+  --panel-header-min-height: calc(
+    var(--panel-header-pt) + var(--panel-header-logo-h) + var(--panel-header-pb)
+  );
+  --site-logo-height: clamp(35px, 3.6vw, 46px);
+}
+
+.panel-column-header {
+  box-sizing: border-box;
+  padding-top: var(--panel-header-pt);
+  padding-bottom: var(--panel-header-pb);
+  min-height: var(--panel-header-min-height);
 }
 
 /* Mobile: Stack vertically, both full width */
@@ -88,20 +106,20 @@ html {
   }
 }
 
-/* Tablet/Desktop: side by side — ~47.6% : 52.4% (left : right), flex 10 : 11 */
+/* Tablet/Desktop: left column −10% from 13:8 → 39:31 (~55.7% : ~44.3%) */
 @media (min-width: 860px) {
   .workspace-container {
     flex-direction: row;
   }
 
   .panel-primary {
-    flex: 10 1 0%;
+    flex: 39 1 0%;
     min-width: 0;
     width: auto;
   }
 
   .panel-detail {
-    flex: 11 1 0%;
+    flex: 31 1 0%;
     min-width: 0;
     width: auto;
   }
@@ -168,12 +186,20 @@ html {
   text-decoration: underline;
 }
 
-/* Hero title – 032c-style editorial refinements (font unchanged; line-height in inline style) */
+/* Hero title – 032c-style editorial refinements */
 .hero-title {
+  font-size: var(--hero-fs);
+  line-height: var(--hero-lh);
   letter-spacing: -0.096em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@media (min-width: 860px) {
+  .detail-title-align {
+    padding-top: var(--hero-cap-inset);
+  }
 }
 
 /* Hero title hyphenation – balanced word breaks; avoid 1–2 char orphans when a word wraps */
