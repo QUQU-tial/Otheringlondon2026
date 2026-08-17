@@ -231,7 +231,41 @@ type MediaLink = {
 
 ---
 
+## Artist Join Schema (festival artists)
+
+This is **not** the partner activity submission. It does not write to the `activities` table in the current build.
+
+**Persistence (current):**
+- Draft: `localStorage` key `othering_artist_join_draft_v1`
+- Submitted profiles: `localStorage` key `othering_artist_submissions_v1`
+- Editorial roster: `app/lib/artists.ts` (`EDITORIAL_ARTISTS`)
+
+**Artist object**
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `slug` | string | Yes | Derived from `name` (lowercase, hyphenated). Unique key |
+| `name` | string | Yes | Public display name |
+| `field` | string | No | Art discipline (e.g. Oil painter, Sculptor) |
+| `birth` | string | No | Line such as `b. 1989, Lagos` |
+| `photo` | string URL or null | No | Portrait **or** artwork only. No cityscapes, stock interiors, or grey placeholders. Null = white empty slot |
+| `photoAlt` | string | No | Defaults to name |
+| `bio` | string | No | Plain text biography |
+| `cv` | `ArtistLinkedItem[]` | No | `{ year?, title, detail?, href? }` |
+| `exhibitions` | `ArtistLinkedItem[]` | No | Same shape |
+| `press` | `ArtistLinkedItem[]` | No | Same shape |
+| `talks` | `ArtistLinkedItem[]` | No | Same shape |
+| `works` | `{ src, alt? }[]` | No | Max 5. `src` must start with `http` or `data:image` |
+
+**Directory image rule:** About **half of the editorial roster** (7 of 15) have a portrait; the rest have `photo: null`. Directory cards never fall back to activity images or generic filler. Failed loads hide the `<img>` (white remains).
+
+**Filters on `/artists` (client-side, do not persist):**
+- Genre: All / Spatial practice / Performance / Time-based / Lens-based / Object & material — derived from `field`
+- Medium: All + Installation, Sculpture, Photography, Film, Sound art, Performance art, Textile, Prints, Works on paper
+
+---
+
 ## Version
-**Version:** 2026-02-05  
-**Source of truth:** Current codebase (`app/lib/storage.ts`, `app/submit/page.tsx`, `app/lib/profiles.ts`, `DATABASE_SCHEMA.md`)  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/lib/storage.ts`, `app/submit/page.tsx`, `app/lib/profiles.ts`, `app/lib/artists.ts`, `app/lib/artist-submissions.ts`, `DATABASE_SCHEMA.md`)  
 **Intended use:** Reusable system specification

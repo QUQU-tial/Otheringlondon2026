@@ -22,6 +22,7 @@ const SIDE_LINKS = [
   { href: "/about-us", label: "About us" },
   { href: "/submit", label: "Take part" },
   { href: "/partners", label: "All our partners" },
+  { href: "/artists", label: "Artists" },
 ] as const;
 
 /**
@@ -178,6 +179,9 @@ export function AboutUsDarkNavBar() {
             <div className="flex flex-col pt-1">
               <Link href="/partners" onClick={closeMenu} className="px-[24px] py-[16px] text-white transition-opacity hover:opacity-70" style={menuLink}>
                 All our partners
+              </Link>
+              <Link href="/artists" onClick={closeMenu} className="px-[24px] py-[16px] text-white transition-opacity hover:opacity-70" style={menuLink}>
+                Artists
               </Link>
               <Link href="/submit" onClick={closeMenu} className="px-[24px] py-[16px] text-white transition-opacity hover:opacity-70" style={menuLink}>
                 Take part

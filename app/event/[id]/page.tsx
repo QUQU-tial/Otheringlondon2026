@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getSubmission, getActivities, type Activity } from "../../lib/storage";
 import { formatDisplayDateFromString } from "../../lib/calendar";
+import { artistSlugFromName } from "../../lib/artists";
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -152,16 +153,37 @@ export default function EventDetailPage() {
                 >
                   by
                 </span>
-                <span 
-                  className="font-medium text-black capitalize" 
-                  style={{ 
-                    fontFamily: "var(--font-poppins)",
-                    fontSize: 'clamp(12px, 0.97vw, 14px)',
-                    lineHeight: 'normal'
-                  }}
-                >
-                  {activity.author_name || activity.username}
-                </span>
+                {(() => {
+                  const authorName = activity.author_name || activity.username;
+                  const slug = artistSlugFromName(authorName);
+                  if (!slug) {
+                    return (
+                      <span 
+                        className="font-medium text-black capitalize" 
+                        style={{ 
+                          fontFamily: "var(--font-poppins)",
+                          fontSize: 'clamp(12px, 0.97vw, 14px)',
+                          lineHeight: 'normal'
+                        }}
+                      >
+                        {authorName}
+                      </span>
+                    );
+                  }
+                  return (
+                    <a
+                      href={`/artists/${slug}`}
+                      className="font-medium text-black capitalize underline hover:no-underline"
+                      style={{ 
+                        fontFamily: "var(--font-poppins)",
+                        fontSize: 'clamp(12px, 0.97vw, 14px)',
+                        lineHeight: 'normal'
+                      }}
+                    >
+                      {authorName}
+                    </a>
+                  );
+                })()}
               </div>
 
               {/* Primary Image */}

@@ -1,0 +1,3194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Othering London 2026 — designer handoff</title>
+  <style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; color: #000; }
+body { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; }
+.cover { page-break-after: always; padding-top: 28mm; }
+.kicker { letter-spacing: 0.08em; text-transform: uppercase; font-size: 9pt; color: #9A9A9A; }
+.cover h1 { font-size: 28pt; font-weight: 500; letter-spacing: -0.04em; margin: 8px 0 16px; }
+.lede { font-size: 12pt; max-width: 36em; }
+.meta { padding-left: 1.1em; }
+.chapter { page-break-before: always; }
+.chapter:first-of-type { page-break-before: auto; }
+h1 { font-size: 18pt; font-weight: 500; margin: 0 0 12px; page-break-after: avoid; }
+h2 { font-size: 13pt; font-weight: 600; margin: 18px 0 8px; page-break-after: avoid; }
+h3 { font-size: 11pt; font-weight: 600; margin: 14px 0 6px; page-break-after: avoid; }
+p { margin: 0 0 8px; }
+ul, ol { margin: 0 0 10px; padding-left: 1.2em; }
+li { margin: 0 0 3px; }
+hr { border: 0; border-top: 1px solid rgba(0,0,0,0.2); margin: 16px 0; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: 8.5pt; }
+pre { background: #f6f6f6; border: 1px solid rgba(0,0,0,0.12); padding: 8px; overflow-wrap: anywhere; white-space: pre-wrap; font-size: 8pt; page-break-inside: avoid; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 12px; font-size: 8.5pt; page-break-inside: auto; }
+th, td { border: 1px solid rgba(0,0,0,0.2); padding: 4px 6px; vertical-align: top; text-align: left; }
+th { background: #f4f4f4; font-weight: 600; }
+.file-label { font-size: 8pt; letter-spacing: 0.08em; text-transform: uppercase; color: #9A9A9A; margin: 0 0 6px; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <p class="kicker">Othering London 2026 · SPIRA9</p>
+  <h1>Designer / engineer handoff</h1>
+  <p class="lede">One PDF of the live specification system, updated 17 August 2026 to include the Artists area.</p>
+  <ul class="meta">
+    <li>Visual system: black &amp; white only (plus existing red selected/hover)</li>
+    <li>Fonts: Inter, Poppins, Source Sans 3 — do not add families</li>
+    <li>Spacing scale: 4 / 12 / 16 / 24 / 30 / 36 / 60px</li>
+    <li>Codebase is source of truth if a sentence here disagrees with the app</li>
+  </ul>
+  <p>How to use: start with SYSTEM_INDEX, then tokens → type → layout → interaction. Artists pages live in LAYOUT §1.3, Type section D, Motion §4b, Form schema (Artist Join).</p>
+</section>
+<section class="chapter"><p class="file-label">docs/2026-08-17-WHAT-CHANGED.md</p><h1>What changed — 17 August 2026</h1><h1>What changed — 17 August 2026</h1>
+<p>Handoff note for the next designer. Specs in this pack were updated to match the live site. If code and spec disagree, <strong>the codebase is the source of truth</strong>.</p>
+<h2>New public routes</h2>
+<table>
+<thead><tr><th>Route</th><th>Model</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>/artists</code></td><td>White Directory (LAYOUT §1.3)</td><td>A–Z list, Genre/Medium filters, overlapping four-artist billboard, four-column grid</td></tr>
+<tr><td><code>/artists/[slug]</code></td><td>White Split Content</td><td>Portrait/bio left; CV, Exhibitions, Press, Talks, Works right. Empty sections keep their headings</td></tr>
+<tr><td><code>/artists/join</code></td><td>Content Page (form)</td><td>Three-tab artist profile. Saved in <code>localStorage</code> until an <code>artists</code> table exists</td></tr>
+</tbody></table>
+<p>White header (<code>WhiteSiteHeader</code>) on <code>/partners</code> and Artists: Become a Partner → Artists → Back to workspace (muted, last).</p>
+<h2>Billboard</h2>
+<ul>
+<li>Four overlapping full-height artist pages. Default: name overlay, image to the top edge (no white header strip).</li>
+<li>Select: that page expands; the other three compress (~6% width), <strong>name vertical, no image</strong>.</li>
+<li>Motion: <code>700ms</code> <code>cubic-bezier(0.22, 1, 0.36, 1)</code> on <code>left</code> / <code>width</code>.</li>
+<li><code>Read more →</code> is the existing CTA-with-arrow text button.</li>
+<li><code>∨</code> at the billboard bottom scrolls to the grid. Billboard bottom sits on the screen bottom under header + filters.</li>
+</ul>
+<h2>Filters</h2>
+<ul>
+<li>Genre and Medium only, <strong>collapsed by default</strong>.</li>
+<li>Exhibition / When dropdown was removed.</li>
+</ul>
+<h2>Images</h2>
+<ul>
+<li>About <strong>half of the 15 editorial artists</strong> have a portrait (7 with, 8 without).</li>
+<li>Empty = <strong>white</strong>. No grey square, no broken-image icon.</li>
+<li>Portraits or artworks only. No cityscapes or stock filler.</li>
+<li>Grid thumbs: <code>96px</code>.</li>
+</ul>
+<h2>Tokens still in force</h2>
+<p>Black/white system. Fonts: Inter, Poppins, Source Sans 3. Spacing scale unchanged. Red (<code>#FF0000</code>) only for workspace activity-list hover and the selected A–Z artist name. Meta grey <code>#9A9A9A</code> for muted nav, field, years, letters.</p>
+<h2>Persistence</h2>
+<p>Artist join is <strong>not</strong> in Supabase yet. Draft: <code>othering_artist_join_draft_v1</code>. Submitted: <code>othering_artist_submissions_v1</code>. DATABASE_SCHEMA.md describes a later <code>artists</code> table — do not invent it in UI.</p></section><section class="chapter"><p class="file-label">SYSTEM_INDEX.md</p><h1>SYSTEM_INDEX.md</h1><h1>SYSTEM_INDEX.md</h1>
+<h2>Purpose</h2>
+<p>This document serves as a table of contents and onboarding guide for the Art Festival 2026 platform specification system.</p>
+<p><strong>How to use this file:</strong></p>
+<ol>
+<li>Read this file first to understand the system structure</li>
+<li>Refer to specific specification files as needed</li>
+<li>Use this file to understand how files work together</li>
+</ol>
+<hr />
+<h2>Specification Files Overview</h2>
+<p>The system is organized into <strong>9 specification files</strong>, each with a clear, non-overlapping responsibility:</p>
+<ol>
+<li><strong>DESIGN_TOKENS.md</strong> - Visual primitives (colors, fonts, spacing, borders)</li>
+<li><strong>Typography Mapping Table.md</strong> - Text styling by semantic role</li>
+<li><strong>LAYOUT_INTERACTION_SPEC.md</strong> - Page models and scrolling behavior</li>
+<li><strong>SPACE_SYSTEM_COMPLETE.md</strong> - Global spacing rules</li>
+<li><strong>SPACE_SYSTEM_DETAIL_PANEL.md</strong> - Detail panel spacing specifics</li>
+<li><strong>FORM_SCHEMA.md</strong> - Data structure and validation</li>
+<li><strong>FORM_PAGE_SPEC.md</strong> - Form behavior and logic</li>
+<li><strong>INTERACTION_MOTION_SPEC.md</strong> - Interaction feedback and motion rules</li>
+<li><strong>Project_scope.md</strong> - Overall purpose and goals</li>
+</ol>
+<p><strong>Note:</strong> The system includes authentication (Supabase), navigation menu dropdown, login page, and dynamic label changes based on auth state.</p>
+<hr />
+<h2>File-by-File Guide</h2>
+<h3>1. DESIGN_TOKENS.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Color tokens (black, white, grays, backgrounds)</li>
+<li>Font families (Inter, Poppins, Source Sans 3)</li>
+<li>Spacing scale (4px, 12px, 16px, 24px, 30px, 36px, 60px)</li>
+<li>Border tokens (width, color, radius)</li>
+<li>Button tokens (primary, secondary, outlined)</li>
+<li>Responsive typography patterns</li>
+<li>Scrollbar and animation tokens</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>All visual primitive values</li>
+<li>Token names and exact values</li>
+<li>Usage guidelines for each token</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Component definitions</li>
+<li>Layout structures</li>
+<li>Page-specific rules</li>
+<li>Form field definitions</li>
+<li>Business logic</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Implementing any visual styling</li>
+<li>Choosing colors, fonts, or spacing values</li>
+<li>Creating buttons or UI elements</li>
+<li>Setting up responsive typography</li>
+</ul>
+<hr />
+<h3>2. Typography Mapping Table.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Font family assignment by semantic role</li>
+<li>Font weight, size, line-height for each text role</li>
+<li>Text transform (uppercase, lowercase, capitalize, none)</li>
+<li>Text color for each role</li>
+<li>Responsive typography scaling</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Complete mapping of text roles to typography tokens</li>
+<li>Exact font sizes and line heights (with responsive formulas)</li>
+<li>Color assignments</li>
+<li>Transform rules</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Layout or spacing rules</li>
+<li>Component structures</li>
+<li>Form field definitions</li>
+<li>Business logic</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Styling any text element</li>
+<li>Choosing font family for a text role</li>
+<li>Setting font size and line height</li>
+<li>Applying text transforms</li>
+</ul>
+<hr />
+<h3>3. LAYOUT_INTERACTION_SPEC.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Page model types (Workspace vs Content)</li>
+<li>Panel structure and dimensions</li>
+<li>Scrolling behavior (independent vs single scroll)</li>
+<li>Responsive breakpoints (860px, 1440px)</li>
+<li>Fixed elements (sticky headers/footers)</li>
+<li>Scroll-triggered reveal animations</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Clear distinction between Workspace and Content pages</li>
+<li>Panel width rules and responsive behavior</li>
+<li>Scrolling rules for each page type</li>
+<li>Breakpoint definitions</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Visual styling (colors, fonts, spacing)</li>
+<li>Form field definitions</li>
+<li>Component implementations</li>
+<li>Business logic</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Determining page structure</li>
+<li>Implementing panel layouts</li>
+<li>Setting up scrolling behavior</li>
+<li>Adding responsive breakpoints</li>
+</ul>
+<hr />
+<h3>4. SPACE_SYSTEM_COMPLETE.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Global spacing rules across entire system</li>
+<li>Section spacing, dividers, padding logic</li>
+<li>Notion-like vertical rhythm</li>
+<li>Spacing for both Workspace and Content pages</li>
+<li>Form page spacing</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Complete spacing token reference</li>
+<li>Spacing for all major sections</li>
+<li>Panel spacing rules</li>
+<li>Form spacing rules</li>
+<li>Visual hierarchy summary</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Typography rules</li>
+<li>Color definitions</li>
+<li>Component structures</li>
+<li>Business logic</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Setting padding and margins</li>
+<li>Determining gaps between sections</li>
+<li>Creating vertical rhythm</li>
+<li>Spacing form fields</li>
+</ul>
+<hr />
+<h3>5. SPACE_SYSTEM_DETAIL_PANEL.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Spacing and layout rules specific to Workspace detail panels</li>
+<li>Image/text/link vertical rhythm</li>
+<li>Detail panel-specific spacing values</li>
+<li>Media links layout and spacing</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Detail panel container spacing</li>
+<li>Title block spacing</li>
+<li>Meta information spacing</li>
+<li>Body text and image spacing</li>
+<li>Media links spacing</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Primary panel spacing (see SPACE_SYSTEM_COMPLETE.md)</li>
+<li>Typography rules</li>
+<li>Color definitions</li>
+<li>Form spacing</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Implementing detail panel layout</li>
+<li>Spacing detail panel content</li>
+<li>Arranging media links</li>
+<li>Setting image spacing</li>
+</ul>
+<hr />
+<h3>6. FORM_SCHEMA.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>All form field definitions (names, types, required/optional)</li>
+<li>Data structure (Submission type, Activity type)</li>
+<li>Status flow and transitions</li>
+<li>Identity locking rules (username vs author_name)</li>
+<li>Validation rules</li>
+<li>Image storage requirements</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Complete field list with types</li>
+<li>Required vs optional flags</li>
+<li>Editable vs locked rules</li>
+<li>Status definitions and transitions</li>
+<li>Validation requirements</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>UI or layout instructions</li>
+<li>Form behavior (see FORM_PAGE_SPEC.md)</li>
+<li>Visual styling</li>
+<li>Component structures</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Defining form fields</li>
+<li>Implementing validation</li>
+<li>Understanding data structure</li>
+<li>Setting up status transitions</li>
+</ul>
+<hr />
+<h3>7. FORM_PAGE_SPEC.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Tab structure and navigation</li>
+<li>Save Draft vs Submit logic</li>
+<li>Button behavior (Next, Back, Submit, Save Draft)</li>
+<li>Validation rules and timing</li>
+<li>Modal behavior</li>
+<li>Image upload handling</li>
+<li>Rich text editor usage</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Tab navigation rules</li>
+<li>Save Draft vs Submit differences</li>
+<li>Button states and behaviors</li>
+<li>Validation timing</li>
+<li>Modal triggers</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Data structure (see FORM_SCHEMA.md)</li>
+<li>Visual styling</li>
+<li>Layout rules (see LAYOUT_INTERACTION_SPEC.md)</li>
+<li>Spacing rules (see SPACE_SYSTEM_COMPLETE.md)</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Implementing form behavior</li>
+<li>Setting up tab navigation</li>
+<li>Adding validation logic</li>
+<li>Creating button interactions</li>
+</ul>
+<hr />
+<h3>8. INTERACTION_MOTION_SPEC.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Hover behavior (when enabled, when disabled)</li>
+<li>Focus states (keyboard and mouse)</li>
+<li>Click/active feedback</li>
+<li>Tab switching behavior</li>
+<li>Modal entrance/exit</li>
+<li>Image upload feedback</li>
+<li>Disabled states (visual and interaction)</li>
+<li>Scroll-triggered reveals</li>
+<li>Workspace vs Form interaction intensity</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Complete interaction patterns</li>
+<li>Motion timing and transitions</li>
+<li>Accessibility rules (prefers-reduced-motion)</li>
+<li>When hover/focus/active states apply</li>
+<li>When interactions are disabled</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Visual styling (colors, fonts - see DESIGN_TOKENS.md)</li>
+<li>Layout rules (see LAYOUT_INTERACTION_SPEC.md)</li>
+<li>Component structures</li>
+<li>Business logic</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Implementing hover states</li>
+<li>Adding focus indicators</li>
+<li>Creating button interactions</li>
+<li>Implementing modals</li>
+<li>Adding scroll animations</li>
+<li>Ensuring accessibility</li>
+</ul>
+<hr />
+<h3>9. Project_scope.md</h3>
+<p><strong>What it controls:</strong></p>
+<ul>
+<li>Overall purpose and goals</li>
+<li>Target users (Partners, Admins, Public)</li>
+<li>Core flows and features</li>
+<li>Non-goals (out of scope)</li>
+<li>Success criteria</li>
+</ul>
+<p><strong>What it MUST include:</strong></p>
+<ul>
+<li>Clear purpose statement</li>
+<li>User personas</li>
+<li>In-scope features</li>
+<li>Out-of-scope features</li>
+<li>Success metrics</li>
+</ul>
+<p><strong>What it MUST NOT include:</strong></p>
+<ul>
+<li>Technical implementation details</li>
+<li>Design specifications</li>
+<li>Data structure details</li>
+<li>Layout rules</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Understanding project goals</li>
+<li>Determining if a feature is in scope</li>
+<li>Onboarding new team members</li>
+<li>Making scope decisions</li>
+</ul>
+<hr />
+<h2>How Files Work Together</h2>
+<h3>Visual Styling Flow</h3>
+<ol>
+<li><strong>DESIGN_TOKENS.md</strong> → Provides color, font, spacing tokens</li>
+<li><strong>Typography Mapping Table.md</strong> → Maps tokens to text roles</li>
+<li><strong>SPACE_SYSTEM_COMPLETE.md</strong> → Defines spacing application</li>
+<li><strong>SPACE_SYSTEM_DETAIL_PANEL.md</strong> → Refines detail panel spacing</li>
+</ol>
+<p><strong>Example:</strong> Styling a detail panel title</p>
+<ul>
+<li>Use DESIGN_TOKENS.md for font family (Inter) and color (black)</li>
+<li>Use Typography Mapping Table.md for size (<code>clamp(40px, 4.17vw, 60px)</code>) and transform (capitalize)</li>
+<li>Use SPACE_SYSTEM_DETAIL_PANEL.md for spacing around title (16px gap)</li>
+</ul>
+<hr />
+<h3>Layout Flow</h3>
+<ol>
+<li><strong>LAYOUT_INTERACTION_SPEC.md</strong> → Determines page model (Workspace vs Content)</li>
+<li><strong>SPACE_SYSTEM_COMPLETE.md</strong> → Provides spacing for panels</li>
+<li><strong>SPACE_SYSTEM_DETAIL_PANEL.md</strong> → Refines detail panel layout</li>
+</ol>
+<p><strong>Example:</strong> Building a Workspace page</p>
+<ul>
+<li>Use LAYOUT_INTERACTION_SPEC.md to determine two-panel structure</li>
+<li>Use SPACE_SYSTEM_COMPLETE.md for panel padding (36px) and gaps (12px)</li>
+<li>Use SPACE_SYSTEM_DETAIL_PANEL.md for detail panel content spacing</li>
+</ul>
+<hr />
+<h3>Form Implementation Flow</h3>
+<ol>
+<li><strong>FORM_SCHEMA.md</strong> → Defines fields and data structure</li>
+<li><strong>FORM_PAGE_SPEC.md</strong> → Defines behavior and logic</li>
+<li><strong>LAYOUT_INTERACTION_SPEC.md</strong> → Determines Content Page model</li>
+<li><strong>SPACE_SYSTEM_COMPLETE.md</strong> → Provides form spacing</li>
+<li><strong>DESIGN_TOKENS.md</strong> → Provides button and input styling</li>
+<li><strong>Typography Mapping Table.md</strong> → Provides form text styling</li>
+</ol>
+<p><strong>Example:</strong> Building the submission form</p>
+<ul>
+<li>Use FORM_SCHEMA.md to list all fields (first_name, last_name, etc.)</li>
+<li>Use FORM_PAGE_SPEC.md to implement tab navigation and validation</li>
+<li>Use LAYOUT_INTERACTION_SPEC.md to ensure single scroll (Content Page)</li>
+<li>Use SPACE_SYSTEM_COMPLETE.md for form container and field spacing</li>
+<li>Use DESIGN_TOKENS.md for button styles (primary, outlined)</li>
+<li>Use Typography Mapping Table.md for form label and input text styling</li>
+</ul>
+<hr />
+<h2>Decision Tree</h2>
+<p><strong>&quot;Where do I find...?&quot;</strong></p>
+<ul>
+<li><strong>Colors, fonts, spacing values</strong> → DESIGN_TOKENS.md</li>
+<li><strong>How to style text</strong> → Typography Mapping Table.md</li>
+<li><strong>Page structure (panels, scrolling)</strong> → LAYOUT_INTERACTION_SPEC.md</li>
+<li><strong>Spacing between elements</strong> → SPACE_SYSTEM_COMPLETE.md or SPACE_SYSTEM_DETAIL_PANEL.md</li>
+<li><strong>Form field definitions</strong> → FORM_SCHEMA.md</li>
+<li><strong>Form behavior (tabs, validation)</strong> → FORM_PAGE_SPEC.md</li>
+<li><strong>Hover, focus, click interactions</strong> → INTERACTION_MOTION_SPEC.md</li>
+<li><strong>Public artist pages</strong> → LAYOUT_INTERACTION_SPEC.md §1.3, Typography Mapping Table section D, INTERACTION_MOTION_SPEC.md §4b, FORM_SCHEMA.md (Artist Join)</li>
+<li><strong>Project goals and scope</strong> → Project_scope.md</li>
+</ul>
+<hr />
+<h2>System Features</h2>
+<h3>Navigation &amp; Authentication</h3>
+<p><strong>Workspace Menu Dropdown:</strong></p>
+<ul>
+<li>Located in Primary Panel header (right side)</li>
+<li>Menu items:</li>
+<li>&quot;All our partners&quot; → <code>/partners</code> (map-based partner browsing page)</li>
+<li>&quot;Take part&quot; → <code>/submit</code> (submission form)</li>
+<li>&quot;About us&quot; → <code>/about-us</code> (placeholder page)</li>
+<li>&quot;Login&quot; / &quot;Logout&quot; (dynamic based on auth state)</li>
+<li>Dropdown styling: Dark background (<code>#2d2d2d</code>), white text, Poppins Light (300), 16px</li>
+<li>Item borders: Light gray (<code>#e9e9f2</code>) between items</li>
+<li>Padding: <code>24px</code> horizontal, <code>16px</code> vertical per item</li>
+<li>Dropdown closes on outside click or item selection</li>
+<li>Instant appearance/disappearance (no animation)</li>
+</ul>
+<p><strong>White site header</strong> (<code>WhiteSiteHeader</code>, used on <code>/partners</code>, <code>/artists</code>, <code>/artists/[slug]</code>):</p>
+<ul>
+<li>Festival logo → <code>/</code></li>
+<li>&quot;Become a Partner&quot; → <code>/submit</code></li>
+<li>&quot;Artists&quot; → <code>/artists</code> (plain text when current)</li>
+<li>&quot;Back to workspace&quot; → <code>/</code> (muted <code>#9A9A9A</code>, weight 400, last)</li>
+</ul>
+<p><strong>Login Page (<code>/login</code>):</strong></p>
+<ul>
+<li>Split-screen layout (left: billboard, right: form)</li>
+<li>Left panel hidden below 860px</li>
+<li>Form: email + password inputs, primary &quot;Login&quot; button</li>
+<li>Secondary action: &quot;Take part&quot; button (text-only style) below login button, links to <code>/submit</code></li>
+<li>Error display: Inline text below form (no toast)</li>
+<li>Return path: Stores <code>returnTo</code> in sessionStorage, redirects after login</li>
+</ul>
+<p><strong>Post-Login UI Changes:</strong></p>
+<ul>
+<li>Detail Panel: &quot;Become a Partner&quot; label changes to &quot;My program&quot; when logged in</li>
+<li>Same button style and placement, only label changes</li>
+<li>Uses existing auth state from <code>getCurrentUser()</code></li>
+</ul>
+<p><strong>Return Path Logic:</strong></p>
+<ul>
+<li>When user clicks &quot;Login&quot; from any page, current path stored as <code>returnTo</code> in sessionStorage</li>
+<li>After successful login, redirects to <code>returnTo</code> if present, otherwise <code>/</code></li>
+<li><code>returnTo</code> cleared after redirect</li>
+</ul>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase</p>
+<p><strong>Intended use:</strong> System specification index and onboarding guide</p>
+<hr />
+<h2>Version Control</h2>
+<p>All specification files include a version footer:</p>
+<pre><code>## Version
+**Version: 2026-01-23
+**Source of truth:** Current codebase
+**Intended use:** Reusable system specification</code></pre>
+<p><strong>When updating:</strong></p>
+<ul>
+<li>Update version date</li>
+<li>Ensure source of truth matches current implementation</li>
+<li>Maintain strict responsibility boundaries</li>
+</ul>
+<hr />
+<h2>Best Practices</h2>
+<ol>
+<li><strong>Read SYSTEM_INDEX.md first</strong> to understand the system</li>
+<li><strong>Use the decision tree</strong> to find the right file</li>
+<li><strong>Respect boundaries</strong> - don&#x27;t mix concerns between files</li>
+<li><strong>Follow the flow</strong> - use files in the order they work together</li>
+<li><strong>Check version dates</strong> - ensure you&#x27;re using current specifications</li>
+<li><strong>Current codebase is source of truth</strong> - if spec conflicts with code, update spec</li>
+</ol>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase</p>
+<p><strong>Intended use:</strong> System specification index and onboarding guide</p></section><section class="chapter"><p class="file-label">Project_scope.md</p><h1>Project_scope.md</h1><h1>Project Scope</h1>
+<h2>Purpose</h2>
+<p>Defines the overall purpose, target users, core flows, non-goals, and success criteria for the Art Festival 2026 platform.</p>
+<hr />
+<h2>Goal</h2>
+<p>Build an MVP art / exhibition platform for approximately 30 partner organisations or artists.</p>
+<p><strong>Core Functionality:</strong></p>
+<ul>
+<li>Partners can register accounts, submit exhibition or activity content, and edit drafts</li>
+<li>All submissions must be reviewed by an admin before being publicly published</li>
+<li>Public-facing pages display <strong>approved and published content only</strong></li>
+</ul>
+<hr />
+<h2>Target Users</h2>
+<h3>Partners (Artists/Organizations)</h3>
+<ul>
+<li>Individual artists or organizations</li>
+<li>Can register accounts and submit content</li>
+<li>Can save drafts and edit submissions</li>
+<li>Can resubmit after rejection</li>
+</ul>
+<h3>Administrators</h3>
+<ul>
+<li>Review and manage submissions</li>
+<li>Approve or reject submissions</li>
+<li>Publish approved content</li>
+<li>Remove published content</li>
+</ul>
+<h3>Public Visitors</h3>
+<ul>
+<li>Browse published exhibitions/activities</li>
+<li>View detailed activity information</li>
+<li>Access external links (websites, media)</li>
+</ul>
+<hr />
+<h2>In Scope (MVP)</h2>
+<h3>Public Pages</h3>
+<p><strong>Workspace Page Model:</strong></p>
+<ul>
+<li>Public exhibition browsing uses a <strong>Workspace Page model</strong></li>
+<li>Layout follows a <strong>master–detail structure</strong>:</li>
+<li><strong>Primary Panel</strong>: List of all published activities / exhibitions</li>
+<li><strong>Detail Panel</strong>: Detailed view of the currently selected activity / exhibition</li>
+<li>Interaction rules:</li>
+<li>Selecting an item in the Primary Panel updates the Detail Panel</li>
+<li>On small screens (&lt; 860px), panels stack vertically</li>
+<li>Selecting an item scrolls to the Detail Panel on mobile</li>
+<li>Scroll-triggered reveal animations for editorial feel</li>
+<li>No Gallery Grid layout in MVP (list-based navigation only)</li>
+</ul>
+<p><strong>Navigation Menu:</strong></p>
+<ul>
+<li>Menu dropdown in Primary Panel header</li>
+<li>Menu items:</li>
+<li>&quot;All our partners&quot; → navigates to <code>/partners</code> (map-based visitor browsing page)</li>
+<li>&quot;Take part&quot; → navigates to <code>/submit</code></li>
+<li>&quot;About us&quot; → navigates to <code>/about-us</code></li>
+<li>&quot;Login&quot; / &quot;Logout&quot; (dynamic based on auth state)</li>
+<li>Dropdown styling: Dark background (<code>#2d2d2d</code>), white text, Poppins Light font</li>
+<li>Dropdown closes on outside click or item selection</li>
+<li>Post-login label change: &quot;Become a Partner&quot; (Detail Panel) becomes &quot;My program&quot; when logged in</li>
+</ul>
+<p><strong>Partners Page (<code>/partners</code>):</strong></p>
+<ul>
+<li>Content Page model</li>
+<li><code>WhiteSiteHeader</code>: Become a Partner → <code>/submit</code>, Artists → <code>/artists</code>, Back to workspace → <code>/</code></li>
+</ul>
+<p><strong>Artists (<code>/artists</code>, <code>/artists/[slug]</code>, <code>/artists/join</code>):</strong></p>
+<ul>
+<li>Directory is a <strong>White Directory Page</strong> (see LAYOUT_INTERACTION_SPEC.md §1.3): A–Z list, Genre/Medium filters, four-page overlapping billboard, four-column grid</li>
+<li>Detail is White Split Content (photo/bio | CV / Exhibitions / Press / Talks / Works)</li>
+<li>Join is a Content Page form (localStorage until an <code>artists</code> table exists)</li>
+<li>Images: portraits or artworks only; about half the editorial roster has no image (white, not grey)</li>
+</ul>
+<hr />
+<h3>Partner Registration &amp; Access</h3>
+<ul>
+<li>Partner account registration (Basic Info form)</li>
+<li>Each partner represents an individual artist or organisation</li>
+<li>Identity fields (<code>first_name</code>, <code>last_name</code>, <code>username</code>) locked after first submission</li>
+<li>Display name (<code>author_name</code>) always editable</li>
+<li>Authentication via Supabase Auth (email/password)</li>
+<li>Passwords managed by Supabase Auth only (never stored in database)</li>
+<li>User profiles stored in <code>profiles</code> table (username, role)</li>
+<li>Login page with split-screen layout (billboard left, form right)</li>
+<li>Login form: Email + password inputs, primary &quot;Login&quot; button</li>
+<li>Secondary action: &quot;Take part&quot; button (text-only style) below login button, links to <code>/submit</code></li>
+<li>Logout functionality redirects to public landing page</li>
+<li>Return path storage: When user clicks &quot;Login&quot; from any page, current path is stored as <code>returnTo</code>; after successful login, redirects to <code>returnTo</code> if present, otherwise <code>/</code></li>
+</ul>
+<hr />
+<h3>Partner Submission Form</h3>
+<p><strong>Content Page Model:</strong></p>
+<ul>
+<li>Submission form uses <strong>Content Page model</strong> (single scroll)</li>
+<li>Form split into <strong>three tabs</strong>:</li>
+<li><strong>Basic Info</strong>: Partner account and registration information</li>
+<li><strong>About the Exhibition / Activity</strong>: Content with strict order, image uploads, rich text</li>
+<li><strong>Links / Media</strong>: Website link and optional additional media links</li>
+<li>Partners can:</li>
+<li>Create new submissions</li>
+<li>Save drafts (status: <code>draft</code>, no validation required)</li>
+<li>Submit for review (status: <code>pending_review</code>, validation required)</li>
+<li>Edit drafts or previously approved content</li>
+</ul>
+<p><strong>Form Features:</strong></p>
+<ul>
+<li>Rich text editor for long descriptions</li>
+<li>Image upload (Supabase Storage or data URL fallback)</li>
+<li>Tab navigation (Next/Back buttons)</li>
+<li>Save Draft always available</li>
+<li>Submit only on final tab (disabled until valid + terms accepted)</li>
+</ul>
+<hr />
+<h3>Admin Review</h3>
+<p><strong>Minimal Admin System:</strong></p>
+<ul>
+<li>Admin users can review submitted content</li>
+<li>Admin list shows only submitted items (filters out <code>draft</code> status)</li>
+<li>Admin actions:</li>
+<li><strong>Approve &amp; Publish</strong>: Sets status to <code>published</code>, adds to activities list</li>
+<li><strong>Reject</strong>: Sets status to <code>rejected</code></li>
+<li><strong>Remove</strong>: Sets <code>is_deleted: true</code>, removes from activities list</li>
+<li>Read-only detail view (no editing UI)</li>
+<li>No pagination, filters, search, or bulk actions</li>
+</ul>
+<hr />
+<h3>Publishing &amp; Status Workflow</h3>
+<p><strong>Status Flow:</strong></p>
+<pre><code>draft → pending_review → approved → published
+                              ↓
+                          rejected (can resubmit)</code></pre>
+<p><strong>Status Rules:</strong></p>
+<ul>
+<li>Only content with status <code>published</code> is visible on public pages</li>
+<li>Editing any <code>approved</code> or <code>published</code> content resets status to <code>pending_review</code></li>
+<li>Drafts are not visible to admins</li>
+<li>Rejected submissions can be edited and resubmitted</li>
+</ul>
+<hr />
+<h3>Data &amp; Content Rules</h3>
+<p><strong>Schema Compliance:</strong></p>
+<ul>
+<li>All fields, validation rules, image requirements, alt text, and content order must strictly follow <code>FORM_SCHEMA.md</code></li>
+</ul>
+<p><strong>Visual Styling:</strong></p>
+<ul>
+<li>Black &amp; white visual system only</li>
+<li>Must follow <code>DESIGN_TOKENS.md</code> for colors, fonts, spacing</li>
+<li>Must follow <code>Typography Mapping Table.md</code> for text styling</li>
+<li>Must follow <code>SPACE_SYSTEM_COMPLETE.md</code> for spacing</li>
+</ul>
+<p><strong>Layout &amp; Interaction:</strong></p>
+<ul>
+<li>Must follow <code>LAYOUT_INTERACTION_SPEC.md</code> for page models and scrolling</li>
+<li>Workspace Pages: Master–detail layout with independent scrolling</li>
+<li>Content Pages: Single scroll, max-width containers</li>
+</ul>
+<hr />
+<h2>Out of Scope (MVP)</h2>
+<ul>
+<li>Payment processing or ticket sales</li>
+<li>Advanced analytics or reporting dashboards</li>
+<li>Multi-language support</li>
+<li>Notifications, comments, likes, or social features</li>
+<li>Gallery Grid layout on the <strong>Workspace</strong> page (Artists directory grid is specified and in use)</li>
+<li>Password reset functionality</li>
+<li>Email notifications</li>
+<li>Search functionality</li>
+<li>Pagination or infinite scroll</li>
+<li>Advanced admin features (bulk actions, filters, search)</li>
+<li>User registration (partners register via submission form)</li>
+</ul>
+<hr />
+<h2>Key Principles</h2>
+<ol>
+<li><strong>Avoid over-engineering</strong>: Finish usable flows before adding complexity</li>
+<li><strong>Visual structure first</strong>: Layout and interaction rules defined before implementation</li>
+<li><strong>Specification-driven</strong>: All implementation must follow provided specification files</li>
+<li><strong>Black &amp; white only</strong>: No color variations beyond grayscale</li>
+<li><strong>Reusable patterns</strong>: Workspace components and button styles reused across pages</li>
+<li><strong>Editorial feel</strong>: Scroll-triggered reveals, calm interactions, respects <code>prefers-reduced-motion</code></li>
+</ol>
+<hr />
+<h2>Success Criteria</h2>
+<p><strong>Functional:</strong></p>
+<ul>
+<li>Partners can register and submit content</li>
+<li>Admins can review and publish content</li>
+<li>Public visitors can browse published exhibitions</li>
+<li>All status transitions work correctly</li>
+<li>Identity fields lock after first submission</li>
+<li>Display name logic works (author_name fallback to username)</li>
+</ul>
+<p><strong>Technical:</strong></p>
+<ul>
+<li>All pages follow specified layout models (Workspace vs Content)</li>
+<li>All styling follows design tokens and typography mapping</li>
+<li>All spacing follows space system specifications</li>
+<li>Form validation works correctly</li>
+<li>Image upload and storage works (Supabase or data URL fallback)</li>
+</ul>
+<p><strong>User Experience:</strong></p>
+<ul>
+<li>Clear visual hierarchy</li>
+<li>Consistent spacing and typography</li>
+<li>Smooth interactions (with motion preference respect)</li>
+<li>Accessible (alt text, semantic HTML)</li>
+</ul>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/page.tsx</code>, <code>app/submit/page.tsx</code>, <code>app/admin/page.tsx</code>, <code>app/login/page.tsx</code>, <code>app/about-us/page.tsx</code>, <code>app/partners/page.tsx</code>, <code>app/artists/page.tsx</code>, <code>app/lib/auth.ts</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label"># DESIGN_TOKENS.md</p><h1>DESIGN_TOKENS.md</h1><h1>DESIGN_TOKENS.md</h1>
+<h2>Purpose</h2>
+<p>Single source of truth for visual primitives.</p>
+<p>These tokens are <strong>immutable constants</strong>.</p>
+<p>Do not invent new values.</p>
+<hr />
+<h2>1. Color Tokens</h2>
+<table>
+<thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><code>--color-black</code></td><td><code>#000000</code></td><td>Primary text, borders, buttons</td></tr>
+<tr><td><code>--color-white</code></td><td><code>#FFFFFF</code></td><td>Backgrounds, text on dark</td></tr>
+<tr><td><code>--color-primary-bg</code></td><td><code>#1C1C1C</code></td><td>Primary panel background</td></tr>
+<tr><td><code>--color-detail-bg</code></td><td><code>#FFFFFF</code></td><td>Detail panel background</td></tr>
+<tr><td><code>--color-text-muted</code></td><td><code>#E1E1E1</code></td><td>Unselected activity list items</td></tr>
+<tr><td><code>--color-text-placeholder</code></td><td><code>#999999</code></td><td>Placeholder text</td></tr>
+<tr><td><code>--color-text-meta</code></td><td><code>#9A9A9A</code></td><td>White-site muted nav, A–Z letters, artist field labels</td></tr>
+<tr><td><code>--color-selection</code></td><td><code>#FF0000</code></td><td>Workspace activity-list hover; selected artist name in the A–Z list</td></tr>
+<tr><td><code>--color-border</code></td><td><code>#000000</code></td><td>Borders (20% opacity: <code>rgba(0, 0, 0, 0.2)</code>)</td></tr>
+<tr><td><code>--color-gray-300</code></td><td><code>#D1D5DB</code></td><td>Workspace / event <strong>image placeholders only</strong>. Do <strong>not</strong> use on <code>/artists</code> empty slots</td></tr>
+<tr><td><code>--color-gray-400</code></td><td><code>#9CA3AF</code></td><td>Image borders</td></tr>
+<tr><td><code>--color-gray-600</code></td><td><code>#4B5563</code></td><td>Secondary text</td></tr>
+<tr><td><code>--color-dropdown-bg</code></td><td><code>#2d2d2d</code></td><td>Dropdown menu background</td></tr>
+<tr><td><code>--color-dropdown-border</code></td><td><code>#e9e9f2</code></td><td>Dropdown menu item borders</td></tr>
+</tbody></table>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Black &amp; white visual system only</li>
+<li>No color variations beyond grayscale</li>
+<li>Opacity used for borders and overlays only</li>
+</ul>
+<hr />
+<h2>2. Typography Tokens</h2>
+<h3>Font Families</h3>
+<table>
+<thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><code>--font-inter</code></td><td><code>Inter</code></td><td>Primary UI font (body, buttons, labels)</td></tr>
+<tr><td><code>--font-poppins</code></td><td><code>Poppins</code></td><td>Display font (author names, body text)</td></tr>
+<tr><td><code>--font-source-sans-3</code></td><td><code>Source Sans 3</code></td><td>Navigation, meta labels, meta values</td></tr>
+</tbody></table>
+<p><strong>Font Loading:</strong></p>
+<ul>
+<li>Inter: Variable font, subsets: latin, display: swap</li>
+<li>Poppins: Weights 400, 500, 600, 700, subsets: latin, display: swap</li>
+<li>Source Sans 3: Loaded via CSS variable (if available)</li>
+</ul>
+<hr />
+<h2>3. Spacing Tokens (px)</h2>
+<table>
+<thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><code>--space-1</code></td><td><code>4px</code></td><td>Minimal spacing, tight groups (author line, label-value pairs)</td></tr>
+<tr><td><code>--space-2</code></td><td><code>12px</code></td><td>Section gaps, menu padding, vertical rhythm</td></tr>
+<tr><td><code>--space-3</code></td><td><code>16px</code></td><td>Content grouping, label-value spacing, button gaps</td></tr>
+<tr><td><code>--space-4</code></td><td><code>24px</code></td><td>Menu top padding, footer bottom padding, title wrapper gaps</td></tr>
+<tr><td><code>--space-5</code></td><td><code>30px</code></td><td>Activity list item spacing</td></tr>
+<tr><td><code>--space-6</code></td><td><code>36px</code></td><td>Major section gaps, horizontal padding</td></tr>
+<tr><td><code>--space-7</code></td><td><code>60px</code></td><td>Page-level separation, bottom padding</td></tr>
+</tbody></table>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Do not use spacing values outside this scale</li>
+<li>All spacing is fixed pixel values at 1440px reference</li>
+<li>Responsive scaling uses <code>clamp()</code> for typography only, not spacing</li>
+</ul>
+<hr />
+<h2>4. Border Tokens</h2>
+<table>
+<thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><code>--border-width</code></td><td><code>1px</code></td><td>Standard border width</td></tr>
+<tr><td><code>--border-color</code></td><td><code>rgba(0, 0, 0, 0.2)</code></td><td>Standard border color (20% opacity)</td></tr>
+<tr><td><code>--border-radius</code></td><td><code>2px</code></td><td>Standard border radius (form inputs, images)</td></tr>
+<tr><td><code>--border-radius-lg</code></td><td><code>4px</code></td><td>Large border radius (modals, containers)</td></tr>
+</tbody></table>
+<hr />
+<h2>5. Button Tokens</h2>
+<h3>Primary Button (Black Background)</h3>
+<ul>
+<li>Background: <code>#000000</code></li>
+<li>Text: <code>#FFFFFF</code></li>
+<li>Padding: <code>24px</code> horizontal, <code>4px</code> vertical</li>
+<li>Border: None</li>
+<li>Font: Inter, medium weight, uppercase</li>
+<li>Font size: <code>clamp(16px, 1.39vw, 20px)</code></li>
+<li>Line height: <code>clamp(24px, 2.08vw, 30px)</code></li>
+<li>Hover: <code>opacity: 0.9</code> or <code>background: rgba(0, 0, 0, 0.9)</code></li>
+</ul>
+<h3>Secondary Button (Text Only)</h3>
+<ul>
+<li>Background: Transparent</li>
+<li>Text: <code>#000000</code></li>
+<li>Padding: <code>24px</code> horizontal, <code>4px</code> vertical</li>
+<li>Border: None</li>
+<li>Font: Inter, medium weight, uppercase</li>
+<li>Font size: <code>clamp(16px, 1.39vw, 20px)</code></li>
+<li>Line height: <code>clamp(24px, 2.08vw, 30px)</code></li>
+<li>Hover: <code>opacity: 0.7</code></li>
+</ul>
+<h3>Save Draft Button (Outlined)</h3>
+<ul>
+<li>Background: Transparent</li>
+<li>Text: <code>#000000</code></li>
+<li>Padding: <code>24px</code> horizontal, <code>4px</code> vertical</li>
+<li>Border: <code>1px solid #000000</code></li>
+<li>Font: Inter, medium weight, uppercase</li>
+<li>Font size: <code>clamp(16px, 1.39vw, 20px)</code></li>
+<li>Line height: <code>clamp(24px, 2.08vw, 30px)</code></li>
+<li>Hover: <code>opacity: 0.7</code></li>
+</ul>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Buttons use responsive typography via <code>clamp()</code></li>
+<li>Padding remains fixed (not responsive)</li>
+<li>All buttons are <code>shrink-0</code> (hug content)</li>
+</ul>
+<hr />
+<h2>6. Responsive Typography</h2>
+<p>Typography scales using CSS <code>clamp()</code> with viewport width.</p>
+<p><strong>Reference Breakpoints:</strong></p>
+<ul>
+<li>1280px: Minimum viewport</li>
+<li>1440px: Reference viewport (design target)</li>
+<li>Maximum: No upper limit (typography continues scaling)</li>
+</ul>
+<p><strong>Common Patterns:</strong></p>
+<ul>
+<li>Menu/Navigation: <code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></li>
+<li>Page Titles: <code>clamp(40px, 4.17vw, 60px)</code> / <code>clamp(40px, 4.17vw, 60px)</code></li>
+<li>Hero Title (Primary Panel): <code>clamp(96px, calc(-160px + 25vw), 240px)</code> / <code>clamp(62.4px, calc(-104px + 16.25vw), 156px)</code> - Uses language-aware hyphenation (<code>hyphens: auto</code>) with suppressed visible hyphens (<code>hyphenate-character: &quot;&quot;</code>) for user-generated content</li>
+<li>Activity List Items: <code>clamp(20px, 2.08vw, 36px)</code> / <code>clamp(20px, 2.08vw, 36px)</code></li>
+</ul>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Only typography scales responsively</li>
+<li>Spacing, padding, and layout remain fixed</li>
+<li>Use <code>clamp(min, preferred, max)</code> format</li>
+</ul>
+<hr />
+<h2>7. Scrollbar Tokens</h2>
+<table>
+<thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><code>scrollbar-hide</code></td><td>CSS class</td><td>Hides scrollbars completely (always invisible)</td></tr>
+</tbody></table>
+<p><strong>Implementation:</strong></p>
+<ul>
+<li><code>-ms-overflow-style: none</code> (IE/Edge)</li>
+<li><code>scrollbar-width: none</code> (Firefox)</li>
+<li><code>::-webkit-scrollbar { display: none }</code> (Chrome/Safari)</li>
+</ul>
+<hr />
+<h2>8. Animation Tokens</h2>
+<table>
+<thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><code>--transition-base</code></td><td><code>200ms</code></td><td>Standard hover transitions</td></tr>
+<tr><td><code>--transition-slow</code></td><td><code>1000ms</code></td><td>Scroll-triggered reveals</td></tr>
+<tr><td><code>--transition-delay</code></td><td><code>200ms</code></td><td>Image reveal delay</td></tr>
+<tr><td><code>--transition-image</code></td><td><code>400ms</code></td><td>Observational image hover (<code>opacity</code>, <code>filter</code>)</td></tr>
+<tr><td><code>--easing-out</code></td><td><code>ease-out</code></td><td>Default hover / reveal easing</td></tr>
+<tr><td><code>--easing-editorial</code></td><td><code>cubic-bezier(0.22, 1, 0.36, 1)</code></td><td>Already used by <code>.othering-enter</code>; reuse for artist billboard squeeze</td></tr>
+<tr><td><code>--transition-editorial</code></td><td><code>700ms</code></td><td>Artist billboard <code>left</code> / <code>width</code> squeeze only</td></tr>
+</tbody></table>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Respect <code>prefers-reduced-motion</code></li>
+<li>Animations disabled when motion preference is reduced</li>
+<li>Default timing function is <code>ease-out</code></li>
+<li>Billboard squeeze uses <code>--easing-editorial</code> at <code>700ms</code>; compressed-card image fade uses the same easing at <code>500ms</code></li>
+</ul>
+<p><strong>Artists image assets (sizes, not spacing):</strong></p>
+<ul>
+<li>Directory grid thumbnail: <code>96px × 96px</code></li>
+<li>Billboard expanded work/portrait: up to <code>480px</code> (also capped at <code>70%</code> height / <code>55%</code> width of the expanded peek)</li>
+<li>Filter checkbox: <code>12px × 12px</code>, radius <code>2px</code>, black border; checked fill <code>#000000</code></li>
+</ul>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/globals.css</code>, <code>app/layout.tsx</code>, <code>app/page.tsx</code>, <code>app/artists/page.tsx</code>, <code>app/submit/page.tsx</code>, <code>app/login/page.tsx</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label"># Typography Mapping Table.md</p><h1>Typography Mapping Table.md</h1><h1>Typography Mapping Table</h1>
+<h2>Purpose</h2>
+<p>Maps typography tokens to semantic roles across the system.</p>
+<p>Defines font family, weight, size, line-height, transform, and color for each text role.</p>
+<hr />
+<h2>A. Primary Panel (Workspace)</h2>
+<table>
+<thead><tr><th>Visual Role</th><th>UI Area</th><th>Font</th><th>Weight</th><th>Size / Line Height</th><th>Transform</th><th>Color</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Logo</td><td>Primary Header (Left)</td><td>Inter</td><td>700</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Uppercase</td><td>White</td><td>&quot;OT FESTIVAL&quot;</td></tr>
+<tr><td>Menu Link</td><td>Primary Header (Right)</td><td>Inter</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>White</td><td>&quot;Menu&quot;, &quot;Admin&quot;</td></tr>
+<tr><td>Dropdown Menu Item</td><td>Menu Dropdown</td><td>Poppins</td><td>300</td><td><code>16px</code> / <code>normal</code></td><td>None</td><td>White</td><td>&quot;All our partners&quot;, &quot;Take part&quot;, &quot;About us&quot;, &quot;Login&quot;, &quot;Logout&quot;</td></tr>
+<tr><td>Hero Title (Selected) / Display XXL</td><td>Primary Panel Main Title</td><td>Inter</td><td>700 (bold)</td><td><code>clamp(96px, calc(-160px + 25vw), 240px)</code> / <code>clamp(62.4px, calc(-104px + 16.25vw), 156px)</code></td><td>Uppercase</td><td>White</td><td>Selected activity title (very large display type). <strong>Word-breaking rule:</strong> <code>hyphens: auto</code> (language-aware), <code>hyphenate-character: &quot;&quot;</code> (no visible hyphens), <code>word-break: normal</code>, <code>overflow-wrap: break-word</code>. Applied via <code>.hero-title-hyphenate</code> class. Required for user-generated content that cannot be manually line-broken.</td></tr>
+<tr><td>Activity List Item</td><td>Primary Panel List</td><td>Inter</td><td>500</td><td><code>clamp(20px, 2.08vw, 36px)</code> / <code>clamp(20px, 2.08vw, 36px)</code></td><td>Uppercase</td><td><code>#E1E1E1</code> (unselected)</td><td>Each activity (non-selected)</td></tr>
+<tr><td>CTA Button</td><td>Primary Footer</td><td>Inter</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Uppercase</td><td>White</td><td>&quot;Join us →&quot;</td></tr>
+</tbody></table>
+<hr />
+<h2>B. Detail Panel (Workspace)</h2>
+<table>
+<thead><tr><th>Visual Role</th><th>UI Area</th><th>Font</th><th>Weight</th><th>Size / Line Height</th><th>Transform</th><th>Color</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Nav Link</td><td>Detail Header</td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>&quot;View all programmes&quot;, &quot;Become a Partner&quot;</td></tr>
+<tr><td>Main Title</td><td>Detail Content Title</td><td>Inter</td><td>500</td><td><code>clamp(40px, 4.17vw, 60px)</code> / <code>clamp(40px, 4.17vw, 60px)</code></td><td>Capitalize</td><td>Black</td><td>Activity title, tracking: <code>-4.8px</code></td></tr>
+<tr><td>Author Prefix</td><td>Detail Author Line</td><td>Poppins</td><td>500</td><td><code>clamp(12px, 0.97vw, 14px)</code> / <code>normal</code></td><td>Capitalize</td><td>Black</td><td>&quot;by&quot;</td></tr>
+<tr><td>Author Name</td><td>Detail Author Line</td><td>Poppins</td><td>500</td><td><code>clamp(12px, 0.97vw, 14px)</code> / <code>normal</code></td><td>Capitalize</td><td>Black</td><td>Artist / organiser (author_name or username fallback)</td></tr>
+<tr><td>Meta Label</td><td>Detail Meta Section</td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>&quot;Location:&quot;, &quot;Date:&quot;, &quot;Category:&quot;, &quot;Organisers / Partners:&quot;</td></tr>
+<tr><td>Meta Value</td><td>Detail Meta Section</td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Lowercase</td><td>Black</td><td>Location / date text</td></tr>
+<tr><td>Website Button</td><td>Detail Footer Links</td><td>Inter</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Uppercase</td><td>Black</td><td>&quot;Website&quot; (text link button)</td></tr>
+<tr><td>Media Link</td><td>Detail Footer Links</td><td>Inter</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Uppercase</td><td>Black</td><td>Additional media links (media_name)</td></tr>
+<tr><td>Category Label</td><td>Detail Category</td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>&quot;Category:&quot;</td></tr>
+<tr><td>Category Value</td><td>Detail Category</td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>Category text</td></tr>
+<tr><td>Organisers Label</td><td>Detail Organisers</td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>&quot;Organisers / Partners:&quot;</td></tr>
+<tr><td>Organisers Link</td><td>Detail Organisers</td><td>Inter</td><td>600</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize + Underline</td><td>Black</td><td>Clickable partner link</td></tr>
+<tr><td>Body Text</td><td>Detail Content</td><td>Poppins</td><td>500</td><td><code>clamp(12px, 0.97vw, 14px)</code> / <code>normal</code></td><td>None</td><td>Black</td><td>Long-form paragraphs (HTML content from rich text editor)</td></tr>
+</tbody></table>
+<hr />
+<h2>D. White Site (Partners header, Artists directory / detail / join)</h2>
+<table>
+<thead><tr><th>Visual Role</th><th>UI Area</th><th>Font</th><th>Weight</th><th>Size / Line Height</th><th>Transform</th><th>Color</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>White-site nav link</td><td><code>WhiteSiteHeader</code></td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>&quot;Become a Partner&quot;, &quot;Artists&quot;</td></tr>
+<tr><td>White-site nav (current)</td><td><code>WhiteSiteHeader</code></td><td>Source Sans 3</td><td>500</td><td>same</td><td>Capitalize</td><td>Black</td><td>Current page is plain text, not a link</td></tr>
+<tr><td>White-site nav muted</td><td><code>WhiteSiteHeader</code></td><td>Source Sans 3</td><td>400</td><td>same</td><td>Capitalize</td><td><code>#9A9A9A</code></td><td>&quot;Back to workspace&quot; — last item</td></tr>
+<tr><td>Artist name (directory)</td><td><code>/artists</code> list, peeks, grid</td><td>Inter</td><td>600</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black; selected list name <code>#FF0000</code></td><td>Underlined in A–Z list. Hover: underline off</td></tr>
+<tr><td>Artist field</td><td>Grid / expanded peek</td><td>Poppins</td><td>500</td><td><code>clamp(12px, 0.97vw, 14px)</code> / <code>normal</code></td><td>Capitalize</td><td><code>#9A9A9A</code></td><td>Discipline, e.g. &quot;Sculptor&quot;</td></tr>
+<tr><td>Artist bio</td><td>Expanded peek / detail</td><td>Poppins</td><td>500</td><td><code>clamp(12px, 0.97vw, 14px)</code> / <code>normal</code></td><td>None</td><td>Black</td><td>Same as Body Text</td></tr>
+<tr><td>Read more →</td><td>Expanded peek</td><td>Inter</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>Text button with arrow; same motion as &quot;Join us →&quot; (opacity 70%, arrow <code>1px</code>)</td></tr>
+<tr><td>A–Z letter</td><td>Left list</td><td>Inter</td><td>500</td><td><code>10px</code> / <code>16px</code>, tracking <code>0.08em</code></td><td>Uppercase</td><td><code>#9A9A9A</code></td><td>Section label</td></tr>
+<tr><td>Filter heading</td><td>Genre / Medium</td><td>Inter</td><td>500</td><td><code>12px</code> / <code>16px</code>, tracking <code>0.08em</code></td><td>Uppercase</td><td>Black</td><td>Collapsed by default; chevron <code>∨</code> closed, <code>∧</code> open</td></tr>
+<tr><td>Filter option</td><td>Genre / Medium</td><td>Inter</td><td>400</td><td><code>16px</code> / <code>24px</code></td><td>None</td><td>Black</td><td>Checkbox + label</td></tr>
+<tr><td>Search input</td><td>Left column</td><td>Inter</td><td>400</td><td><code>16px</code> / <code>24px</code></td><td>None</td><td>Black</td><td>Placeholder <code>#999999</code></td></tr>
+<tr><td>Artist page title</td><td><code>/artists/[slug]</code></td><td>Inter</td><td>500</td><td><code>clamp(40px, 4.17vw, 60px)</code> / same, tracking <code>-4.8px</code></td><td>Capitalize</td><td>Black</td><td>Same role as Detail Main Title</td></tr>
+<tr><td>Artist section title</td><td>CV, Exhibitions, Press, Talks, Works</td><td>Source Sans 3</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Capitalize</td><td>Black</td><td>Heading remains when the section is empty</td></tr>
+<tr><td>Entry year</td><td>Artist lists</td><td>Inter</td><td>500</td><td><code>10px</code> / <code>16px</code>, tracking <code>0.08em</code></td><td>Uppercase</td><td><code>#9A9A9A</code></td><td></td></tr>
+<tr><td>Entry title</td><td>Artist lists</td><td>Poppins</td><td>500</td><td><code>clamp(12px, 0.97vw, 14px)</code> / <code>normal</code></td><td>None</td><td>Black</td><td></td></tr>
+<tr><td>Entry venue</td><td>Artist lists</td><td>Inter</td><td>400</td><td><code>12px</code> / <code>16px</code></td><td>None</td><td><code>#9A9A9A</code></td><td></td></tr>
+<tr><td>Compressed peek name</td><td>Billboard</td><td>Inter</td><td>600</td><td>same as Artist name</td><td>Capitalize</td><td>Black</td><td><code>writing-mode: vertical-rl</code>; no image</td></tr>
+</tbody></table>
+<hr />
+<h2>C. Form Page (Submission)</h2>
+<table>
+<thead><tr><th>Visual Role</th><th>UI Area</th><th>Font</th><th>Weight</th><th>Size / Line Height</th><th>Transform</th><th>Color</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Page Title</td><td>Form Header</td><td>Inter</td><td>500</td><td><code>clamp(40px, 4.17vw, 60px)</code> / <code>clamp(40px, 4.17vw, 60px)</code></td><td>Capitalize</td><td>Black</td><td>&quot;Submission Form&quot;</td></tr>
+<tr><td>Tab Label</td><td>Tab Navigation</td><td>Inter</td><td>500</td><td><code>16px</code> / <code>24px</code></td><td>None</td><td>Black / Black 50%</td><td>&quot;Basic Info&quot;, &quot;About the Exhibition&quot;, &quot;Links / Media&quot;</td></tr>
+<tr><td>Form Label</td><td>Form Field</td><td>Inter</td><td>500</td><td><code>12px</code> / <code>16px</code></td><td>Uppercase</td><td>Black</td><td>Field labels with asterisk for required</td></tr>
+<tr><td>Input Text</td><td>Form Field</td><td>Inter</td><td>400</td><td><code>16px</code> / <code>24px</code></td><td>None</td><td>Black</td><td>Input values</td></tr>
+<tr><td>Helper Text</td><td>Form Field</td><td>Inter</td><td>400</td><td><code>12px</code> / <code>16px</code></td><td>None</td><td>Black 70%</td><td>Helper/hint text below inputs</td></tr>
+<tr><td>Button Text</td><td>Form Actions</td><td>Inter</td><td>500</td><td><code>clamp(16px, 1.39vw, 20px)</code> / <code>clamp(24px, 2.08vw, 30px)</code></td><td>Uppercase</td><td>Black / White</td><td>&quot;Save Draft&quot;, &quot;Next&quot;, &quot;Submit&quot;, &quot;Back&quot;</td></tr>
+<tr><td>Terms Text</td><td>Terms Section</td><td>Inter</td><td>400</td><td><code>14px</code> / <code>20px</code></td><td>None</td><td>Black 80%</td><td>Terms and conditions text</td></tr>
+</tbody></table>
+<hr />
+<h2>Font Family Summary</h2>
+<p><strong>Inter</strong></p>
+<ul>
+<li>Logo</li>
+<li>Primary CTA / Buttons</li>
+<li>Detail Main Title</li>
+<li>Form labels, inputs, buttons</li>
+<li>Menu links</li>
+<li>Hero title (Primary Panel)</li>
+<li>Activity list items</li>
+<li>Website/media link buttons</li>
+</ul>
+<p><strong>Poppins</strong></p>
+<ul>
+<li>Author prefix (&quot;by&quot;)</li>
+<li>Author name</li>
+<li>Body text (long paragraphs)</li>
+</ul>
+<p><strong>Source Sans 3</strong></p>
+<ul>
+<li>Navigation (Detail Panel and White Site header)</li>
+<li>Meta labels (Location, Date, Category, Organisers)</li>
+<li>Meta values (location/date text)</li>
+<li>Artist detail section titles (CV, Exhibitions, Press, Talks, Works)</li>
+</ul>
+<hr />
+<h2>Responsive Typography Rules</h2>
+<ol>
+<li><strong>Primary Panel Hero Title</strong>: Uses complex <code>clamp()</code> formula for linear scaling between 1280px (160px) and 1440px (200px)</li>
+<li><strong>All other text</strong>: Uses standard <code>clamp(min, preferred, max)</code> pattern</li>
+<li><strong>Line heights</strong>: Scale proportionally with font-size using <code>clamp()</code></li>
+<li><strong>Fixed sizes</strong>: Form labels and helper text remain fixed (not responsive)</li>
+</ol>
+<hr />
+<h2>Word-Breaking Rules</h2>
+<h3>Hero Title (Primary Panel) - Special Word-Breaking Behavior</h3>
+<p><strong>Scope:</strong> ONLY applies to the Hero Title (Display XXL) in the Primary Panel.</p>
+<p><strong>Implementation:</strong></p>
+<ul>
+<li>CSS class: <code>.hero-title-hyphenate</code></li>
+<li><code>hyphens: auto</code> - Enables language-aware hyphenation</li>
+<li><code>hyphenate-character: &quot;&quot;</code> - Suppresses visible hyphen characters</li>
+<li><code>word-break: normal</code> - Prevents aggressive breaking (no <code>break-all</code>)</li>
+<li><code>overflow-wrap: break-word</code> - Allows breaking when necessary</li>
+</ul>
+<p><strong>Rationale:</strong></p>
+<ul>
+<li>Hero titles are user-generated content and cannot be manually line-broken</li>
+<li>Large-scale display type requires proper syllable-based breaking</li>
+<li>Classic print typography approach adapted for web</li>
+<li>No visible hyphens maintain clean visual appearance</li>
+</ul>
+<p><strong>Important:</strong></p>
+<ul>
+<li>This rule applies ONLY to the Hero Title</li>
+<li>Body text, smaller headings, and all other typography use default word-breaking behavior</li>
+<li>No manual line breaks (<code>&lt;br&gt;</code>) or JavaScript string manipulation should be used</li>
+</ul>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/page.tsx</code>, <code>app/submit/page.tsx</code>, <code>app/login/page.tsx</code>, <code>app/about-us/page.tsx</code>, <code>app/partners/page.tsx</code>, <code>app/artists/page.tsx</code>, <code>app/artists/[slug]/page.tsx</code>, <code>app/globals.css</code>)</p>
+<p><strong>Intended use:</strong> Reusable typography specification</p></section><section class="chapter"><p class="file-label"># LAYOUT_INTERACTION_SPEC.md</p><h1>LAYOUT_INTERACTION_SPEC.md</h1><h1>LAYOUT_INTERACTION_SPEC.md</h1>
+<h2>Purpose</h2>
+<p>Defines layout logic, scrolling behavior, and responsiveness.</p>
+<p>This file controls <strong>structure only</strong>, never visual styling.</p>
+<p>All rules in this file are <strong>authoritative and non-negotiable</strong>.</p>
+<p>Do not infer, invent, or substitute alternative structures.</p>
+<hr />
+<h2>1. Page Model Types</h2>
+<p>The system supports <strong>exactly two</strong> page models.</p>
+<p>These models are mutually exclusive and must never be mixed.</p>
+<hr />
+<h3>1.1 Workspace Pages</h3>
+<p><strong>Examples:</strong></p>
+<ul>
+<li>Public exhibition browsing (master–detail)</li>
+<li>Gallery list + detail interfaces (do not use this model for <code>/artists</code>; see §1.3)</li>
+</ul>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Multi-panel layout (exactly two panels)</li>
+<li>Panels are role-based: <code>Panel / Primary</code> and <code>Panel / Detail</code></li>
+<li>Independent panel scrolling (each panel scrolls separately)</li>
+<li>Fixed top and bottom bars (menu bars, footers)</li>
+<li>Scrollbars are always hidden (invisible)</li>
+</ul>
+<p><strong>Workspace Pages exist to manage stateful interaction.</strong></p>
+<hr />
+<h3>1.2 Content Pages</h3>
+<p><strong>Examples:</strong></p>
+<ul>
+<li>Submission form (<code>/submit</code>)</li>
+<li>Admin review pages (<code>/admin</code>)</li>
+<li>Login page (<code>/login</code>)</li>
+<li>About us page (<code>/about-us</code>)</li>
+<li>Partners page (<code>/partners</code>)</li>
+<li>Artist join form (<code>/artists/join</code>)</li>
+<li>Blog pages, preview pages</li>
+</ul>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Single vertical page scroll</li>
+<li>No independent panel scrolling</li>
+<li>Max-width content containers allowed (e.g., <code>max-w-[874px]</code>)</li>
+<li>No fixed top/bottom bars (unless explicitly specified)</li>
+</ul>
+<p><strong>Content Pages exist to present linear content or input flows.</strong></p>
+<hr />
+<h3>1.3 White Directory Pages (Artists) — authorised exception</h3>
+<p><code>/artists</code> is <strong>not</strong> a Workspace Page and <strong>not</strong> a standard Content Page.</p>
+<p>This exception is specified here so it is not inferred.</p>
+<p><strong>Used by:</strong> <code>/artists</code> only.</p>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Full-viewport shell: page does not scroll; header is sticky</li>
+<li>Two white columns at <code>≥ 860px</code> (identity list + preview). Columns are <strong>not</strong> <code>Panel / Primary</code> / <code>Panel / Detail</code></li>
+<li>Left column: search + A–Z artist names; independent internal scroll; <code>scrollbar-hide</code></li>
+<li>Right column: collapsed Genre / Medium filters stay at the top of the column (not inside the scroller)</li>
+<li>Right scroller: <strong>billboard</strong> fills the remaining viewport so its bottom edge sits on the screen bottom; a four-column artist grid follows below</li>
+<li>Below <code>860px</code>: columns stack (list first, then filters + billboard + grid)</li>
+<li>Scrollbars hidden</li>
+</ul>
+<p><strong>Billboard + grid (right scroller on <code>/artists</code>):</strong></p>
+<ul>
+<li>Billboard is four overlapping artist “pages”. Default: each page is offset to the right so only a name and a slice of image (when a photo exists) is visible</li>
+<li>Selecting an artist expands that page; the other three compress to ~<code>6%</code> width with the name rotated 90° (<code>writing-mode: vertical-rl</code>). Compressed peeks show <strong>no image</strong></li>
+<li>Billboard bottom edge aligns with the viewport bottom under the sticky header + filter row</li>
+<li>A centred <code>∨</code> control at the billboard bottom scrolls the right column to the four-column grid</li>
+<li>Grid: 4 columns from <code>1100px</code>, 2 from <code>700px</code>, 1 below; cell borders <code>1px</code> <code>rgba(0,0,0,0.2)</code></li>
+<li>Empty image slots are white (no grey fill, no broken-image glyph)</li>
+</ul>
+<hr />
+<ul>
+<li>White sticky header (<code>WhiteSiteHeader</code>)</li>
+<li>Two independently scrolling white columns at <code>≥ 860px</code></li>
+<li>Left: name, birth, portrait (if present), biography, Join text control</li>
+<li>Right: CV, Exhibitions, Press, Talks, Works (section headings remain even when a section is empty)</li>
+<li>Stacks vertically below <code>860px</code></li>
+<li>Scrollbars hidden</li>
+<li>Scroll-triggered reveals (<code>reveal-content</code>, <code>reveal-image</code>) apply here</li>
+</ul>
+<hr />
+<h2>2. Workspace Page Rules (Master–Detail)</h2>
+<p>These rules apply <strong>only</strong> to Workspace Pages.</p>
+<hr />
+<h3>2.1 Panel Structure</h3>
+<p>A Workspace Page consists of <strong>exactly two panels</strong>:</p>
+<ul>
+<li><code>Panel / Primary</code></li>
+<li><code>Panel / Detail</code></li>
+</ul>
+<p>No additional panels are permitted.</p>
+<p><strong>Panel roles are semantic</strong> and must not be replaced with:</p>
+<ul>
+<li>Left / Right</li>
+<li>Sidebar / Main</li>
+<li>Aside / Content</li>
+</ul>
+<hr />
+<h3>2.2 Panel Dimensions</h3>
+<p><strong>At 1440px viewport (reference):</strong></p>
+<ul>
+<li><code>Panel / Primary</code>: Fixed width <code>720px</code></li>
+<li><code>Panel / Detail</code>: Flexible width, minimum <code>720px</code>, expands to fill remaining space</li>
+</ul>
+<p><strong>Below 1440px (down to 860px):</strong></p>
+<ul>
+<li>Both panels: Equal widths, <code>clamp(430px, 50vw, 720px)</code></li>
+<li>Minimum width: <code>430px</code> each</li>
+</ul>
+<p><strong>Below 860px (mobile):</strong></p>
+<ul>
+<li>Panels stack vertically (flex-direction: column)</li>
+<li>Both panels: Full width (<code>100%</code>)</li>
+<li>User scrolls to read detail panel below primary panel</li>
+</ul>
+<p><strong>Above 1440px:</strong></p>
+<ul>
+<li><code>Panel / Primary</code>: Fixed <code>720px</code></li>
+<li><code>Panel / Detail</code>: Expands to fill remaining viewport width</li>
+</ul>
+<hr />
+<h3>2.3 Scrolling Behavior</h3>
+<ul>
+<li><code>Panel / Primary</code> scrolls independently (internal scroll container)</li>
+<li><code>Panel / Detail</code> scrolls independently (internal scroll container)</li>
+<li>The page itself must not scroll</li>
+<li>Scrollbars are always hidden (CSS class <code>scrollbar-hide</code>)</li>
+</ul>
+<hr />
+<h3>2.4 Fixed Elements</h3>
+<ul>
+<li>Top menu bars are fixed (sticky positioning)</li>
+<li>Bottom footers are fixed (sticky positioning)</li>
+<li>Fixed elements do not participate in panel scrolling</li>
+<li>Fixed elements use backdrop blur for visual separation</li>
+</ul>
+<hr />
+<h3>2.5 Panel Background Colors</h3>
+<ul>
+<li><code>Panel / Primary</code>: <code>#1C1C1C</code> (dark background)</li>
+<li><code>Panel / Detail</code>: <code>#FFFFFF</code> (white background)</li>
+</ul>
+<hr />
+<h2>3. Content Page Rules</h2>
+<p>These rules apply <strong>only</strong> to Content Pages.</p>
+<hr />
+<h3>3.1 Scrolling Model</h3>
+<ul>
+<li>The page itself is the only scroll container</li>
+<li>No internal or independent scroll regions are permitted</li>
+<li>Standard browser scroll behavior</li>
+</ul>
+<hr />
+<h3>3.2 Structural Constraints</h3>
+<p>Content Pages must not include:</p>
+<ul>
+<li><code>Panel / Primary</code></li>
+<li><code>Panel / Detail</code></li>
+<li>Any element named <code>Panel</code></li>
+</ul>
+<p>Side panels must never be inferred or added unless a separate spec explicitly overrides this rule.</p>
+<hr />
+<h3>3.3 Content Container</h3>
+<ul>
+<li>Max-width: <code>874px</code> (form pages, about-us page)</li>
+<li>Centered: <code>margin: 0 auto</code></li>
+<li>Horizontal padding: <code>36px</code></li>
+<li>Vertical padding: <code>36px</code></li>
+</ul>
+<h3>3.4 Split-Screen Layout (Login Page)</h3>
+<p><strong>Login Page (<code>/login</code>):</strong></p>
+<ul>
+<li>Left-right split layout</li>
+<li><strong>Left Panel (Billboard):</strong></li>
+<li>Background: <code>#1C1C1C</code> (dark)</li>
+<li>Hidden below 860px (mobile: full-width form only)</li>
+<li>Content: Festival name + short copy</li>
+<li>Padding: <code>36px</code> horizontal</li>
+<li>Centered content with max-width <code>400px</code></li>
+<li><strong>Right Panel (Form):</strong></li>
+<li>Background: <code>#FFFFFF</code> (white)</li>
+<li>Full width on mobile, 50% on desktop</li>
+<li>Content: Login form (email, password, submit button)</li>
+<li>Padding: <code>36px</code> horizontal and vertical</li>
+<li>Max-width: <code>400px</code>, centered</li>
+<li>Single page scroll (Content Page model)</li>
+</ul>
+<hr />
+<h2>4. Responsive Layout Switch</h2>
+<p><strong>Breakpoint: 860px</strong></p>
+<p>When viewport width is <strong>less than 860px</strong>:</p>
+<ul>
+<li>Workspace Pages: Horizontal layouts switch to vertical stacking</li>
+<li>Stacking order: <code>Panel / Primary</code> first, then <code>Panel / Detail</code></li>
+<li>Content Pages: No layout change (single scroll remains)</li>
+<li>White Directory (<code>/artists</code>) and White Split Content (<code>/artists/[slug]</code>): columns stack vertically, list / left column first</li>
+</ul>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>This switch is <strong>layout-based only</strong></li>
+<li>Typography does not change based on this breakpoint</li>
+<li>Panel roles remain unchanged when stacked</li>
+<li>Left / Right orientation must not be inferred</li>
+</ul>
+<hr />
+<h2>5. Scroll-Triggered Reveals</h2>
+<p><strong>Workspace Pages only:</strong></p>
+<ul>
+<li>Content elements use <code>reveal-content</code> class</li>
+<li>Image elements use <code>reveal-image</code> class</li>
+<li>Reveal animation: <code>opacity: 0 → 1</code>, <code>translateY: 16px → 0</code></li>
+<li>Timing: <code>1000ms ease-out</code></li>
+<li>Image delay: <code>200ms</code> after text</li>
+<li>Uses <code>IntersectionObserver</code> API</li>
+</ul>
+<p><strong>Accessibility:</strong></p>
+<ul>
+<li>Respects <code>prefers-reduced-motion</code></li>
+<li>Animations disabled when motion preference is reduced</li>
+</ul>
+<hr />
+<h2>6. Enforcement Rules (Critical)</h2>
+<ul>
+<li>Page model type must be determined before layout implementation</li>
+<li>Workspace rules must never leak into Content Pages</li>
+<li>Content rules must never be relaxed by assumption</li>
+<li>If ambiguity exists, <strong>Content Page rules take precedence</strong></li>
+</ul>
+<p>Any deviation from this specification is considered incorrect.</p>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/page.tsx</code>, <code>app/globals.css</code>, <code>app/login/page.tsx</code>, <code>app/partners/page.tsx</code>, <code>app/artists/page.tsx</code>, <code>app/artists/[slug]/page.tsx</code>, <code>app/artists/join/page.tsx</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label">SPACE_SYSTEM_COMPLETE.md</p><h1>SPACE_SYSTEM_COMPLETE.md</h1><h1>Complete Space System Documentation</h1>
+<h2>Purpose</h2>
+<p>Global spacing rules across the entire system.</p>
+<p>Defines section spacing, dividers, padding logic, and Notion-like rhythm.</p>
+<p><strong>Reference:</strong> 1440px viewport width</p>
+<hr />
+<h2>Space Token Reference</h2>
+<table>
+<thead><tr><th>Token</th><th>Value (px)</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><code>--space-1</code></td><td><code>4px</code></td><td>Minimal spacing, tight groups (author line, label-value pairs, checkbox spacing)</td></tr>
+<tr><td><code>--space-2</code></td><td><code>12px</code></td><td>Section gaps, menu padding, vertical rhythm between major sections</td></tr>
+<tr><td><code>--space-3</code></td><td><code>16px</code></td><td>Content grouping, label-value spacing, button gaps, title block elements</td></tr>
+<tr><td><code>--space-4</code></td><td><code>24px</code></td><td>Menu top padding, footer bottom padding, title wrapper gaps, button horizontal padding</td></tr>
+<tr><td><code>--space-5</code></td><td><code>30px</code></td><td>Activity list item spacing</td></tr>
+<tr><td><code>--space-6</code></td><td><code>36px</code></td><td>Major section gaps, horizontal padding (panels, containers)</td></tr>
+<tr><td><code>--space-7</code></td><td><code>60px</code></td><td>Page-level separation, bottom padding (detail panel end)</td></tr>
+</tbody></table>
+<hr />
+<h2>PANEL / PRIMARY</h2>
+<h3>Container</h3>
+<ul>
+<li><strong>Width</strong>: <code>720px</code> (fixed at 1440px+)</li>
+<li><strong>Min Width</strong>: <code>430px</code> (below 1440px)</li>
+<li><strong>Vertical gap between sections</strong>: <code>12px</code> (space-2)</li>
+<li>Between: Menu, Activity List, Footer</li>
+</ul>
+<hr />
+<h3>Menu 1 (Primary Panel Header)</h3>
+<ul>
+<li><strong>Top padding</strong>: <code>24px</code> (space-4) - responsive: <code>clamp(16px, 1.67vw, 24px)</code></li>
+<li><strong>Bottom padding</strong>: <code>12px</code> (space-2) - responsive: <code>clamp(8px, 0.83vw, 12px)</code></li>
+<li><strong>Horizontal padding</strong>: <code>36px</code> (space-6)</li>
+<li><strong>Background</strong>: <code>#1C1C1C</code> (matches panel background)</li>
+<li><strong>Position</strong>: Sticky top, z-index 10</li>
+</ul>
+<hr />
+<h3>Activity List Container</h3>
+<ul>
+<li><strong>Horizontal padding</strong>: <code>36px</code> (space-6)</li>
+<li><strong>Vertical gap between items</strong>: <code>30px</code> (space-5)</li>
+<li>Between: Hero title (selected activity), Activity list items</li>
+</ul>
+<p><strong>Activity List Items:</strong></p>
+<ul>
+<li>All activities are part of the same list with <code>30px</code> gap between each item</li>
+<li>No additional spacing for selected vs non-selected items</li>
+<li>Hero title (selected) uses same spacing as list items</li>
+</ul>
+<hr />
+<h3>Footer (JOIN US Section)</h3>
+<ul>
+<li><strong>Top padding</strong>: <code>12px</code> (space-2) - responsive: <code>clamp(8px, 0.83vw, 12px)</code></li>
+<li><strong>Bottom padding</strong>: <code>24px</code> (space-4) - responsive: <code>clamp(20px, 1.67vw, 24px)</code></li>
+<li><strong>Horizontal padding</strong>: <code>36px</code> (space-6)</li>
+<li><strong>Position</strong>: Sticky bottom</li>
+</ul>
+<p><strong>JOIN US Button:</strong></p>
+<ul>
+<li><strong>Gap between text and arrow</strong>: <code>12px</code> (space-2)</li>
+</ul>
+<hr />
+<h2>PANEL / DETAIL</h2>
+<h3>Container</h3>
+<ul>
+<li><strong>Width</strong>: Flexible (minimum <code>720px</code> at 1440px+)</li>
+<li><strong>Vertical gap between sections</strong>: <code>12px</code> (space-2)</li>
+<li>Between: Menu and Content</li>
+<li><strong>Horizontal padding</strong>: <code>36px</code> (space-6)</li>
+<li><strong>Bottom padding</strong>: <code>60px</code> (space-7) - ensures content is fully visible</li>
+</ul>
+<hr />
+<h3>Menu 2 (Detail Panel Header)</h3>
+<ul>
+<li><strong>Top padding</strong>: <code>24px</code> (space-4) - responsive: <code>clamp(16px, 1.67vw, 24px)</code></li>
+<li><strong>Bottom padding</strong>: <code>12px</code> (space-2) - responsive: <code>clamp(8px, 0.83vw, 12px)</code></li>
+<li><strong>Horizontal padding</strong>: Inherits from container (<code>36px</code> space-6)</li>
+<li><strong>Background</strong>: <code>#FFFFFF</code> (matches panel background)</li>
+<li><strong>Position</strong>: Sticky top, z-index 10</li>
+</ul>
+<hr />
+<h3>Main Content Container</h3>
+<ul>
+<li><strong>Gap between major sections</strong>: <code>36px</code> (space-6)</li>
+<li>Between: Title section, Body text 1, Image 1, Body text 2, Image 2, Media links</li>
+</ul>
+<hr />
+<h3>Title Section Wrapper</h3>
+<ul>
+<li><strong>Gap</strong>: <code>24px</code> (space-4)</li>
+<li>Between: Title block (title + author + image) and Location/Date block</li>
+</ul>
+<hr />
+<h3>Title Block (Title + Author + Image)</h3>
+<ul>
+<li><strong>Gap</strong>: <code>16px</code> (space-3)</li>
+<li>Between: Title, Author line, Primary Image</li>
+</ul>
+<p><strong>Author Line:</strong></p>
+<ul>
+<li><strong>Gap between &quot;by&quot; and name</strong>: <code>4px</code> (space-1)</li>
+</ul>
+<hr />
+<h3>Location/Date Section</h3>
+<ul>
+<li><strong>Gap between Location and Date rows</strong>: <code>4px</code> (space-1)</li>
+<li><strong>Gap between label and value</strong> (within each row): <code>16px</code> (space-3)</li>
+</ul>
+<p><strong>Location Row:</strong></p>
+<ul>
+<li>Label: Auto width (hugs content)</li>
+<li>Value: Auto width (hugs content), no flex-1</li>
+</ul>
+<p><strong>Date Row:</strong></p>
+<ul>
+<li>Label: Auto width (hugs content)</li>
+<li>Value: Auto width (hugs content)</li>
+</ul>
+<hr />
+<h3>Website Button / Media Links</h3>
+<ul>
+<li><strong>Padding</strong>: </li>
+<li>Horizontal: <code>24px</code> (space-4)</li>
+<li>Vertical: <code>4px</code> (space-1)</li>
+<li><strong>Width</strong>: <code>shrink-0</code> (hugs content, NOT full width)</li>
+<li><strong>Gap between links</strong>: <code>16px</code> (space-3) - inline flex with wrap</li>
+<li><strong>Gap to next section</strong>: <code>36px</code> (space-6) - from main container gap</li>
+<li><strong>Separator</strong>: Dot (·) between Website and additional media links, same typography as links</li>
+</ul>
+<hr />
+<h3>Category/Organisers Section</h3>
+<ul>
+<li><strong>Gap between Category and Organisers rows</strong>: <code>4px</code> (space-1)</li>
+<li><strong>Gap between label and value</strong> (within each row): <code>16px</code> (space-3)</li>
+</ul>
+<p><strong>Category Row:</strong></p>
+<ul>
+<li>Label and value: Auto width (hug content)</li>
+</ul>
+<p><strong>Organisers Row:</strong></p>
+<ul>
+<li>Label and value: Auto width (hug content)</li>
+</ul>
+<hr />
+<h3>Body Text Sections</h3>
+<ul>
+<li><strong>Gap</strong>: Inherits from main container (<code>36px</code> space-6)</li>
+<li>Between Body text 1 and Image 1</li>
+<li>Between Image 1 and Body text 2</li>
+<li>Between Body text 2 and Image 2</li>
+</ul>
+<hr />
+<h2>FORM PAGE SPACING</h2>
+<h3>Container</h3>
+<ul>
+<li><strong>Max-width</strong>: <code>874px</code></li>
+<li><strong>Horizontal padding</strong>: <code>36px</code> (space-6)</li>
+<li><strong>Vertical padding</strong>: <code>36px</code> (space-6)</li>
+</ul>
+<h3>Page Title</h3>
+<ul>
+<li><strong>Bottom margin</strong>: <code>36px</code> (space-6)</li>
+</ul>
+<h3>Tabs</h3>
+<ul>
+<li><strong>Gap between tabs</strong>: <code>16px</code> (space-3)</li>
+<li><strong>Bottom margin</strong>: <code>36px</code> (space-6)</li>
+<li><strong>Bottom border</strong>: <code>1px solid black</code></li>
+</ul>
+<h3>Banner</h3>
+<ul>
+<li><strong>Bottom margin</strong>: <code>36px</code> (space-6)</li>
+</ul>
+<h3>Form Fields (Table Rows)</h3>
+<ul>
+<li><strong>Vertical padding</strong>: <code>16px</code> (space-3) per row</li>
+<li><strong>Horizontal padding</strong>: <code>16px</code> (space-3) per row</li>
+<li><strong>Border between rows</strong>: <code>1px solid rgba(0, 0, 0, 0.1)</code></li>
+<li><strong>Gap between label and input</strong>: <code>16px</code> (space-3)</li>
+<li><strong>Gap between input and helper text</strong>: <code>8px</code> (if helper text exists)</li>
+</ul>
+<h3>Action Buttons</h3>
+<ul>
+<li><strong>Gap between buttons</strong>: <code>16px</code> (space-3)</li>
+<li><strong>Top padding</strong>: <code>24px</code> (space-4)</li>
+<li><strong>Top margin</strong>: <code>24px</code> (space-4)</li>
+</ul>
+<hr />
+<h2>VISUAL HIERARCHY SUMMARY</h2>
+<h3>Spacing Scale (Smallest to Largest)</h3>
+<ol>
+<li><strong>4px</strong> (space-1): Tight text groups (author line, category/date rows, checkbox spacing)</li>
+<li><strong>12px</strong> (space-2): Section gaps, menu padding, vertical rhythm</li>
+<li><strong>16px</strong> (space-3): Content grouping (label-value pairs, title block, button gaps, form rows)</li>
+<li><strong>24px</strong> (space-4): Menu top, footer bottom, title wrapper, button horizontal padding</li>
+<li><strong>30px</strong> (space-5): Activity list spacing</li>
+<li><strong>36px</strong> (space-6): Major sections, horizontal padding</li>
+<li><strong>60px</strong> (space-7): Page-level separation, bottom padding</li>
+</ol>
+<hr />
+<h2>STRUCTURE DIAGRAM</h2>
+<pre><code>WORKSPACE CONTAINER
+├── PANEL / PRIMARY (gap: 12px, bg: #1C1C1C)
+│   ├── Menu 1 (pt: 24px, pb: 12px, px: 36px, sticky)
+│   ├── Activity List (px: 36px, gap: 30px)
+│   │   ├── Hero Title (selected activity)
+│   │   ├── Activity Item 1
+│   │   ├── Activity Item 2
+│   │   └── ...
+│   └── Footer (pt: 12px, pb: 24px, px: 36px, sticky)
+│       └── JOIN US (gap: 12px)
+│
+└── PANEL / DETAIL (gap: 12px, px: 36px, bg: #FFFFFF, pb: 60px)
+    ├── Menu 2 (pt: 24px, pb: 12px, sticky)
+    └── Main Content (gap: 36px)
+        ├── Title Section Wrapper (gap: 24px)
+        │   ├── Title Block (gap: 16px)
+        │   │   ├── Title
+        │   │   ├── Author (gap: 4px)
+        │   │   └── Primary Image
+        │   └── Location/Date (gap: 4px between rows, 16px label-value)
+        ├── Website Button / Media Links (px: 24px, py: 4px, gap: 16px, shrink-0)
+        ├── Category/Organisers (gap: 4px between rows, 16px label-value)
+        ├── Body Text 1
+        ├── Image 1
+        ├── Body Text 2
+        └── Image 2</code></pre>
+<hr />
+<h2>KEY DESIGN PRINCIPLES</h2>
+<ol>
+<li><strong>Horizontal Padding</strong>: Consistent <code>36px</code> (space-6) for both panels and form containers</li>
+<li><strong>Vertical Section Gaps</strong>: <code>12px</code> (space-2) for panel-level structure</li>
+<li><strong>Major Content Gaps</strong>: <code>36px</code> (space-6) for main content sections</li>
+<li><strong>Content Grouping</strong>: <code>16px</code> (space-3) for related content pairs</li>
+<li><strong>Tight Text Groups</strong>: <code>4px</code> (space-1) for minimal spacing needs</li>
+<li><strong>Auto Width</strong>: Location/Date values hug content (no flex-1 or fixed widths)</li>
+<li><strong>Button Sizing</strong>: All buttons hug content with padding (not full width)</li>
+<li><strong>Notion-like Rhythm</strong>: Consistent vertical spacing creates editorial flow</li>
+</ol>
+<hr />
+<h2>RESPONSIVE CONSIDERATIONS</h2>
+<p>All spacing values are fixed pixel values at 1440px reference.</p>
+<p><strong>Menu/Footer Padding:</strong></p>
+<ul>
+<li>Uses responsive <code>clamp()</code> for top/bottom padding only</li>
+<li>Horizontal padding remains fixed <code>36px</code></li>
+</ul>
+<p><strong>Panel Widths:</strong></p>
+<ul>
+<li>Responsive via CSS media queries (see LAYOUT_INTERACTION_SPEC.md)</li>
+<li>Spacing within panels remains fixed</li>
+</ul>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-01-23</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/page.tsx</code>, <code>app/submit/page.tsx</code>, <code>app/login/page.tsx</code>, <code>app/about-us/page.tsx</code>, <code>app/partners/page.tsx</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label">SPACE_SYSTEM_DETAIL_PANEL.md</p><h1>SPACE_SYSTEM_DETAIL_PANEL.md</h1><h1>Detail Panel Space System</h1>
+<h2>Purpose</h2>
+<p>Spacing and layout rules specific to workspace detail panels.</p>
+<p>Defines image/text/link vertical rhythm.</p>
+<p><strong>Reference:</strong> 1440px viewport width</p>
+<hr />
+<h2>Space Token Reference</h2>
+<ul>
+<li><code>--space-1</code>: 4px</li>
+<li><code>--space-2</code>: 12px</li>
+<li><code>--space-3</code>: 16px</li>
+<li><code>--space-4</code>: 24px</li>
+<li><code>--space-5</code>: 30px</li>
+<li><code>--space-6</code>: 36px</li>
+<li><code>--space-7</code>: 60px</li>
+</ul>
+<hr />
+<h2>Panel / Detail Container</h2>
+<ul>
+<li><strong>Horizontal padding</strong>: <code>36px</code> (space-6)</li>
+<li><strong>Vertical gap between sections</strong>: <code>12px</code> (space-2)</li>
+<li><strong>Bottom padding</strong>: <code>60px</code> (space-7) - ensures content is fully visible at end of scroll</li>
+</ul>
+<hr />
+<h2>Menu 2 (Detail Panel Header)</h2>
+<ul>
+<li><strong>Top padding</strong>: <code>24px</code> (space-4) - responsive: <code>clamp(16px, 1.67vw, 24px)</code></li>
+<li><strong>Bottom padding</strong>: <code>12px</code> (space-2) - responsive: <code>clamp(8px, 0.83vw, 12px)</code></li>
+<li><strong>Horizontal padding</strong>: Inherits from container (<code>36px</code>)</li>
+<li><strong>Position</strong>: Sticky top, z-index 10</li>
+</ul>
+<hr />
+<h2>Main Content Container</h2>
+<ul>
+<li><strong>Gap between major sections</strong>: <code>36px</code> (space-6)</li>
+<li>Between: Title section, Body text 1, Image 1, Body text 2, Image 2, Media links</li>
+</ul>
+<hr />
+<h2>Title Section Wrapper</h2>
+<ul>
+<li><strong>Gap</strong>: <code>24px</code> (space-4)</li>
+<li>Between: Title block (title + author + image) and Location/Date block</li>
+</ul>
+<hr />
+<h2>Title Block (Title + Author + Image)</h2>
+<ul>
+<li><strong>Gap</strong>: <code>16px</code> (space-3)</li>
+<li>Between: Title, Author line, Primary Image</li>
+</ul>
+<h3>Author Line</h3>
+<ul>
+<li><strong>Gap between &quot;by&quot; and name</strong>: <code>4px</code> (space-1)</li>
+</ul>
+<h3>Primary Image</h3>
+<ul>
+<li><strong>Height</strong>: <code>388px</code> (fixed)</li>
+<li><strong>Border</strong>: <code>1px solid #9CA3AF</code> (gray-400)</li>
+<li><strong>Object fit</strong>: <code>cover</code></li>
+</ul>
+<hr />
+<h2>Location/Date Section</h2>
+<ul>
+<li><strong>Gap between Location and Date rows</strong>: <code>4px</code> (space-1)</li>
+<li><strong>Gap between label and value</strong> (within each row): <code>16px</code> (space-3)</li>
+</ul>
+<p><strong>Location Row:</strong></p>
+<ul>
+<li>Label: Auto width (hugs content)</li>
+<li>Value: Auto width (hugs content), no flex-1</li>
+</ul>
+<p><strong>Date Row:</strong></p>
+<ul>
+<li>Label: Auto width (hugs content)</li>
+<li>Value: Auto width (hugs content)</li>
+</ul>
+<hr />
+<h2>Website Button / Media Links Section</h2>
+<ul>
+<li><strong>Padding</strong> (per link): </li>
+<li>Horizontal: <code>24px</code> (space-4)</li>
+<li>Vertical: <code>4px</code> (space-1)</li>
+<li><strong>Width</strong>: <code>shrink-0</code> (hugs content, NOT full width)</li>
+<li><strong>Gap between links</strong>: <code>16px</code> (space-3) - inline flex with wrap</li>
+<li><strong>Gap to next section</strong>: <code>36px</code> (space-6) - from main container gap</li>
+<li><strong>Separator</strong>: Dot (·) between Website and additional media links</li>
+<li>Same typography styling as links</li>
+<li>Only shown when both website link and additional media links exist</li>
+</ul>
+<p><strong>Link Display:</strong></p>
+<ul>
+<li>Website link: Label is &quot;Website&quot; (not the URL)</li>
+<li>Additional media links: Label is <code>media_name</code> from form data</li>
+</ul>
+<hr />
+<h2>Category/Organisers Section</h2>
+<ul>
+<li><strong>Gap between Category and Organisers rows</strong>: <code>4px</code> (space-1)</li>
+<li><strong>Gap between label and value</strong> (within each row): <code>16px</code> (space-3)</li>
+</ul>
+<p><strong>Category Row:</strong></p>
+<ul>
+<li>Label and value: Auto width (hug content)</li>
+</ul>
+<p><strong>Organisers Row:</strong></p>
+<ul>
+<li>Label and value: Auto width (hug content)</li>
+<li>Organiser link: Underlined, Inter 600 weight</li>
+</ul>
+<hr />
+<h2>Body Text Sections</h2>
+<ul>
+<li><strong>Gap</strong>: Inherits from main container (<code>36px</code> space-6)</li>
+<li>Between Body text 1 and Image 1</li>
+<li>Between Image 1 and Body text 2</li>
+<li>Between Body text 2 and Image 2</li>
+</ul>
+<p><strong>Body Text:</strong></p>
+<ul>
+<li>Renders HTML content from rich text editor</li>
+<li>Uses <code>dangerouslySetInnerHTML</code></li>
+<li>Links are styled with underline</li>
+</ul>
+<p><strong>Images:</strong></p>
+<ul>
+<li><strong>Aspect ratio</strong>: <code>538/319</code> (for additional_images_1)</li>
+<li><strong>Additional images 2</strong>: Array of images, each with <code>538/319</code> aspect ratio</li>
+<li><strong>Gap between multiple images</strong>: <code>12px</code> (space-2)</li>
+<li><strong>Border</strong>: <code>1px solid #9CA3AF</code> (gray-400)</li>
+<li><strong>Object fit</strong>: <code>cover</code></li>
+</ul>
+<hr />
+<h2>Summary Structure</h2>
+<pre><code>Panel / Detail (gap: 12px, px: 36px, pb: 60px)
+├── Menu 2 (pt: 24px, pb: 12px, sticky)
+└── Main Content (gap: 36px)
+    ├── Title Section Wrapper (gap: 24px)
+    │   ├── Title Block (gap: 16px)
+    │   │   ├── Title
+    │   │   ├── Author (gap: 4px)
+    │   │   └── Primary Image (h: 388px)
+    │   └── Location/Date (gap: 4px between rows, 16px label-value)
+    ├── Website Button / Media Links (px: 24px, py: 4px, gap: 16px, shrink-0)
+    │   ├── Website (label: &quot;Website&quot;)
+    │   ├── · (separator dot)
+    │   └── Media Link 1, Media Link 2, ...
+    ├── Category/Organisers (gap: 4px between rows, 16px label-value)
+    ├── Body Text 1 (HTML content)
+    ├── Image 1 (aspect: 538/319)
+    ├── Body Text 2 (HTML content)
+    └── Image 2 (array, aspect: 538/319 each, gap: 12px)</code></pre>
+<hr />
+<h2>Key Principles</h2>
+<ol>
+<li><strong>Vertical Rhythm</strong>: Consistent <code>36px</code> gaps between major content sections</li>
+<li><strong>Tight Grouping</strong>: <code>4px</code> for related meta information (Location/Date, Category/Organisers)</li>
+<li><strong>Content Grouping</strong>: <code>16px</code> for label-value pairs and title block elements</li>
+<li><strong>Auto Width</strong>: All meta values hug content (no flex-1)</li>
+<li><strong>Button/Link Sizing</strong>: All links hug content with padding (not full width)</li>
+<li><strong>Image Consistency</strong>: Fixed heights/aspect ratios for visual stability</li>
+<li><strong>Bottom Padding</strong>: <code>60px</code> ensures content is never clipped at end of scroll</li>
+</ol>
+<hr />
+<h2>Version</h2>
+<p>**Version: 2026-01-23</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/page.tsx</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label">FORM_SCHEMA.md</p><h1>FORM_SCHEMA.md</h1><h1>FORM_SCHEMA.md</h1>
+<h2>Purpose</h2>
+<p>Complete data schema for partner submissions.</p>
+<p>All frontend forms, backend tables, and AI-generated code must strictly follow this schema.</p>
+<p><strong>This file defines data structure only. No UI or layout instructions.</strong></p>
+<hr />
+<h2>TAB 1 — Basic Info (Partner Account Registration)</h2>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Editable After Submit</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>first_name</code></td><td>string</td><td>Yes</td><td>No (locked)</td><td>Cannot be edited after first submission</td></tr>
+<tr><td><code>last_name</code></td><td>string</td><td>Yes</td><td>No (locked)</td><td>Cannot be edited after first submission</td></tr>
+<tr><td><code>username</code></td><td>string</td><td>Yes</td><td>No (locked)</td><td>Account identity, locked after first submit. Auto-generated if empty: <code>first_name_last_name</code> (lowercase, underscores)</td></tr>
+<tr><td><code>organization_name</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Organization or artist name</td></tr>
+<tr><td><code>email</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Must be valid email format (regex: <code>/^[^\s@]+@[^\s@]+\.[^\s@]+$/</code>)</td></tr>
+<tr><td><code>role</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Default: <code>&#x27;partner&#x27;</code></td></tr>
+<tr><td><code>is_student</code></td><td>boolean</td><td>No</td><td>Yes</td><td>Optional checkbox. Helper text: &quot;If you are a student, please email proof to info@spira9.art with the subject: name_spira9_student_application&quot;</td></tr>
+</tbody></table>
+<p><strong>Identity Locking Rules:</strong></p>
+<ul>
+<li><code>first_name</code>, <code>last_name</code>, <code>username</code> become read-only (disabled, greyed) after first successful submit</li>
+<li><code>username</code> is locked in <code>profiles</code> table after first submit (cannot be changed)</li>
+<li><code>author_name</code> (in TAB 2) is <strong>always editable</strong> and is NOT locked</li>
+<li>Locking is controlled by <code>is_locked</code> flag on submission and <code>profiles.username</code> field</li>
+</ul>
+<hr />
+<h2>TAB 2 — About the Exhibition / Activity</h2>
+<p><strong>All fields are required except <code>partner</code>.</strong></p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Editable</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>activity_title</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Exhibition/activity title</td></tr>
+<tr><td><code>author_name</code></td><td>string</td><td>Yes</td><td>Yes</td><td><strong>Display credit, always editable</strong> (never locked). Used for public display. Falls back to <code>username</code> if empty.</td></tr>
+<tr><td><code>activity_type</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Type of activity/exhibition</td></tr>
+<tr><td><code>activity_description</code></td><td>string (HTML)</td><td>Yes</td><td>Yes</td><td>Rich text (HTML content from rich text editor)</td></tr>
+<tr><td><code>activity_location</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Location of activity</td></tr>
+<tr><td><code>activity_date</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Date of activity</td></tr>
+<tr><td><code>primary_image</code></td><td>string (URL)</td><td>Yes</td><td>Yes</td><td>Image URL (Supabase Storage URL). Must start with <code>http</code>. Images are uploaded to Supabase Storage, not stored as data URLs in database.</td></tr>
+<tr><td><code>primary_image_alt</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Alt text for primary image</td></tr>
+<tr><td><code>website_link</code></td><td>string (URL)</td><td>Yes</td><td>Yes</td><td>Must be valid URL format. Can be used for video, ticket, press, or other media</td></tr>
+<tr><td><code>body_text_1</code></td><td>string (HTML)</td><td>Yes</td><td>Yes</td><td>Rich text (HTML content from rich text editor)</td></tr>
+<tr><td><code>additional_images_1</code></td><td>string (URL)</td><td>Yes</td><td>Yes</td><td>Image URL (Supabase Storage URL). Must start with <code>http</code>. Images are uploaded to Supabase Storage.</td></tr>
+<tr><td><code>additional_images_1_alt</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Alt text for additional image 1</td></tr>
+<tr><td><code>body_text_2</code></td><td>string (HTML)</td><td>Yes</td><td>Yes</td><td>Rich text (HTML content from rich text editor)</td></tr>
+<tr><td><code>additional_images_2</code></td><td>string[] (URLs)</td><td>Yes</td><td>Yes</td><td>Array of 1-3 image URLs. Each must start with <code>http</code>. Images are uploaded to Supabase Storage.</td></tr>
+<tr><td><code>additional_images_2_alt</code></td><td>string[]</td><td>Yes</td><td>Yes</td><td>Array of alt texts (one per image)</td></tr>
+<tr><td><code>organizer</code></td><td>string</td><td>Yes</td><td>Yes</td><td>Organizer name</td></tr>
+<tr><td><code>partner</code></td><td>string</td><td>No</td><td>Yes</td><td>Optional, can be a link to partner organization</td></tr>
+</tbody></table>
+<p><strong>Content Sequence (strict order):</strong></p>
+<ol>
+<li><code>body_text_1</code> (paragraph)</li>
+<li><code>additional_images_1</code> (single image)</li>
+<li><code>body_text_2</code> (paragraph)</li>
+<li><code>additional_images_2</code> (1-3 images, carousel)</li>
+</ol>
+<p><strong>Image Requirements:</strong></p>
+<ul>
+<li>Minimum resolution: 1920x1080 per image</li>
+<li>72dpi</li>
+<li>Max 5MB per image</li>
+<li>JPG or PNG</li>
+<li>Stored in Supabase Storage bucket <code>images/activities/</code></li>
+<li>Database stores only URLs (strings), not File objects or data URLs</li>
+<li>Images are publicly accessible via Supabase Storage URLs</li>
+</ul>
+<hr />
+<h2>TAB 3 — Links / Media</h2>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Editable</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>website_link</code></td><td>string (URL)</td><td>Yes</td><td>Yes</td><td>Main website link (also in TAB 2, same field)</td></tr>
+<tr><td><code>additional_media_links</code></td><td>MediaLink[]</td><td>No</td><td>Yes</td><td>Optional, up to 5 items. Each item: <code>{ media_name: string, media_link: string }</code></td></tr>
+<tr><td><code>accept_terms</code></td><td>boolean</td><td>Yes</td><td>Yes</td><td>Required for submission. Must be checked to enable Submit button</td></tr>
+</tbody></table>
+<p><strong>Terms &amp; Conditions Text:</strong></p>
+<p>&quot;I confirm that:</p>
+<p>1) I have the rights to submit and display the uploaded materials (images/text), and I grant SPIRA9 ART permission to use them for exhibition presentation and related promotion (website, social media, press) with credit.</p>
+<p>2) The information I provide is accurate, and I understand SPIRA9 ART may request clarification.</p>
+<p>3) I understand submissions may be reviewed and may be edited for formatting (not altering meaning) for publication/presentation.</p>
+<p>4) I understand my submission may be accepted or declined, and participation/publication is not guaranteed.</p>
+<p>5) I agree to be contacted by SPIRA9 ART regarding my submission.&quot;</p>
+<hr />
+<h2>Status Flow</h2>
+<table>
+<thead><tr><th>Status</th><th>Editable</th><th>Visible to Admin</th><th>Visible to Public</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>draft</code></td><td>Yes</td><td>No</td><td>No</td><td>Saved but not submitted</td></tr>
+<tr><td><code>pending_review</code></td><td>Yes</td><td>Yes</td><td>No</td><td>Submitted, awaiting admin review</td></tr>
+<tr><td><code>approved</code></td><td>Yes</td><td>Yes</td><td>No</td><td>Approved by admin, not yet published</td></tr>
+<tr><td><code>published</code></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Visible on public pages</td></tr>
+<tr><td><code>rejected</code></td><td>Yes</td><td>Yes</td><td>No</td><td>Rejected by admin, can be edited and resubmitted</td></tr>
+<tr><td><code>removed</code></td><td>No</td><td>Yes</td><td>No</td><td>Soft deleted (is_deleted: true)</td></tr>
+</tbody></table>
+<p><strong>Status Transition Rules:</strong></p>
+<ul>
+<li><code>draft</code> → <code>pending_review</code>: On Submit (if all required fields valid + terms accepted)</li>
+<li><code>pending_review</code> → <code>approved</code>: Admin action</li>
+<li><code>approved</code> → <code>published</code>: Admin action (manual publish)</li>
+<li>Any edit to <code>approved</code> or <code>published</code> content resets status to <code>pending_review</code></li>
+<li><code>rejected</code> → <code>pending_review</code>: On resubmit after editing</li>
+</ul>
+<hr />
+<h2>Identity &amp; Display Name Logic</h2>
+<p><strong>Username vs Author Name:</strong></p>
+<ul>
+<li><code>username</code>: Account identity, locked after first submit</li>
+<li><code>author_name</code>: Display credit, always editable</li>
+</ul>
+<p><strong>Display Fallback:</strong></p>
+<ul>
+<li>If <code>author_name</code> is empty, use <code>username</code> for display</li>
+<li>If <code>author_name</code> is filled, use <code>author_name</code> for display</li>
+<li>Do not auto-sync <code>author_name</code> with <code>username</code></li>
+</ul>
+<p><strong>Implementation:</strong></p>
+<pre><code>displayName = submission.author_name || submission.username</code></pre>
+<hr />
+<h2>Data Types</h2>
+<h3>Submission Type</h3>
+<pre><code>type Submission = {
+  id: string;
+  owner_id: string; // UUID, matches auth.users.id
+  // TAB 1
+  first_name: string;
+  last_name: string;
+  username: string; // Locked after first submit (stored in profiles table)
+  organization_name: string;
+  email: string;
+  role: string;
+  is_student?: boolean;
+  // TAB 2
+  activity_title: string;
+  author_name: string;
+  activity_type: string;
+  activity_description: string; // HTML
+  activity_location: string;
+  activity_date: string;
+  primary_image: string | null; // URL
+  primary_image_alt: string;
+  website_link: string; // URL
+  body_text_1: string; // HTML
+  additional_images_1: string | null; // URL
+  additional_images_1_alt: string;
+  body_text_2: string; // HTML
+  additional_images_2: string[] | null; // URLs
+  additional_images_2_alt: string[];
+  organizer: string;
+  partner: string;
+  // TAB 3
+  additional_media_links?: MediaLink[];
+  accept_terms?: boolean;
+  // System fields
+  status: &#x27;draft&#x27; | &#x27;pending_review&#x27; | &#x27;approved&#x27; | &#x27;published&#x27; | &#x27;rejected&#x27; | &#x27;removed&#x27;;
+  createdAt: string; // ISO string
+  is_deleted?: boolean;
+  is_locked?: boolean;
+}
+
+type MediaLink = {
+  media_name: string;
+  media_link: string;
+}</code></pre>
+<hr />
+<h2>Validation Rules</h2>
+<p><strong>Required Field Validation:</strong></p>
+<ul>
+<li>All TAB 1 fields except <code>is_student</code> are required</li>
+<li>All TAB 2 fields except <code>partner</code> are required</li>
+<li><code>accept_terms</code> is required for submission</li>
+</ul>
+<p><strong>Format Validation:</strong></p>
+<ul>
+<li><code>email</code>: Must match regex <code>/^[^\s@]+@[^\s@]+\.[^\s@]+$/</code></li>
+<li><code>website_link</code>: Must be valid URL (can use <code>new URL()</code> constructor)</li>
+<li><code>primary_image</code>, <code>additional_images_1</code>, <code>additional_images_2</code>: Must be valid URLs (start with <code>http</code> or <code>data:image</code>)</li>
+</ul>
+<p><strong>Image Validation:</strong></p>
+<ul>
+<li>Images must be uploaded to Supabase Storage before submission</li>
+<li>File objects are converted to Supabase Storage URLs</li>
+<li>Only URLs (strings) are stored in database, never File objects or data URLs</li>
+<li>Images are stored in <code>images/activities/</code> bucket</li>
+</ul>
+<hr />
+<h2>Notes for Implementation</h2>
+<ul>
+<li>Partners can save drafts multiple times (status: <code>draft</code>)</li>
+<li>Submission form is split into 3 tabs</li>
+<li>Tab 2 content sequence <strong>must be preserved</strong></li>
+<li>Video is always a link (no upload)</li>
+<li>Admin handles approval and manual publish</li>
+<li>All fields except <code>partner</code> and <code>is_student</code> are required</li>
+<li>Alt text should be filled for SEO and accessibility</li>
+<li>Frontend should show placeholder/help text (character limit, small text indicator, image size hints)</li>
+<li>Rich text fields (<code>activity_description</code>, <code>body_text_1</code>, <code>body_text_2</code>) store HTML content</li>
+<li>Image fields store URLs only (not File objects)</li>
+</ul>
+<hr />
+<h2>Production Notes</h2>
+<p><strong>Authentication:</strong></p>
+<ul>
+<li>Passwords are managed by Supabase Auth only</li>
+<li>Passwords are NEVER stored in database or localStorage</li>
+<li>Users authenticate via <code>/login</code> page using email/password</li>
+</ul>
+<p><strong>User Profiles:</strong></p>
+<ul>
+<li>Each user has a <code>profiles</code> table entry (created on first login)</li>
+<li><code>profiles.username</code> is locked after first successful submit</li>
+<li><code>profiles.role</code> determines admin access (<code>&#x27;admin&#x27;</code> or <code>&#x27;user&#x27;</code>)</li>
+</ul>
+<p><strong>Data Storage:</strong></p>
+<ul>
+<li>All data stored in Supabase database (<code>activities</code> table)</li>
+<li>Images stored in Supabase Storage (<code>images</code> bucket)</li>
+<li>No localStorage or sessionStorage for activity data</li>
+<li>Single source of truth: Supabase</li>
+</ul>
+<hr />
+<h2>Artist Join Schema (festival artists)</h2>
+<p>This is <strong>not</strong> the partner activity submission. It does not write to the <code>activities</code> table in the current build.</p>
+<p><strong>Persistence (current):</strong></p>
+<ul>
+<li>Draft: <code>localStorage</code> key <code>othering_artist_join_draft_v1</code></li>
+<li>Submitted profiles: <code>localStorage</code> key <code>othering_artist_submissions_v1</code></li>
+<li>Editorial roster: <code>app/lib/artists.ts</code> (<code>EDITORIAL_ARTISTS</code>)</li>
+</ul>
+<p><strong>Artist object</strong></p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>slug</code></td><td>string</td><td>Yes</td><td>Derived from <code>name</code> (lowercase, hyphenated). Unique key</td></tr>
+<tr><td><code>name</code></td><td>string</td><td>Yes</td><td>Public display name</td></tr>
+<tr><td><code>field</code></td><td>string</td><td>No</td><td>Art discipline (e.g. Oil painter, Sculptor)</td></tr>
+<tr><td><code>birth</code></td><td>string</td><td>No</td><td>Line such as <code>b. 1989, Lagos</code></td></tr>
+<tr><td><code>photo</code></td><td>string URL or null</td><td>No</td><td>Portrait <strong>or</strong> artwork only. No cityscapes, stock interiors, or grey placeholders. Null = white empty slot</td></tr>
+<tr><td><code>photoAlt</code></td><td>string</td><td>No</td><td>Defaults to name</td></tr>
+<tr><td><code>bio</code></td><td>string</td><td>No</td><td>Plain text biography</td></tr>
+<tr><td><code>cv</code></td><td><code>ArtistLinkedItem[]</code></td><td>No</td><td><code>{ year?, title, detail?, href? }</code></td></tr>
+<tr><td><code>exhibitions</code></td><td><code>ArtistLinkedItem[]</code></td><td>No</td><td>Same shape</td></tr>
+<tr><td><code>press</code></td><td><code>ArtistLinkedItem[]</code></td><td>No</td><td>Same shape</td></tr>
+<tr><td><code>talks</code></td><td><code>ArtistLinkedItem[]</code></td><td>No</td><td>Same shape</td></tr>
+<tr><td><code>works</code></td><td><code>{ src, alt? }[]</code></td><td>No</td><td>Max 5. <code>src</code> must start with <code>http</code> or <code>data:image</code></td></tr>
+</tbody></table>
+<p><strong>Directory image rule:</strong> About <strong>half of the editorial roster</strong> (7 of 15) have a portrait; the rest have <code>photo: null</code>. Directory cards never fall back to activity images or generic filler. Failed loads hide the <code>&lt;img&gt;</code> (white remains).</p>
+<p><strong>Filters on <code>/artists</code> (client-side, do not persist):</strong></p>
+<ul>
+<li>Genre: All / Spatial practice / Performance / Time-based / Lens-based / Object &amp; material — derived from <code>field</code></li>
+<li>Medium: All + Installation, Sculpture, Photography, Film, Sound art, Performance art, Textile, Prints, Works on paper</li>
+</ul>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/lib/storage.ts</code>, <code>app/submit/page.tsx</code>, <code>app/lib/profiles.ts</code>, <code>app/lib/artists.ts</code>, <code>app/lib/artist-submissions.ts</code>, <code>DATABASE_SCHEMA.md</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label">FORM_PAGE_SPEC.md</p><h1>FORM_PAGE_SPEC.md</h1><h1>FORM_PAGE_SPEC.md</h1>
+<h2>Purpose</h2>
+<p>Scoped specification for building Form pages.</p>
+<p>Defines tab structure, Save Draft vs Submit logic, validation rules, and button behavior.</p>
+<p><strong>This file defines form behavior only. No layout or styling details.</strong></p>
+<hr />
+<h2>1. Page Definition</h2>
+<ul>
+<li><strong>Page type</strong>: Content Page</li>
+<li><strong>Scroll model</strong>: Single page scroll</li>
+<li><strong>No side panels</strong></li>
+<li><strong>Max-width container</strong>: <code>874px</code></li>
+<li><strong>Centered</strong>: <code>margin: 0 auto</code></li>
+<li><strong>Padding</strong>: <code>36px</code> horizontal and vertical</li>
+</ul>
+<hr />
+<h2>2. Tab Structure</h2>
+<p><strong>Three tabs:</strong></p>
+<ol>
+<li><strong>Basic Info</strong> (TAB 1)</li>
+<li><strong>About the Exhibition</strong> (TAB 2)</li>
+<li><strong>Links / Media</strong> (TAB 3)</li>
+</ol>
+<p><strong>Tab Navigation:</strong></p>
+<ul>
+<li>Tabs are clickable buttons</li>
+<li>Active tab: Black text, black bottom border (2px)</li>
+<li>Inactive tabs: Black 50% opacity</li>
+<li>Tab gap: <code>16px</code></li>
+<li>Bottom border: <code>1px solid black</code> (below all tabs)</li>
+</ul>
+<hr />
+<h2>3. Tab Navigation Buttons</h2>
+<p><strong>Tab 1 and Tab 2:</strong></p>
+<ul>
+<li>Show &quot;Next&quot; button (primary style: black background, white text)</li>
+<li>Show &quot;Back&quot; button (text-only style) if on Tab 2 or 3</li>
+<li>&quot;Next&quot; advances to next tab</li>
+<li>&quot;Back&quot; returns to previous tab</li>
+</ul>
+<p><strong>Tab 3 (Final Tab):</strong></p>
+<ul>
+<li>Show &quot;Submit&quot; button (primary style: black background, white text)</li>
+<li>Submit button is disabled until:</li>
+<li>All required fields are valid and filled</li>
+<li><code>accept_terms</code> is checked</li>
+<li>User is on Tab 3</li>
+</ul>
+<p><strong>All Tabs:</strong></p>
+<ul>
+<li>&quot;Save Draft&quot; button always available (outlined style: black border, transparent background)</li>
+<li>&quot;Save Draft&quot; works with partially filled form (no validation required)</li>
+</ul>
+<hr />
+<h2>4. Save Draft vs Submit Logic</h2>
+<h3>Save Draft</h3>
+<ul>
+<li><strong>Always available</strong>: Can be clicked at any time, on any tab</li>
+<li><strong>No validation required</strong>: Can save with missing required fields</li>
+<li><strong>Status</strong>: Sets <code>status = &#x27;draft&#x27;</code></li>
+<li><strong>Behavior</strong>: Saves current form state to localStorage</li>
+<li><strong>Success</strong>: Shows success modal (&quot;Upload successful&quot;)</li>
+<li><strong>Admin visibility</strong>: Drafts are NOT shown in admin list (filtered out)</li>
+</ul>
+<h3>Submit</h3>
+<ul>
+<li><strong>Only on Tab 3</strong>: Submit button only appears on final tab</li>
+<li><strong>Disabled until valid</strong>: Submit button disabled until:</li>
+<li>All required fields are filled and valid</li>
+<li><code>accept_terms</code> checkbox is checked</li>
+<li><strong>Validation</strong>: Runs <code>isFormValid()</code> function (checks all required fields + format validation)</li>
+<li><strong>Status</strong>: Sets <code>status = &#x27;pending_review&#x27;</code></li>
+<li><strong>Locking</strong>: Sets <code>is_locked = true</code> (locks username, first_name, last_name)</li>
+<li><strong>Success</strong>: Shows success modal (&quot;Upload successful&quot;)</li>
+<li><strong>Admin visibility</strong>: Submitted items (pending_review/published/etc) are shown in admin list</li>
+</ul>
+<hr />
+<h2>5. Validation Rules</h2>
+<p><strong>Required Fields Check:</strong></p>
+<ul>
+<li>TAB 1: <code>first_name</code>, <code>last_name</code>, <code>username</code>, <code>organization_name</code>, <code>email</code>, <code>password</code></li>
+<li>TAB 2: <code>activity_title</code>, <code>author_name</code>, <code>activity_type</code>, <code>activity_description</code>, <code>activity_location</code>, <code>activity_date</code>, <code>primary_image</code>, <code>website_link</code>, <code>body_text_1</code>, <code>additional_images_1</code>, <code>body_text_2</code>, <code>additional_images_2</code>, <code>organizer</code></li>
+</ul>
+<p><strong>Format Validation:</strong></p>
+<ul>
+<li><code>email</code>: Must match regex <code>/^[^\s@]+@[^\s@]+\.[^\s@]+$/</code></li>
+<li><code>website_link</code>: Must be valid URL (use <code>new URL()</code> constructor)</li>
+<li><code>primary_image</code>: Must be string starting with <code>http</code> or <code>data:image</code></li>
+<li><code>additional_images_1</code>: Must be string starting with <code>http</code> or <code>data:image</code></li>
+<li><code>additional_images_2</code>: Must be array with at least 1 item, all items must be strings starting with <code>http</code> or <code>data:image</code></li>
+</ul>
+<p><strong>Terms Validation:</strong></p>
+<ul>
+<li><code>accept_terms</code>: Must be <code>true</code> (checkbox checked)</li>
+</ul>
+<p><strong>Validation Function:</strong></p>
+<pre><code>isFormValid(): boolean {
+  // Check all required fields
+  // Check format validation
+  // Return true only if all pass
+}</code></pre>
+<hr />
+<h2>6. Editable vs Locked Fields</h2>
+<h3>Locked After First Submit</h3>
+<ul>
+<li><code>first_name</code>: Read-only, disabled, greyed (opacity 50%)</li>
+<li><code>last_name</code>: Read-only, disabled, greyed (opacity 50%)</li>
+<li><code>username</code>: Read-only, disabled, greyed (opacity 50%)</li>
+</ul>
+<p><strong>Locking Logic:</strong></p>
+<ul>
+<li>Check if user has submitted before: Look for submission with <code>status === &#x27;pending_review&#x27; || &#x27;published&#x27; || &#x27;approved&#x27;</code> and <code>is_locked === true</code></li>
+<li>If locked, load <code>first_name</code>, <code>last_name</code>, <code>username</code> from existing submission</li>
+<li>Set <code>isLocked</code> state to <code>true</code></li>
+<li>Apply <code>disabled</code> and <code>opacity-50</code> classes to locked fields</li>
+</ul>
+<h3>Always Editable</h3>
+<ul>
+<li><code>author_name</code>: <strong>Always editable</strong> (never locked)</li>
+<li>All other fields: Always editable</li>
+</ul>
+<p><strong>Display Name Logic:</strong></p>
+<ul>
+<li><code>author_name</code> is used for public display</li>
+<li>Falls back to <code>username</code> if <code>author_name</code> is empty</li>
+<li>Do not auto-sync <code>author_name</code> with <code>username</code></li>
+</ul>
+<hr />
+<h2>7. Button Behavior</h2>
+<h3>Save Draft Button</h3>
+<ul>
+<li><strong>Style</strong>: Outlined (black border, transparent background, black text)</li>
+<li><strong>Padding</strong>: <code>24px</code> horizontal, <code>4px</code> vertical</li>
+<li><strong>Always enabled</strong>: Can click at any time</li>
+<li><strong>Action</strong>: <code>handleSaveDraft()</code> - saves with <code>status: &#x27;draft&#x27;</code></li>
+</ul>
+<h3>Next Button (Tabs 1-2)</h3>
+<ul>
+<li><strong>Style</strong>: Primary (black background, white text)</li>
+<li><strong>Padding</strong>: <code>24px</code> horizontal, <code>4px</code> vertical</li>
+<li><strong>Action</strong>: <code>handleNext()</code> - advances to next tab</li>
+<li><strong>Only on</strong>: Tab 1 and Tab 2</li>
+</ul>
+<h3>Back Button (Tabs 2-3)</h3>
+<ul>
+<li><strong>Style</strong>: Text-only (transparent background, black text)</li>
+<li><strong>Padding</strong>: <code>24px</code> horizontal, <code>4px</code> vertical</li>
+<li><strong>Action</strong>: <code>handleBack()</code> - returns to previous tab</li>
+<li><strong>Only on</strong>: Tab 2 and Tab 3 (hidden on Tab 1)</li>
+</ul>
+<h3>Submit Button (Tab 3)</h3>
+<ul>
+<li><strong>Style</strong>: Primary (black background, white text)</li>
+<li><strong>Padding</strong>: <code>24px</code> horizontal, <code>4px</code> vertical</li>
+<li><strong>Disabled state</strong>: <code>opacity: 50%</code>, <code>cursor: not-allowed</code></li>
+<li><strong>Enabled when</strong>: <code>isFormValid() &amp;&amp; accept_terms === true</code></li>
+<li><strong>Action</strong>: <code>handleSubmit()</code> - saves with <code>status: &#x27;pending_review&#x27;</code>, sets <code>is_locked: true</code></li>
+</ul>
+<p><strong>Button Layout:</strong></p>
+<ul>
+<li>All buttons in same row: <code>flex gap-[16px]</code></li>
+<li>&quot;Save Draft&quot; always first</li>
+<li>Then &quot;Back&quot; (if applicable)</li>
+<li>Then &quot;Next&quot; or &quot;Submit&quot;</li>
+</ul>
+<hr />
+<h2>8. Modal Behavior</h2>
+<h3>Success Modal</h3>
+<ul>
+<li><strong>Trigger</strong>: After successful Save Draft, Submit, or image upload</li>
+<li><strong>Content</strong>:</li>
+<li>Title: &quot;Success&quot;</li>
+<li>Body: &quot;Upload successful&quot;</li>
+<li>Button: &quot;OK&quot; (closes modal)</li>
+<li><strong>Style</strong>: White background, black border, centered overlay</li>
+<li><strong>Backdrop</strong>: Black 50% opacity</li>
+<li><strong>Close</strong>: Click backdrop or &quot;OK&quot; button</li>
+</ul>
+<hr />
+<h2>9. Image Upload Handling</h2>
+<p><strong>Upload Process:</strong></p>
+<ol>
+<li>User selects file(s)</li>
+<li>File(s) uploaded to Supabase Storage (if configured)</li>
+<li>Get public URL from Supabase</li>
+<li>If Supabase not configured, convert to data URL (base64) as fallback</li>
+<li>Store URL in form data (not File object)</li>
+<li>Show preview immediately</li>
+<li>Show success modal</li>
+</ol>
+<p><strong>Image Preview:</strong></p>
+<ul>
+<li>Display thumbnail/preview after upload</li>
+<li>Show placeholder if image not available</li>
+<li>Preview updates form data immediately</li>
+</ul>
+<p><strong>Image Validation:</strong></p>
+<ul>
+<li>Must be valid URL (starts with <code>http</code> or <code>data:image</code>)</li>
+<li>File objects are converted to URLs before storage</li>
+</ul>
+<hr />
+<h2>10. Rich Text Editor</h2>
+<p><strong>Fields using Rich Text Editor:</strong></p>
+<ul>
+<li><code>activity_description</code></li>
+<li><code>body_text_1</code></li>
+<li><code>body_text_2</code></li>
+</ul>
+<p><strong>Features:</strong></p>
+<ul>
+<li>Bold, italic, underline formatting</li>
+<li>Link insertion</li>
+<li>Character count display</li>
+<li>HTML content storage</li>
+<li>Placeholder text support</li>
+</ul>
+<p><strong>Height:</strong></p>
+<ul>
+<li>Minimum height: <code>180px</code> (50% taller than standard inputs)</li>
+</ul>
+<hr />
+<h2>11. Form Field Layout</h2>
+<p><strong>Notion-like Table Style:</strong></p>
+<ul>
+<li>Each field is a table row</li>
+<li>Two columns: Label (200px) | Input (flex-1)</li>
+<li>Border between rows: <code>1px solid rgba(0, 0, 0, 0.1)</code></li>
+<li>Row padding: <code>16px</code> vertical, <code>16px</code> horizontal</li>
+<li>No hover effects on rows</li>
+<li>No outline on form container</li>
+</ul>
+<p><strong>Label:</strong></p>
+<ul>
+<li>Uppercase, Inter 500, 12px/16px</li>
+<li>Required indicator: Asterisk (*)</li>
+<li>Helper text below input (if provided)</li>
+</ul>
+<p><strong>Input:</strong></p>
+<ul>
+<li>Full width within column</li>
+<li>Border: <code>1px solid rgba(0, 0, 0, 0.2)</code></li>
+<li>Border radius: <code>2px</code></li>
+<li>Padding: <code>12px</code> horizontal, <code>8px</code> vertical</li>
+<li>Focus: No outline (removed)</li>
+</ul>
+<hr />
+<h2>12. Student Checkbox</h2>
+<p><strong>Location</strong>: TAB 1 (Basic Info)</p>
+<p><strong>Field:</strong></p>
+<ul>
+<li><code>is_student</code>: boolean checkbox</li>
+<li>Optional (not required)</li>
+</ul>
+<p><strong>Helper Text:</strong></p>
+<p>&quot;If you are a student, please email proof to info@spira9.art with the subject: name_spira9_student_application&quot;</p>
+<hr />
+<h2>13. Terms Checkbox</h2>
+<p><strong>Location</strong>: TAB 3 (Links / Media)</p>
+<p><strong>Field:</strong></p>
+<ul>
+<li><code>accept_terms</code>: boolean checkbox</li>
+<li><strong>Required for submission</strong></li>
+</ul>
+<p><strong>Terms Text:</strong></p>
+<p>&quot;I confirm that:</p>
+<p>1) I have the rights to submit and display the uploaded materials (images/text), and I grant SPIRA9 ART permission to use them for exhibition presentation and related promotion (website, social media, press) with credit.</p>
+<p>2) The information I provide is accurate, and I understand SPIRA9 ART may request clarification.</p>
+<p>3) I understand submissions may be reviewed and may be edited for formatting (not altering meaning) for publication/presentation.</p>
+<p>4) I understand my submission may be accepted or declined, and participation/publication is not guaranteed.</p>
+<p>5) I agree to be contacted by SPIRA9 ART regarding my submission.&quot;</p>
+<p><strong>Styling:</strong></p>
+<ul>
+<li>Checkbox: <code>16px × 16px</code>, black border</li>
+<li>Terms text: Inter 400, 14px/20px, black 80% opacity</li>
+<li>Numbered list: Decimal, inside positioning</li>
+</ul>
+<hr />
+<h2>14. Artist Join Form (<code>/artists/join</code>)</h2>
+<p><strong>Page type:</strong> Content Page (single scroll). Uses <code>SubmitShell</code> chrome.</p>
+<p><strong>Purpose:</strong> Festival artist profile, separate from the partner activity submission at <code>/submit</code>.</p>
+<p><strong>Three tabs:</strong></p>
+<ol>
+<li><strong>Basic Info</strong> — name, birth line, field (art discipline, e.g. &quot;Oil painter&quot;), photo, biography</li>
+<li><strong>CV / Exhibitions</strong> — repeatable year / title / venue / URL rows</li>
+<li><strong>Press / Talks / Works</strong> — same row pattern for press and talks; works = up to 5 image URLs</li>
+</ol>
+<p><strong>Navigation:</strong> Same tab chrome as the partner form (instant switch). Final tab shows Submit. Save Draft persists to <code>localStorage</code> without validation.</p>
+<p><strong>Required to submit:</strong></p>
+<ul>
+<li><code>name</code> (non-empty; slug is derived)</li>
+<li><code>accept_terms</code> checked</li>
+<li>CV / exhibitions / press / talks / works / photo / bio are optional. Empty sections still render their headings on the public page.</li>
+</ul>
+<p><strong>After submit:</strong></p>
+<ul>
+<li>Artist is stored in <code>localStorage</code> under <code>othering_artist_submissions_v1</code></li>
+<li>Browser navigates to <code>/artists/{slug}</code></li>
+</ul>
+<p><strong>Join control on <code>/artists/[slug]</code>:</strong> text button, not a filled primary button; navigates to <code>/artists/join</code>.</p>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/submit/page.tsx</code>, <code>app/submit/form/page.tsx</code>, <code>app/artists/join/page.tsx</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label">INTERACTION_MOTION_SPEC.md</p><h1>INTERACTION_MOTION_SPEC.md</h1><h1>INTERACTION_MOTION_SPEC.md</h1>
+<h2>Purpose</h2>
+<p>Define consistent interaction feedback and motion rules across the system.</p>
+<p>Ensures predictable, calm, and reusable interaction behavior for future projects.</p>
+<p><strong>Principles:</strong></p>
+<ul>
+<li>Motion must be subtle, functional, and minimal</li>
+<li>No expressive or decorative animations</li>
+<li>Black &amp; white system only</li>
+<li>Respect <code>prefers-reduced-motion</code></li>
+</ul>
+<hr />
+<h2>1. Hover Behavior</h2>
+<h3>When Hover Feedback Exists</h3>
+<p><strong>Buttons (Primary - Black Background):</strong></p>
+<ul>
+<li>Hover: Background opacity changes to <code>90%</code> (<code>rgba(0, 0, 0, 0.9)</code>)</li>
+<li>Transition: <code>200ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>Buttons (Secondary - Text Only):</strong></p>
+<ul>
+<li>Hover: Text opacity changes to <code>70%</code></li>
+<li>Transition: <code>200ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>Buttons (Outlined - Save Draft):</strong></p>
+<ul>
+<li>Hover: Text opacity changes to <code>70%</code></li>
+<li>Transition: <code>200ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>Text Link Buttons (Workspace Detail Panel):</strong></p>
+<ul>
+<li>Hover: Text opacity changes to <code>70%</code></li>
+<li>Transition: <code>200ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>Navigation Links (Menu Items):</strong></p>
+<ul>
+<li>Hover: Text opacity changes to <code>70%</code> (Detail Panel) or <code>80%</code> (Primary Panel logo)</li>
+<li>Transition: <code>200ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>Activity List Items (Primary Panel):</strong></p>
+<ul>
+<li>Hover: Background color changes to <code>#FF0000</code> (red), text color changes to white</li>
+<li>Transition: <code>200ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+<li>Note: Only applies to non-selected items (selected item uses hero title styling)</li>
+</ul>
+<p><strong>Hero Title (Selected Activity):</strong></p>
+<ul>
+<li>Hover: Text opacity changes to <code>90%</code></li>
+<li>Transition: <code>opacity</code> only (no transform)</li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>CTA Button with Arrow (Join Us):</strong></p>
+<ul>
+<li>Hover: Text opacity changes to <code>70%</code></li>
+<li>Arrow: Translates right by <code>1px</code> (<code>translate-x-1</code>)</li>
+<li>Transition: <code>200ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>Images (Workspace Detail Panel):</strong></p>
+<ul>
+<li>Hover: Opacity changes to <code>85%</code>, grayscale filter <code>10%</code>, brightness <code>98%</code></li>
+<li>Transition: <code>400ms ease-out</code></li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+<li>Purpose: Observational feedback, not clickable indication</li>
+</ul>
+<p><strong>Form Action Buttons (Remove, Add Media Link):</strong></p>
+<ul>
+<li>Hover: Background color changes to <code>rgba(0, 0, 0, 0.05)</code> (black 5% opacity)</li>
+<li>Transition: Immediate (no explicit transition)</li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<p><strong>Organiser Links (Underlined):</strong></p>
+<ul>
+<li>Hover: Underline removed (<code>hover:no-underline</code>)</li>
+<li>Transition: Immediate</li>
+<li>Timing: Immediate on hover, immediate on hover out</li>
+</ul>
+<hr />
+<h3>When Hover Must Be Disabled</h3>
+<p><strong>Form Input Fields:</strong></p>
+<ul>
+<li>No hover feedback</li>
+<li>No visual change on hover</li>
+<li>Hover state is ignored</li>
+</ul>
+<p><strong>Disabled Form Fields:</strong></p>
+<ul>
+<li>No hover feedback</li>
+<li>Cursor: <code>not-allowed</code></li>
+<li>Visual: <code>opacity: 50%</code></li>
+</ul>
+<p><strong>Disabled Buttons:</strong></p>
+<ul>
+<li>No hover feedback</li>
+<li>Cursor: <code>not-allowed</code></li>
+<li>Visual: <code>opacity: 50%</code></li>
+</ul>
+<p><strong>Locked Fields (first_name, last_name, username after submit):</strong></p>
+<ul>
+<li>No hover feedback</li>
+<li>Cursor: <code>not-allowed</code></li>
+<li>Visual: <code>opacity: 50%</code></li>
+</ul>
+<hr />
+<h2>2. Focus States</h2>
+<h3>Keyboard Focus</h3>
+<p><strong>Form Input Fields:</strong></p>
+<ul>
+<li>Focus: <strong>No visible outline</strong> (<code>focus:outline-none</code>)</li>
+<li>No focus ring or border change</li>
+<li>Focus is functional but not visually indicated</li>
+</ul>
+<p><strong>Buttons:</strong></p>
+<ul>
+<li>Focus: Standard browser default focus ring</li>
+<li>No custom focus styling</li>
+<li>Focus ring appears on keyboard navigation (Tab key)</li>
+</ul>
+<p><strong>Links:</strong></p>
+<ul>
+<li>Focus: Standard browser default focus ring</li>
+<li>No custom focus styling</li>
+<li>Focus ring appears on keyboard navigation (Tab key)</li>
+</ul>
+<p><strong>Tabs:</strong></p>
+<ul>
+<li>Focus: Standard browser default focus ring</li>
+<li>No custom focus styling</li>
+<li>Focus ring appears on keyboard navigation (Tab key)</li>
+</ul>
+<h3>Mouse Focus</h3>
+<p><strong>Form Input Fields:</strong></p>
+<ul>
+<li>Click focus: No visual change (same as keyboard focus - no outline)</li>
+<li>Cursor changes to text input cursor</li>
+</ul>
+<p><strong>Buttons:</strong></p>
+<ul>
+<li>Click focus: No visual change (focus ring only on keyboard)</li>
+<li>Cursor changes to pointer</li>
+</ul>
+<hr />
+<h2>3. Click / Active Feedback</h2>
+<h3>Buttons</h3>
+<p><strong>Primary Buttons (Black Background):</strong></p>
+<ul>
+<li>Active state: Uses hover state (background opacity <code>90%</code>)</li>
+<li>No separate active state</li>
+<li>Click feedback: Immediate state change (no animation)</li>
+</ul>
+<p><strong>Secondary Buttons (Text Only):</strong></p>
+<ul>
+<li>Active state: Uses hover state (text opacity <code>70%</code>)</li>
+<li>No separate active state</li>
+<li>Click feedback: Immediate state change (no animation)</li>
+</ul>
+<p><strong>Outlined Buttons (Save Draft):</strong></p>
+<ul>
+<li>Active state: Uses hover state (text opacity <code>70%</code>)</li>
+<li>No separate active state</li>
+<li>Click feedback: Immediate state change (no animation)</li>
+</ul>
+<h3>Text Link Buttons</h3>
+<p><strong>Workspace Detail Panel Links:</strong></p>
+<ul>
+<li>Active state: Uses hover state (text opacity <code>70%</code>)</li>
+<li>No separate active state</li>
+<li>Click feedback: Immediate navigation (no animation)</li>
+</ul>
+<p><strong>Navigation Links:</strong></p>
+<ul>
+<li>Active state: Uses hover state (text opacity <code>70-80%</code>)</li>
+<li>No separate active state</li>
+<li>Click feedback: Immediate navigation (no animation)</li>
+</ul>
+<h3>Activity List Items</h3>
+<p><strong>Selection Feedback:</strong></p>
+<ul>
+<li>Click: Immediate selection (no animation)</li>
+<li>Selected item: Renders as hero title (large typography, white)</li>
+<li>Non-selected items: Small typography, <code>#E1E1E1</code> color</li>
+<li>No transition between selected states</li>
+</ul>
+<hr />
+<h2>4. Tab Switching</h2>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>Tab switching is <strong>instant</strong> (no animation)</li>
+<li>State change: Immediate</li>
+<li>Visual change: Active tab shows black text and black bottom border (2px)</li>
+<li>Inactive tabs: Black text at 50% opacity</li>
+<li>Transition: <code>transition-colors</code> class present but no visible animation (instant color change)</li>
+</ul>
+<p><strong>Timing:</strong></p>
+<ul>
+<li>Click → Tab change: Immediate</li>
+<li>No fade, slide, or other motion</li>
+</ul>
+<hr />
+<h2>4a. Menu Dropdown</h2>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>Dropdown appears <strong>instant</strong> (no animation)</li>
+<li>Position: Absolute, below menu button, right-aligned</li>
+<li>Background: <code>#2d2d2d</code> (dark gray)</li>
+<li>Items: White text, Poppins Light (300), 16px, hover opacity 70%</li>
+<li>Item borders: <code>#e9e9f2</code> (light gray) between items</li>
+<li>Padding: <code>24px</code> horizontal, <code>16px</code> vertical per item</li>
+<li>Close triggers:</li>
+<li>Click outside dropdown</li>
+<li>Click any menu item</li>
+<li>Navigation occurs</li>
+<li>No fade, slide, or other motion</li>
+</ul>
+<p><strong>Timing:</strong></p>
+<ul>
+<li>Click menu button → Dropdown appears: Immediate</li>
+<li>Click outside/item → Dropdown closes: Immediate</li>
+</ul>
+<hr />
+<h2>4b. Artists Directory</h2>
+<p><strong>List name (left A–Z):</strong></p>
+<ul>
+<li>Click: immediately sets the selected artist in the billboard (toggle off if the same name is clicked again)</li>
+<li>Selected name: <code>#FF0000</code>, still underlined until hover</li>
+<li>Hover: underline removed (same as organiser links)</li>
+</ul>
+<p><strong>Billboard peeks:</strong></p>
+<ul>
+<li>Default: overlapping full-height pages; name overlays the image; image is full-bleed (no reserved white header strip)</li>
+<li>Expand / compress: <code>700ms</code> <code>cubic-bezier(0.22, 1, 0.36, 1)</code> on <code>left</code> and <code>width</code></li>
+<li>Compressed peeks: vertical name only, <strong>no image</strong> (<code>opacity: 0</code>, <code>pointer-events: none</code>)</li>
+<li>Clicking a compressed peek expands that artist</li>
+<li>Clicking an A–Z name that is not in the four featured peeks inserts that artist into the stack and expands them</li>
+<li><code>prefers-reduced-motion: reduce</code>: no left/width/opacity transition</li>
+</ul>
+<p><strong>Read more →:</strong></p>
+<ul>
+<li>Same as CTA with arrow: text opacity <code>70%</code> on hover; arrow translates <code>1px</code> right; <code>200ms ease-out</code>; gap <code>12px</code></li>
+</ul>
+<p><strong>Genre / Medium filters:</strong></p>
+<ul>
+<li>Collapsed by default</li>
+<li>Open / close is instant (no animation)</li>
+<li>Checkbox is visual only (12px square, black fill when on); row is the hit target</li>
+</ul>
+<p><strong>Billboard scroll cue:</strong></p>
+<ul>
+<li><code>∨</code> centred on the billboard bottom</li>
+<li>Hover: opacity <code>70%</code>, <code>200ms ease-out</code></li>
+<li>Click: smooth-scrolls the right column to the grid (<code>scroll-behavior</code> disabled under reduced motion)</li>
+</ul>
+<p><strong>Images:</strong></p>
+<ul>
+<li>Hover matches Workspace detail images (<code>400ms ease-out</code>, opacity <code>85%</code>, grayscale <code>10%</code>, brightness <code>98%</code>)</li>
+<li>Missing or failed images render nothing (white). Never grey squares or broken-image icons</li>
+<li>Do not use cityscapes, stock rooms, or other filler that is not a portrait or an artwork</li>
+</ul>
+<hr />
+<h2>5. Modal Behavior</h2>
+<h3>Success Modal</h3>
+<p><strong>Entrance:</strong></p>
+<ul>
+<li>Appearance: <strong>Instant</strong> (no animation)</li>
+<li>Modal appears immediately when <code>showSuccessModal</code> state becomes <code>true</code></li>
+<li>No fade-in, slide-in, or scale animation</li>
+</ul>
+<p><strong>Exit:</strong></p>
+<ul>
+<li>Dismissal: <strong>Instant</strong> (no animation)</li>
+<li>Modal disappears immediately when <code>showSuccessModal</code> state becomes <code>false</code></li>
+<li>No fade-out, slide-out, or scale animation</li>
+</ul>
+<p><strong>Backdrop:</strong></p>
+<ul>
+<li>Color: Black at 50% opacity (<code>rgba(0, 0, 0, 0.5)</code>)</li>
+<li>Click behavior: Clicking backdrop closes modal</li>
+<li>No animation on backdrop appearance/disappearance</li>
+</ul>
+<p><strong>Modal Content:</strong></p>
+<ul>
+<li>Background: White</li>
+<li>Border: <code>1px solid black</code></li>
+<li>Padding: <code>24px</code></li>
+<li>Max width: <code>400px</code></li>
+<li>Centered: Flexbox centering</li>
+</ul>
+<p><strong>Dismiss Methods:</strong></p>
+<ol>
+<li>Click &quot;OK&quot; button → Closes modal</li>
+<li>Click backdrop → Closes modal</li>
+<li>No keyboard escape (not implemented)</li>
+</ol>
+<p><strong>Timing:</strong></p>
+<ul>
+<li>Modal appears: Immediately after action (Save Draft, Submit, Image Upload)</li>
+<li>Modal stays: Until user dismisses (no auto-dismiss)</li>
+<li>No timeout or auto-close</li>
+</ul>
+<hr />
+<h2>6. Toast / Success Dialog Behavior</h2>
+<p><strong>Current Implementation:</strong></p>
+<ul>
+<li>Uses modal pattern (not toast)</li>
+<li>See &quot;Modal Behavior&quot; section above</li>
+</ul>
+<p><strong>Future Toast Pattern (if needed):</strong></p>
+<ul>
+<li>Not currently implemented</li>
+<li>Would follow same instant appearance/disappearance pattern</li>
+</ul>
+<hr />
+<h2>7. Image Upload Feedback</h2>
+<h3>Loading State</h3>
+<p><strong>Current Implementation:</strong></p>
+<ul>
+<li>No visible loading indicator</li>
+<li>Upload happens synchronously (or with brief delay simulation)</li>
+<li>No spinner, progress bar, or skeleton state</li>
+</ul>
+<h3>Success State</h3>
+<p><strong>Feedback:</strong></p>
+<ul>
+<li>Success modal appears immediately after upload</li>
+<li>Modal content: &quot;Upload successful&quot;</li>
+<li>Image preview appears immediately in form</li>
+<li>No separate success animation for image itself</li>
+</ul>
+<p><strong>Timing:</strong></p>
+<ul>
+<li>Upload → Success modal: Immediate (or 500ms delay simulation)</li>
+<li>Preview appears: Immediately after URL is available</li>
+</ul>
+<h3>Error State</h3>
+<p><strong>Current Implementation:</strong></p>
+<ul>
+<li>No visible error state</li>
+<li>Errors logged to console only</li>
+<li>No error message displayed to user</li>
+<li>Fallback: Image converts to data URL if Supabase upload fails</li>
+</ul>
+<hr />
+<h2>8. Disabled States</h2>
+<h3>Visual Rules</h3>
+<p><strong>Disabled Buttons:</strong></p>
+<ul>
+<li>Opacity: <code>50%</code></li>
+<li>Cursor: <code>not-allowed</code></li>
+<li>Hover: Disabled (no hover feedback)</li>
+<li>Background: Same as enabled state (just dimmed)</li>
+</ul>
+<p><strong>Disabled Form Fields:</strong></p>
+<ul>
+<li>Opacity: <code>50%</code></li>
+<li>Cursor: <code>not-allowed</code></li>
+<li>Background: Same as enabled state (just dimmed)</li>
+<li>Border: Same as enabled state (just dimmed)</li>
+</ul>
+<p><strong>Locked Fields (first_name, last_name, username):</strong></p>
+<ul>
+<li>Opacity: <code>50%</code></li>
+<li>Cursor: <code>not-allowed</code></li>
+<li>Background: Same as enabled state (just dimmed)</li>
+<li>Border: Same as enabled state (just dimmed)</li>
+<li>Visual indication: Greyed out appearance</li>
+</ul>
+<h3>Interaction Rules</h3>
+<p><strong>Disabled Elements:</strong></p>
+<ul>
+<li>Cannot be clicked</li>
+<li>Cannot receive focus (or focus is ignored)</li>
+<li>Cannot be edited (for form fields)</li>
+<li>No hover feedback</li>
+<li>No active state</li>
+</ul>
+<p><strong>Submit Button Disabled Logic:</strong></p>
+<ul>
+<li>Disabled when: <code>!isFormValid() || !accept_terms</code></li>
+<li>Visual: <code>opacity: 50%</code>, <code>cursor: not-allowed</code></li>
+<li>No hover feedback when disabled</li>
+</ul>
+<hr />
+<h2>9. Scroll-Triggered Reveals (Workspace Only)</h2>
+<h3>Content Reveals</h3>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>Elements with <code>reveal-content</code> class fade in and slide up on scroll</li>
+<li>Initial state: <code>opacity: 0</code>, <code>translateY: 16px</code></li>
+<li>Revealed state: <code>opacity: 1</code>, <code>translateY: 0</code></li>
+<li>Transition: <code>1000ms ease-out</code></li>
+<li>Trigger: <code>IntersectionObserver</code> API (threshold: 0.1, rootMargin: <code>0px 0px -50px 0px</code>)</li>
+</ul>
+<p><strong>Timing:</strong></p>
+<ul>
+<li>Reveal starts: When element enters viewport (with 50px bottom margin)</li>
+<li>Reveal duration: 1000ms</li>
+<li>Once revealed: Stays revealed (no fade out on scroll away)</li>
+</ul>
+<h3>Image Reveals</h3>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>Elements with <code>reveal-image</code> class fade in and slide up on scroll</li>
+<li>Initial state: <code>opacity: 0</code>, <code>translateY: 16px</code></li>
+<li>Revealed state: <code>opacity: 1</code>, <code>translateY: 0</code></li>
+<li>Transition: <code>1000ms ease-out</code> with <code>200ms</code> delay</li>
+<li>Trigger: Same as content reveals</li>
+</ul>
+<p><strong>Timing:</strong></p>
+<ul>
+<li>Reveal starts: 200ms after content reveals</li>
+<li>Reveal duration: 1000ms</li>
+<li>Once revealed: Stays revealed</li>
+</ul>
+<h3>Accessibility</h3>
+<p><strong>Reduced Motion:</strong></p>
+<ul>
+<li>When <code>prefers-reduced-motion: reduce</code>:</li>
+<li>All reveal animations disabled</li>
+<li>Elements appear immediately (<code>opacity: 1</code>, <code>transform: none</code>)</li>
+<li>Transition durations set to <code>0.01ms</code></li>
+</ul>
+<hr />
+<h2>10. Workspace vs Form Interaction Intensity</h2>
+<h3>Workspace Pages</h3>
+<p><strong>Interaction Intensity: Medium</strong></p>
+<ul>
+<li>More structural feedback</li>
+<li>Hover states on all interactive elements</li>
+<li>Activity list items have color change on hover (red background, white text)</li>
+<li>Scroll-triggered reveals for editorial feel</li>
+<li>Image hover effects (observational)</li>
+<li>Arrow translation on CTA button hover</li>
+</ul>
+<p><strong>Motion Level:</strong></p>
+<ul>
+<li>Scroll reveals: 1000ms (slow, calm)</li>
+<li>Hover transitions: 200ms (quick, responsive)</li>
+<li>Image hover: 400ms (smooth, observational)</li>
+</ul>
+<h3>Form Pages</h3>
+<p><strong>Interaction Intensity: Low</strong></p>
+<ul>
+<li>Reduced motion, calm interactions</li>
+<li>No hover feedback on form inputs</li>
+<li>Minimal hover feedback on buttons only</li>
+<li>No scroll-triggered reveals</li>
+<li>Instant tab switching (no animation)</li>
+<li>Instant modal appearance (no animation)</li>
+</ul>
+<p><strong>Motion Level:</strong></p>
+<ul>
+<li>Button hover: 200ms (quick, minimal)</li>
+<li>No other motion</li>
+<li>Focus on clarity and calmness</li>
+</ul>
+<h3>White Directory (<code>/artists</code>)</h3>
+<p><strong>Interaction Intensity: Medium (structural only)</strong></p>
+<ul>
+<li>Billboard squeeze is the only expressive-feeling motion, and it must stay editorial: <code>700ms</code> <code>cubic-bezier(0.22, 1, 0.36, 1)</code></li>
+<li>Filters and tab-like chrome remain instant</li>
+<li>Image hover matches Workspace observation rules</li>
+<li>No red hover bars on the A–Z list (selected name uses <code>#FF0000</code> as static selected state)</li>
+</ul>
+<hr />
+<h2>11. General Motion Rules</h2>
+<h3>Transition Timing</h3>
+<p><strong>Standard Transitions:</strong></p>
+<ul>
+<li>Duration: <code>200ms</code></li>
+<li>Timing function: <code>ease-out</code></li>
+<li>Properties: <code>opacity</code>, <code>background-color</code>, <code>transform</code></li>
+</ul>
+<p><strong>Slow Transitions (Workspace Reveals):</strong></p>
+<ul>
+<li>Duration: <code>1000ms</code></li>
+<li>Timing function: <code>ease-out</code></li>
+<li>Properties: <code>opacity</code>, <code>transform</code></li>
+</ul>
+<p><strong>Image Hover:</strong></p>
+<ul>
+<li>Duration: <code>400ms</code></li>
+<li>Timing function: <code>ease-out</code></li>
+<li>Properties: <code>opacity</code>, <code>filter</code></li>
+</ul>
+<h3>Motion Reduction</h3>
+<p><strong>Respect <code>prefers-reduced-motion</code>:</strong></p>
+<ul>
+<li>All transitions disabled when motion preference is reduced</li>
+<li>Transition durations set to <code>0.01ms</code></li>
+<li>Animations set to <code>1</code> iteration</li>
+<li>Scroll reveals appear immediately</li>
+<li>Hover transitions disabled</li>
+</ul>
+<p><strong>Implementation:</strong></p>
+<ul>
+<li>Use <code>motion-reduce:transition-none</code> class where applicable</li>
+<li>CSS media query: <code>@media (prefers-reduced-motion: reduce)</code></li>
+</ul>
+<hr />
+<h2>12. Interaction Patterns Summary</h2>
+<h3>Instant Interactions (No Animation)</h3>
+<ul>
+<li>Tab switching</li>
+<li>Modal appearance/disappearance</li>
+<li>Activity selection</li>
+<li>Form field focus</li>
+<li>Button clicks (state change only)</li>
+</ul>
+<h3>Animated Interactions (Subtle Motion)</h3>
+<ul>
+<li>Button hover (200ms opacity/background)</li>
+<li>Link hover (200ms opacity)</li>
+<li>Activity list item hover (200ms color change)</li>
+<li>Image hover (400ms opacity/filter)</li>
+<li>Scroll-triggered reveals (1000ms fade/slide)</li>
+<li>Artist billboard squeeze (<code>700ms</code>, <code>cubic-bezier(0.22, 1, 0.36, 1)</code> on <code>left</code> and <code>width</code>)</li>
+<li>Compressed peek image fade (<code>500ms</code>, same easing, to <code>opacity: 0</code>)</li>
+</ul>
+<h3>No Interaction Feedback</h3>
+<ul>
+<li>Form input hover</li>
+<li>Disabled elements hover</li>
+<li>Locked fields hover</li>
+</ul>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/page.tsx</code>, <code>app/submit/page.tsx</code>, <code>app/login/page.tsx</code>, <code>app/artists/page.tsx</code>, <code>app/globals.css</code>)</p>
+<p><strong>Intended use:</strong> Reusable system specification</p></section><section class="chapter"><p class="file-label">AUTH_IDENTITY_SPEC.md</p><h1>AUTH_IDENTITY_SPEC.md</h1><h1>Authentication and User Identity Specification</h1>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase</p>
+<p><strong>Intended use:</strong> Reusable authentication and user identity specification</p>
+<hr />
+<h2>Core Principles</h2>
+<h3>Display Name Resolution (CRITICAL RULE)</h3>
+<p><strong>The resolved display name MUST NOT be written back to the database.</strong></p>
+<p>This rule applies to:</p>
+<ul>
+<li>Workspace list</li>
+<li>Workspace detail</li>
+<li>Admin views</li>
+<li>Public event pages</li>
+</ul>
+<p><strong>Implementation:</strong></p>
+<ul>
+<li>Display name is resolved in UI only: <code>author_name || username</code></li>
+<li><code>Activity.author_name</code> stores the original value (may be empty)</li>
+<li><code>Activity.username</code> stores the account identity</li>
+<li>Never persist the resolved value: <code>author_name || username</code> is computed at render time only</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code>// ✅ CORRECT: Resolve in UI
+const displayName = activity.author_name || activity.username;
+
+// ❌ WRONG: Persisting resolved value
+activity.author_name = activity.author_name || activity.username; // NEVER DO THIS</code></pre>
+<hr />
+<h2>Status Flow</h2>
+<h3>Draft</h3>
+<ul>
+<li><code>status = draft</code></li>
+<li>Incomplete data allowed</li>
+<li>Visible only to the owner (and admin)</li>
+</ul>
+<h3>Submit</h3>
+<ul>
+<li>Triggered when all required fields are valid and terms accepted</li>
+<li>Actions:</li>
+<li><code>status → pending_review</code></li>
+<li>If <code>username</code> is empty:</li>
+<li>Set it (from form data: <code>first_name_last_name</code> pattern)</li>
+<li>Lock it permanently (<code>is_locked: true</code>)</li>
+</ul>
+<h3>Publish</h3>
+<ul>
+<li><code>pending_review → published</code></li>
+<li>Activity becomes publicly visible</li>
+<li>Added to activities list via <code>submissionToActivity()</code></li>
+</ul>
+<h3>Remove</h3>
+<ul>
+<li>Any state → <code>removed</code> (or <code>is_deleted: true</code>)</li>
+<li>Activity disappears from workspace and public routes</li>
+</ul>
+<hr />
+<h2>Route Access Rules</h2>
+<h3>Public Routes (No Login Required)</h3>
+<ul>
+<li><code>/</code> - Workspace page</li>
+<li><code>/submit</code> - Partner submission form</li>
+<li><code>/partners</code> - Partners page</li>
+<li><code>/artists</code> - Artist directory</li>
+<li><code>/artists/[slug]</code> - Artist detail</li>
+<li><code>/artists/join</code> - Artist join form</li>
+<li><code>/about-us</code> - About us page</li>
+<li><code>/login</code> - Login page</li>
+<li><code>/signup</code> - Signup page</li>
+<li><code>/event/[id]</code> - Public event detail (including preview)</li>
+<li><code>/admin</code> - Admin review list (viewable without login in current build)</li>
+<li>Calendar export (<code>.ics</code> file downloads)</li>
+</ul>
+<h3>Private Routes (Login Required)</h3>
+<ul>
+<li>Currently none at the route-guard layer. Admin <strong>actions</strong> still depend on an admin profile in application logic.</li>
+</ul>
+<h3>Route Protection Behavior</h3>
+<p>If a logged-out user accesses a private route:</p>
+<ol>
+<li>Store current path as <code>returnTo</code> in <code>sessionStorage</code></li>
+<li>Redirect to <code>/login?returnTo={encodedPath}</code></li>
+<li>After successful login, redirect back to <code>returnTo</code></li>
+<li>Clear <code>returnTo</code> after redirect</li>
+</ol>
+<p><strong>Implementation:</strong></p>
+<ul>
+<li><code>RouteGuard</code> component wraps all routes in <code>app/layout.tsx</code></li>
+<li><code>checkRouteAccess()</code> function determines if redirect is needed</li>
+<li>Login page reads <code>returnTo</code> from both URL params and <code>sessionStorage</code></li>
+</ul>
+<hr />
+<h2>User Identity Model</h2>
+<h3>Username (Account Identity)</h3>
+<ul>
+<li><strong>Purpose:</strong> Stable account identifier</li>
+<li><strong>Source:</strong> Form field or auto-generated from <code>first_name_last_name</code></li>
+<li><strong>Locking:</strong> Locked after first successful submit (<code>is_locked: true</code>)</li>
+<li><strong>Persistence:</strong> Stored in <code>Submission.username</code> and <code>Activity.username</code></li>
+<li><strong>Never changes:</strong> Once set and locked, cannot be modified</li>
+</ul>
+<h3>Author Name (Display Credit)</h3>
+<ul>
+<li><strong>Purpose:</strong> Public-facing display name</li>
+<li><strong>Source:</strong> Form field (<code>author_name</code>)</li>
+<li><strong>Locking:</strong> Never locked, always editable</li>
+<li><strong>Persistence:</strong> Stored in <code>Submission.author_name</code> and <code>Activity.author_name</code></li>
+<li><strong>May be empty:</strong> If empty, UI falls back to <code>username</code> for display</li>
+</ul>
+<h3>Display Name Resolution</h3>
+<ul>
+<li><strong>Formula:</strong> <code>displayName = author_name || username</code></li>
+<li><strong>Location:</strong> UI only (never persisted)</li>
+<li><strong>Usage:</strong> All views that show author/artist name</li>
+</ul>
+<hr />
+<h2>Implementation Files</h2>
+<h3>Core Logic</h3>
+<ul>
+<li><code>app/lib/storage.ts</code> - Data storage and <code>submissionToActivity()</code> conversion</li>
+<li><code>app/lib/auth.ts</code> - Authentication utilities</li>
+<li><code>app/lib/route-protection.ts</code> - Route access control</li>
+<li><code>app/lib/artists.ts</code> - Editorial artist roster and directory helpers</li>
+<li><code>app/lib/artist-submissions.ts</code> - Artist join draft / submit (<code>localStorage</code>)</li>
+</ul>
+<h3>Components</h3>
+<ul>
+<li><code>app/components/RouteGuard.tsx</code> - Route protection wrapper</li>
+</ul>
+<h3>Pages</h3>
+<ul>
+<li><code>app/page.tsx</code> - Workspace (public)</li>
+<li><code>app/submit/page.tsx</code> - Submission form (public)</li>
+<li><code>app/admin/page.tsx</code> - Admin list</li>
+<li><code>app/admin/[id]/page.tsx</code> - Admin detail</li>
+<li><code>app/partners/page.tsx</code> - Partners (public)</li>
+<li><code>app/artists/page.tsx</code> - Artist directory (public)</li>
+<li><code>app/artists/[slug]/page.tsx</code> - Artist detail (public)</li>
+<li><code>app/artists/join/page.tsx</code> - Artist join form (public)</li>
+<li><code>app/login/page.tsx</code> - Login (public)</li>
+<li><code>app/about-us/page.tsx</code> - About us (public)</li>
+</ul>
+<hr />
+<h2>Summary</h2>
+<ul>
+<li><strong>Auth User</strong> controls access (login required for private routes)</li>
+<li><strong>Profile/Username</strong> controls stable identity (locked after first submit)</li>
+<li><strong>Activity</strong> controls content and authorship (<code>author_name</code> always editable)</li>
+<li><strong>Display logic</strong> is resolved in the UI, never persisted</li>
+</ul>
+<p>This separation is mandatory for system consistency and future scalability.</p>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Current codebase (<code>app/lib/route-protection.ts</code>, <code>app/lib/auth.ts</code>)</p>
+<p><strong>Intended use:</strong> Reusable authentication and user identity specification</p></section><section class="chapter"><p class="file-label">DATABASE_SCHEMA.md</p><h1>DATABASE_SCHEMA.md</h1><h1>Database Schema</h1>
+<h2>Purpose</h2>
+<p>Defines the Supabase database schema for the production-ready multi-user platform.</p>
+<hr />
+<h2>Tables</h2>
+<h3>1. <code>profiles</code></h3>
+<p>User profile information linked to Supabase Auth users.</p>
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>id</code></td><td><code>uuid</code></td><td>PRIMARY KEY, REFERENCES <code>auth.users(id)</code></td><td>User ID (matches auth.users.id)</td></tr>
+<tr><td><code>username</code></td><td><code>text</code></td><td>NULLABLE, UNIQUE</td><td>Username (locked after first submit)</td></tr>
+<tr><td><code>role</code></td><td><code>text</code></td><td>NOT NULL, DEFAULT &#x27;user&#x27;</td><td>User role: &#x27;user&#x27; or &#x27;admin&#x27;</td></tr>
+<tr><td><code>created_at</code></td><td><code>timestamp</code></td><td>NOT NULL, DEFAULT now()</td><td>Profile creation timestamp</td></tr>
+</tbody></table>
+<p><strong>Indexes:</strong></p>
+<ul>
+<li>Primary key on <code>id</code></li>
+<li>Unique index on <code>username</code> (where not null)</li>
+</ul>
+<p><strong>Row Level Security (RLS):</strong></p>
+<ul>
+<li>Users can read their own profile</li>
+<li>Users can update their own profile (but username is locked after first submit)</li>
+<li>Admins can read all profiles</li>
+</ul>
+<p><strong>Triggers:</strong></p>
+<ul>
+<li>Auto-create profile on user signup (via Supabase trigger or application logic)</li>
+</ul>
+<hr />
+<h3>2. <code>activities</code></h3>
+<p>Activity/submission data (single table for both drafts and published activities).</p>
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>id</code></td><td><code>uuid</code></td><td>PRIMARY KEY, DEFAULT gen_random_uuid()</td><td>Activity ID</td></tr>
+<tr><td><code>owner_id</code></td><td><code>uuid</code></td><td>NOT NULL, REFERENCES <code>auth.users(id)</code></td><td>Owner user ID</td></tr>
+<tr><td><code>status</code></td><td><code>text</code></td><td>NOT NULL, DEFAULT &#x27;draft&#x27;</td><td>Status: &#x27;draft&#x27;, &#x27;pending_review&#x27;, &#x27;published&#x27;, &#x27;rejected&#x27;, &#x27;removed&#x27;</td></tr>
+<tr><td><code>created_at</code></td><td><code>timestamp</code></td><td>NOT NULL, DEFAULT now()</td><td>Creation timestamp</td></tr>
+<tr><td><code>updated_at</code></td><td><code>timestamp</code></td><td>NOT NULL, DEFAULT now()</td><td>Last update timestamp</td></tr>
+<tr><td><code>is_deleted</code></td><td><code>boolean</code></td><td>NOT NULL, DEFAULT false</td><td>Soft delete flag</td></tr>
+<tr><td><code>is_locked</code></td><td><code>boolean</code></td><td>NOT NULL, DEFAULT false</td><td>Username locked flag</td></tr>
+<tr><td><code>first_name</code></td><td><code>text</code></td><td>NOT NULL</td><td>First name</td></tr>
+<tr><td><code>last_name</code></td><td><code>text</code></td><td>NOT NULL</td><td>Last name</td></tr>
+<tr><td><code>username</code></td><td><code>text</code></td><td>NOT NULL</td><td>Account username</td></tr>
+<tr><td><code>organization_name</code></td><td><code>text</code></td><td>NOT NULL</td><td>Organization name</td></tr>
+<tr><td><code>email</code></td><td><code>text</code></td><td>NOT NULL</td><td>Email address</td></tr>
+<tr><td><code>role</code></td><td><code>text</code></td><td>NOT NULL</td><td>User role (e.g., &#x27;partner&#x27;)</td></tr>
+<tr><td><code>is_student</code></td><td><code>boolean</code></td><td>NOT NULL, DEFAULT false</td><td>Student flag</td></tr>
+<tr><td><code>activity_title</code></td><td><code>text</code></td><td>NOT NULL</td><td>Activity title</td></tr>
+<tr><td><code>author_name</code></td><td><code>text</code></td><td>NOT NULL</td><td>Display author name</td></tr>
+<tr><td><code>activity_type</code></td><td><code>text</code></td><td>NOT NULL</td><td>Activity type</td></tr>
+<tr><td><code>activity_description</code></td><td><code>text</code></td><td>NOT NULL</td><td>HTML description</td></tr>
+<tr><td><code>activity_location</code></td><td><code>text</code></td><td>NOT NULL</td><td>Location (neighbourhood / venue)</td></tr>
+<tr><td><code>activity_area</code></td><td><code>text</code></td><td>NULL</td><td>Region: South London, East London, West London, or North London</td></tr>
+<tr><td><code>activity_date</code></td><td><code>text</code></td><td>NOT NULL</td><td>Date string</td></tr>
+<tr><td><code>primary_image</code></td><td><code>text</code></td><td>NULLABLE</td><td>Primary image URL (Supabase Storage)</td></tr>
+<tr><td><code>primary_image_alt</code></td><td><code>text</code></td><td>NULLABLE</td><td>Primary image alt text</td></tr>
+<tr><td><code>website_link</code></td><td><code>text</code></td><td>NOT NULL</td><td>Website URL</td></tr>
+<tr><td><code>body_text_1</code></td><td><code>text</code></td><td>NOT NULL</td><td>First body text (HTML)</td></tr>
+<tr><td><code>additional_images_1</code></td><td><code>text</code></td><td>NULLABLE</td><td>Additional image 1 URL</td></tr>
+<tr><td><code>additional_images_1_alt</code></td><td><code>text</code></td><td>NULLABLE</td><td>Additional image 1 alt text</td></tr>
+<tr><td><code>body_text_2</code></td><td><code>text</code></td><td>NOT NULL</td><td>Second body text (HTML)</td></tr>
+<tr><td><code>additional_images_2</code></td><td><code>jsonb</code></td><td>NULLABLE</td><td>Array of image URLs (JSON)</td></tr>
+<tr><td><code>additional_images_2_alt</code></td><td><code>jsonb</code></td><td>NULLABLE</td><td>Array of alt texts (JSON)</td></tr>
+<tr><td><code>organizer</code></td><td><code>text</code></td><td>NOT NULL</td><td>Organizer name</td></tr>
+<tr><td><code>partner</code></td><td><code>text</code></td><td>NOT NULL</td><td>Partner name</td></tr>
+<tr><td><code>additional_media_links</code></td><td><code>jsonb</code></td><td>NULLABLE</td><td>Array of media links (JSON)</td></tr>
+<tr><td><code>accept_terms</code></td><td><code>boolean</code></td><td>NOT NULL, DEFAULT false</td><td>Terms acceptance flag</td></tr>
+</tbody></table>
+<p><strong>Indexes:</strong></p>
+<ul>
+<li>Primary key on <code>id</code></li>
+<li>Index on <code>owner_id</code> for user queries</li>
+<li>Index on <code>status</code> for filtering</li>
+<li>Index on <code>is_deleted</code> for soft delete filtering</li>
+<li>Composite index on <code>(status, is_deleted)</code> for published activities query</li>
+</ul>
+<p><strong>Row Level Security (RLS):</strong></p>
+<ul>
+<li>Users can read their own activities (all statuses)</li>
+<li>Users can create/update their own activities (draft/pending_review only)</li>
+<li>Public can read activities with <code>status=&#x27;published&#x27;</code> and <code>is_deleted=false</code></li>
+<li>Admins can read/update all activities</li>
+</ul>
+<p><strong>JSONB Fields:</strong></p>
+<ul>
+<li><code>additional_images_2</code>: Array of strings <code>[&quot;url1&quot;, &quot;url2&quot;, ...]</code></li>
+<li><code>additional_images_2_alt</code>: Array of strings <code>[&quot;alt1&quot;, &quot;alt2&quot;, ...]</code></li>
+<li><code>additional_media_links</code>: Array of objects <code>[{&quot;media_name&quot;: &quot;...&quot;, &quot;media_link&quot;: &quot;...&quot;}, ...]</code></li>
+</ul>
+<hr />
+<h2>Storage Buckets</h2>
+<h3><code>images</code></h3>
+<p>Supabase Storage bucket for activity images.</p>
+<p><strong>Structure:</strong></p>
+<ul>
+<li><code>activities/{timestamp}_{random}.{ext}</code> - Activity images (primary, additional)</li>
+</ul>
+<p><strong>Policies:</strong></p>
+<ul>
+<li>Public read access for published activities</li>
+<li>Authenticated users can upload to their own folder</li>
+<li>Admins can manage all images</li>
+</ul>
+<hr />
+<h2>SQL Migration Script</h2>
+<pre><code>-- Create profiles table
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT UNIQUE,
+  role TEXT NOT NULL DEFAULT &#x27;user&#x27; CHECK (role IN (&#x27;user&#x27;, &#x27;admin&#x27;)),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+-- Create activities table
+CREATE TABLE IF NOT EXISTS activities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT &#x27;draft&#x27; CHECK (status IN (&#x27;draft&#x27;, &#x27;pending_review&#x27;, &#x27;published&#x27;, &#x27;rejected&#x27;, &#x27;removed&#x27;)),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  is_deleted BOOLEAN NOT NULL DEFAULT false,
+  is_locked BOOLEAN NOT NULL DEFAULT false,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  username TEXT NOT NULL,
+  organization_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL,
+  is_student BOOLEAN NOT NULL DEFAULT false,
+  activity_title TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  activity_type TEXT NOT NULL,
+  activity_description TEXT NOT NULL,
+  activity_location TEXT NOT NULL,
+  activity_area TEXT,
+  activity_date TEXT NOT NULL,
+  primary_image TEXT,
+  primary_image_alt TEXT,
+  website_link TEXT NOT NULL,
+  body_text_1 TEXT NOT NULL,
+  additional_images_1 TEXT,
+  additional_images_1_alt TEXT,
+  body_text_2 TEXT NOT NULL,
+  additional_images_2 JSONB,
+  additional_images_2_alt JSONB,
+  organizer TEXT NOT NULL,
+  partner TEXT NOT NULL,
+  additional_media_links JSONB,
+  accept_terms BOOLEAN NOT NULL DEFAULT false
+);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_activities_owner_id ON activities(owner_id);
+CREATE INDEX IF NOT EXISTS idx_activities_status ON activities(status);
+CREATE INDEX IF NOT EXISTS idx_activities_is_deleted ON activities(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_activities_status_deleted ON activities(status, is_deleted) WHERE is_deleted = false;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_username ON profiles(username) WHERE username IS NOT NULL;
+
+-- Enable RLS
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for profiles
+CREATE POLICY &quot;Users can read own profile&quot; ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY &quot;Users can update own profile&quot; ON profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- RLS Policies for activities
+CREATE POLICY &quot;Users can read own activities&quot; ON activities
+  FOR SELECT USING (auth.uid() = owner_id);
+
+CREATE POLICY &quot;Public can read published activities&quot; ON activities
+  FOR SELECT USING (status = &#x27;published&#x27; AND is_deleted = false);
+
+CREATE POLICY &quot;Users can create own activities&quot; ON activities
+  FOR INSERT WITH CHECK (auth.uid() = owner_id);
+
+CREATE POLICY &quot;Users can update own activities&quot; ON activities
+  FOR UPDATE USING (auth.uid() = owner_id);
+
+-- Create storage bucket (run in Supabase dashboard or via API)
+-- Storage bucket: &#x27;images&#x27;
+-- Public: true (for published activities)</code></pre>
+<hr />
+<h2>Artist profiles (current vs next)</h2>
+<p><strong>Current production:</strong> there is <strong>no</strong> <code>artists</code> table. Public artists come from:</p>
+<ol>
+<li>Editorial array in <code>app/lib/artists.ts</code></li>
+<li>Browser <code>localStorage</code> (<code>othering_artist_submissions_v1</code>) for join-form submissions</li>
+<li>Activity authors merged into the A–Z directory by name/slug, without copying activity images onto blank cards</li>
+</ol>
+<p><strong>Proposed later (do not implement until product asks):</strong></p>
+<pre><code>CREATE TABLE IF NOT EXISTS artists (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  field TEXT,
+  birth TEXT,
+  photo TEXT,
+  photo_alt TEXT,
+  bio TEXT NOT NULL DEFAULT &#x27;&#x27;,
+  cv JSONB NOT NULL DEFAULT &#x27;[]&#x27;::jsonb,
+  exhibitions JSONB NOT NULL DEFAULT &#x27;[]&#x27;::jsonb,
+  press JSONB NOT NULL DEFAULT &#x27;[]&#x27;::jsonb,
+  talks JSONB NOT NULL DEFAULT &#x27;[]&#x27;::jsonb,
+  works JSONB NOT NULL DEFAULT &#x27;[]&#x27;::jsonb,
+  status TEXT NOT NULL DEFAULT &#x27;draft&#x27;
+    CHECK (status IN (&#x27;draft&#x27;, &#x27;pending_review&#x27;, &#x27;published&#x27;, &#x27;rejected&#x27;)),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);</code></pre>
+<p>JSONB rows follow <code>ArtistLinkedItem</code> / <code>ArtistWork</code> in FORM_SCHEMA.md.</p>
+<hr />
+<h2>Version</h2>
+<p><strong>Version:</strong> 2026-08-17</p>
+<p><strong>Source of truth:</strong> Production Supabase database (activities / profiles); artist roster is code + <code>localStorage</code> until an <code>artists</code> table ships</p>
+<p><strong>Intended use:</strong> Database schema reference and migration guide</p></section>
+</body>
+</html>

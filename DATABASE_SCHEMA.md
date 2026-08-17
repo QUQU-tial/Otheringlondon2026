@@ -196,7 +196,43 @@ CREATE POLICY "Users can update own activities" ON activities
 
 ---
 
+## Artist profiles (current vs next)
+
+**Current production:** there is **no** `artists` table. Public artists come from:
+
+1. Editorial array in `app/lib/artists.ts`
+2. Browser `localStorage` (`othering_artist_submissions_v1`) for join-form submissions
+3. Activity authors merged into the A–Z directory by name/slug, without copying activity images onto blank cards
+
+**Proposed later (do not implement until product asks):**
+
+```sql
+CREATE TABLE IF NOT EXISTS artists (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  field TEXT,
+  birth TEXT,
+  photo TEXT,
+  photo_alt TEXT,
+  bio TEXT NOT NULL DEFAULT '',
+  cv JSONB NOT NULL DEFAULT '[]'::jsonb,
+  exhibitions JSONB NOT NULL DEFAULT '[]'::jsonb,
+  press JSONB NOT NULL DEFAULT '[]'::jsonb,
+  talks JSONB NOT NULL DEFAULT '[]'::jsonb,
+  works JSONB NOT NULL DEFAULT '[]'::jsonb,
+  status TEXT NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft', 'pending_review', 'published', 'rejected')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+JSONB rows follow `ArtistLinkedItem` / `ArtistWork` in FORM_SCHEMA.md.
+
+---
+
 ## Version
-**Version:** 2026-02-05  
-**Source of truth:** Production Supabase database  
+**Version:** 2026-08-17  
+**Source of truth:** Production Supabase database (activities / profiles); artist roster is code + `localStorage` until an `artists` table ships  
 **Intended use:** Database schema reference and migration guide

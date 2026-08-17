@@ -25,9 +25,14 @@ export function AboutUsWhiteTopBar() {
       <Link href="/partners" className={linkClass} style={linkStyle}>
         View All Programmes
       </Link>
-      <Link href="/login" className={linkClass} style={linkStyle}>
-        Login
-      </Link>
+      <nav className="flex items-center gap-[24px]">
+        <Link href="/artists" className={linkClass} style={linkStyle}>
+          Artists
+        </Link>
+        <Link href="/login" className={linkClass} style={linkStyle}>
+          Login
+        </Link>
+      </nav>
     </header>
   );
 }

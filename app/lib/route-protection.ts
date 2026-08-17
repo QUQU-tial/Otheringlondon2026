@@ -10,6 +10,7 @@ export const PUBLIC_ROUTES = [
   '/', // Workspace page (public)
   '/submit', // Submission form (public)
   '/partners',
+  '/artists',
   '/about-us',
   '/login',
   '/signup',
@@ -41,6 +42,10 @@ export function isPublicRoute(pathname: string): boolean {
 
   // Public event detail pages (including preview)
   if (pathname.startsWith('/event/')) {
+    return true;
+  }
+
+  if (pathname.startsWith('/artists')) {
     return true;
   }
   

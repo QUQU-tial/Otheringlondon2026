@@ -1,6 +1,6 @@
 # Authentication and User Identity Specification
 
-**Version:** 2026-01-23  
+**Version:** 2026-08-17  
 **Source of truth:** Current codebase  
 **Intended use:** Reusable authentication and user identity specification
 
@@ -64,16 +64,21 @@ activity.author_name = activity.author_name || activity.username; // NEVER DO TH
 ## Route Access Rules
 
 ### Public Routes (No Login Required)
-- `/partners` - Map / partners page
+- `/` - Workspace page
+- `/submit` - Partner submission form
+- `/partners` - Partners page
+- `/artists` - Artist directory
+- `/artists/[slug]` - Artist detail
+- `/artists/join` - Artist join form
 - `/about-us` - About us page
 - `/login` - Login page
-- Public event detail pages (if implemented: `/event/[id]` or `/public/[id]`)
+- `/signup` - Signup page
+- `/event/[id]` - Public event detail (including preview)
+- `/admin` - Admin review list (viewable without login in current build)
 - Calendar export (`.ics` file downloads)
 
 ### Private Routes (Login Required)
-- `/` - Workspace page
-- `/submit` - Submission form
-- `/admin` - Admin panel (and `/admin/[id]`)
+- Currently none at the route-guard layer. Admin **actions** still depend on an admin profile in application logic.
 
 ### Route Protection Behavior
 
@@ -119,16 +124,21 @@ If a logged-out user accesses a private route:
 - `app/lib/storage.ts` - Data storage and `submissionToActivity()` conversion
 - `app/lib/auth.ts` - Authentication utilities
 - `app/lib/route-protection.ts` - Route access control
+- `app/lib/artists.ts` - Editorial artist roster and directory helpers
+- `app/lib/artist-submissions.ts` - Artist join draft / submit (`localStorage`)
 
 ### Components
 - `app/components/RouteGuard.tsx` - Route protection wrapper
 
 ### Pages
-- `app/page.tsx` - Workspace (private)
-- `app/submit/page.tsx` - Submission form (private)
-- `app/admin/page.tsx` - Admin list (private)
-- `app/admin/[id]/page.tsx` - Admin detail (private)
-- `app/partners/page.tsx` - Partners map (public)
+- `app/page.tsx` - Workspace (public)
+- `app/submit/page.tsx` - Submission form (public)
+- `app/admin/page.tsx` - Admin list
+- `app/admin/[id]/page.tsx` - Admin detail
+- `app/partners/page.tsx` - Partners (public)
+- `app/artists/page.tsx` - Artist directory (public)
+- `app/artists/[slug]/page.tsx` - Artist detail (public)
+- `app/artists/join/page.tsx` - Artist join form (public)
 - `app/login/page.tsx` - Login (public)
 - `app/about-us/page.tsx` - About us (public)
 
@@ -146,7 +156,7 @@ This separation is mandatory for system consistency and future scalability.
 ---
 
 ## Version
-**Version:** 2026-01-23  
-**Source of truth:** Current codebase  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/lib/route-protection.ts`, `app/lib/auth.ts`)  
 **Intended use:** Reusable authentication and user identity specification
 

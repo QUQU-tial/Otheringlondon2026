@@ -65,9 +65,14 @@ Build an MVP art / exhibition platform for approximately 30 partner organisation
 - Post-login label change: "Become a Partner" (Detail Panel) becomes "My program" when logged in
 
 **Partners Page (`/partners`):**
-- Content Page model (single scroll)
-- Placeholder for map-based partner browsing
-- Consistent styling with other content pages
+- Content Page model
+- `WhiteSiteHeader`: Become a Partner → `/submit`, Artists → `/artists`, Back to workspace → `/`
+
+**Artists (`/artists`, `/artists/[slug]`, `/artists/join`):**
+- Directory is a **White Directory Page** (see LAYOUT_INTERACTION_SPEC.md §1.3): A–Z list, Genre/Medium filters, four-page overlapping billboard, four-column grid
+- Detail is White Split Content (photo/bio | CV / Exhibitions / Press / Talks / Works)
+- Join is a Content Page form (localStorage until an `artists` table exists)
+- Images: portraits or artworks only; about half the editorial roster has no image (white, not grey)
 
 ---
 
@@ -166,7 +171,7 @@ draft → pending_review → approved → published
 - Advanced analytics or reporting dashboards
 - Multi-language support
 - Notifications, comments, likes, or social features
-- Gallery Grid layout (possible future expansion)
+- Gallery Grid layout on the **Workspace** page (Artists directory grid is specified and in use)
 - Password reset functionality
 - Email notifications
 - Search functionality
@@ -213,6 +218,6 @@ draft → pending_review → approved → published
 ---
 
 ## Version
-**Version: 2026-01-23  
-**Source of truth:** Current codebase (`app/page.tsx`, `app/submit/page.tsx`, `app/admin/page.tsx`, `app/login/page.tsx`, `app/about-us/page.tsx`, `app/partners/page.tsx`, `app/lib/auth.ts`)  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/page.tsx`, `app/submit/page.tsx`, `app/admin/page.tsx`, `app/login/page.tsx`, `app/about-us/page.tsx`, `app/partners/page.tsx`, `app/artists/page.tsx`, `app/lib/auth.ts`)  
 **Intended use:** Reusable system specification

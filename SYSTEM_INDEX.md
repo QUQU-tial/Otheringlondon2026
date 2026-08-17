@@ -367,6 +367,7 @@ The system is organized into **9 specification files**, each with a clear, non-o
 - **Form field definitions** → FORM_SCHEMA.md
 - **Form behavior (tabs, validation)** → FORM_PAGE_SPEC.md
 - **Hover, focus, click interactions** → INTERACTION_MOTION_SPEC.md
+- **Public artist pages** → LAYOUT_INTERACTION_SPEC.md §1.3, Typography Mapping Table section D, INTERACTION_MOTION_SPEC.md §4b, FORM_SCHEMA.md (Artist Join)
 - **Project goals and scope** → Project_scope.md
 
 ---
@@ -387,6 +388,12 @@ The system is organized into **9 specification files**, each with a clear, non-o
 - Padding: `24px` horizontal, `16px` vertical per item
 - Dropdown closes on outside click or item selection
 - Instant appearance/disappearance (no animation)
+
+**White site header** (`WhiteSiteHeader`, used on `/partners`, `/artists`, `/artists/[slug]`):
+- Festival logo → `/`
+- "Become a Partner" → `/submit`
+- "Artists" → `/artists` (plain text when current)
+- "Back to workspace" → `/` (muted `#9A9A9A`, weight 400, last)
 
 **Login Page (`/login`):**
 - Split-screen layout (left: billboard, right: form)
@@ -409,7 +416,7 @@ The system is organized into **9 specification files**, each with a clear, non-o
 ---
 
 ## Version
-**Version: 2026-01-23  
+**Version:** 2026-08-17  
 **Source of truth:** Current codebase  
 **Intended use:** System specification index and onboarding guide
 
@@ -445,7 +452,7 @@ All specification files include a version footer:
 ---
 
 ## Version
-**Version: 2026-01-23  
+**Version:** 2026-08-17  
 **Source of truth:** Current codebase  
 **Intended use:** System specification index and onboarding guide
 

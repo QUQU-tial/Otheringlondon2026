@@ -17,8 +17,10 @@ Do not invent new values.
 | `--color-detail-bg` | `#FFFFFF` | Detail panel background |
 | `--color-text-muted` | `#E1E1E1` | Unselected activity list items |
 | `--color-text-placeholder` | `#999999` | Placeholder text |
+| `--color-text-meta` | `#9A9A9A` | White-site muted nav, A–Z letters, artist field labels |
+| `--color-selection` | `#FF0000` | Workspace activity-list hover; selected artist name in the A–Z list |
 | `--color-border` | `#000000` | Borders (20% opacity: `rgba(0, 0, 0, 0.2)`) |
-| `--color-gray-300` | `#D1D5DB` | Image placeholder backgrounds |
+| `--color-gray-300` | `#D1D5DB` | Workspace / event **image placeholders only**. Do **not** use on `/artists` empty slots |
 | `--color-gray-400` | `#9CA3AF` | Image borders |
 | `--color-gray-600` | `#4B5563` | Secondary text |
 | `--color-dropdown-bg` | `#2d2d2d` | Dropdown menu background |
@@ -156,18 +158,28 @@ Typography scales using CSS `clamp()` with viewport width.
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--transition-base` | `200ms` | Standard transitions |
+| `--transition-base` | `200ms` | Standard hover transitions |
 | `--transition-slow` | `1000ms` | Scroll-triggered reveals |
 | `--transition-delay` | `200ms` | Image reveal delay |
+| `--transition-image` | `400ms` | Observational image hover (`opacity`, `filter`) |
+| `--easing-out` | `ease-out` | Default hover / reveal easing |
+| `--easing-editorial` | `cubic-bezier(0.22, 1, 0.36, 1)` | Already used by `.othering-enter`; reuse for artist billboard squeeze |
+| `--transition-editorial` | `700ms` | Artist billboard `left` / `width` squeeze only |
 
 **Rules:**
 - Respect `prefers-reduced-motion`
 - Animations disabled when motion preference is reduced
-- Use `ease-out` timing function
+- Default timing function is `ease-out`
+- Billboard squeeze uses `--easing-editorial` at `700ms`; compressed-card image fade uses the same easing at `500ms`
+
+**Artists image assets (sizes, not spacing):**
+- Directory grid thumbnail: `96px × 96px`
+- Billboard expanded work/portrait: up to `480px` (also capped at `70%` height / `55%` width of the expanded peek)
+- Filter checkbox: `12px × 12px`, radius `2px`, black border; checked fill `#000000`
 
 ---
 
 ## Version
-**Version:** 2026-01-23  
-**Source of truth:** Current codebase (`app/globals.css`, `app/layout.tsx`, `app/page.tsx`, `app/submit/page.tsx`, `app/login/page.tsx`)  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/globals.css`, `app/layout.tsx`, `app/page.tsx`, `app/artists/page.tsx`, `app/submit/page.tsx`, `app/login/page.tsx`)  
 **Intended use:** Reusable system specification

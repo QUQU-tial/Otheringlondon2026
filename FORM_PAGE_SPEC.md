@@ -280,7 +280,33 @@ isFormValid(): boolean {
 
 ---
 
+## 14. Artist Join Form (`/artists/join`)
+
+**Page type:** Content Page (single scroll). Uses `SubmitShell` chrome.
+
+**Purpose:** Festival artist profile, separate from the partner activity submission at `/submit`.
+
+**Three tabs:**
+1. **Basic Info** — name, birth line, field (art discipline, e.g. "Oil painter"), photo, biography
+2. **CV / Exhibitions** — repeatable year / title / venue / URL rows
+3. **Press / Talks / Works** — same row pattern for press and talks; works = up to 5 image URLs
+
+**Navigation:** Same tab chrome as the partner form (instant switch). Final tab shows Submit. Save Draft persists to `localStorage` without validation.
+
+**Required to submit:**
+- `name` (non-empty; slug is derived)
+- `accept_terms` checked
+- CV / exhibitions / press / talks / works / photo / bio are optional. Empty sections still render their headings on the public page.
+
+**After submit:**
+- Artist is stored in `localStorage` under `othering_artist_submissions_v1`
+- Browser navigates to `/artists/{slug}`
+
+**Join control on `/artists/[slug]`:** text button, not a filled primary button; navigates to `/artists/join`.
+
+---
+
 ## Version
-**Version: 2026-01-23  
-**Source of truth:** Current codebase (`app/submit/page.tsx`)  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/submit/page.tsx`, `app/submit/form/page.tsx`, `app/artists/join/page.tsx`)  
 **Intended use:** Reusable system specification

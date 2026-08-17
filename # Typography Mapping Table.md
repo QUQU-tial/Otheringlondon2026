@@ -39,6 +39,30 @@ Defines font family, weight, size, line-height, transform, and color for each te
 
 ---
 
+## D. White Site (Partners header, Artists directory / detail / join)
+
+| Visual Role | UI Area | Font | Weight | Size / Line Height | Transform | Color | Notes |
+|-------------|---------|------|--------|-------------------|-----------|-------|-------|
+| White-site nav link | `WhiteSiteHeader` | Source Sans 3 | 500 | `clamp(16px, 1.39vw, 20px)` / `clamp(24px, 2.08vw, 30px)` | Capitalize | Black | "Become a Partner", "Artists" |
+| White-site nav (current) | `WhiteSiteHeader` | Source Sans 3 | 500 | same | Capitalize | Black | Current page is plain text, not a link |
+| White-site nav muted | `WhiteSiteHeader` | Source Sans 3 | 400 | same | Capitalize | `#9A9A9A` | "Back to workspace" — last item |
+| Artist name (directory) | `/artists` list, peeks, grid | Inter | 600 | `clamp(16px, 1.39vw, 20px)` / `clamp(24px, 2.08vw, 30px)` | Capitalize | Black; selected list name `#FF0000` | Underlined in A–Z list. Hover: underline off |
+| Artist field | Grid / expanded peek | Poppins | 500 | `clamp(12px, 0.97vw, 14px)` / `normal` | Capitalize | `#9A9A9A` | Discipline, e.g. "Sculptor" |
+| Artist bio | Expanded peek / detail | Poppins | 500 | `clamp(12px, 0.97vw, 14px)` / `normal` | None | Black | Same as Body Text |
+| Read more → | Expanded peek | Inter | 500 | `clamp(16px, 1.39vw, 20px)` / `clamp(24px, 2.08vw, 30px)` | Capitalize | Black | Text button with arrow; same motion as "Join us →" (opacity 70%, arrow `1px`) |
+| A–Z letter | Left list | Inter | 500 | `10px` / `16px`, tracking `0.08em` | Uppercase | `#9A9A9A` | Section label |
+| Filter heading | Genre / Medium | Inter | 500 | `12px` / `16px`, tracking `0.08em` | Uppercase | Black | Collapsed by default; chevron `∨` closed, `∧` open |
+| Filter option | Genre / Medium | Inter | 400 | `16px` / `24px` | None | Black | Checkbox + label |
+| Search input | Left column | Inter | 400 | `16px` / `24px` | None | Black | Placeholder `#999999` |
+| Artist page title | `/artists/[slug]` | Inter | 500 | `clamp(40px, 4.17vw, 60px)` / same, tracking `-4.8px` | Capitalize | Black | Same role as Detail Main Title |
+| Artist section title | CV, Exhibitions, Press, Talks, Works | Source Sans 3 | 500 | `clamp(16px, 1.39vw, 20px)` / `clamp(24px, 2.08vw, 30px)` | Capitalize | Black | Heading remains when the section is empty |
+| Entry year | Artist lists | Inter | 500 | `10px` / `16px`, tracking `0.08em` | Uppercase | `#9A9A9A` | |
+| Entry title | Artist lists | Poppins | 500 | `clamp(12px, 0.97vw, 14px)` / `normal` | None | Black | |
+| Entry venue | Artist lists | Inter | 400 | `12px` / `16px` | None | `#9A9A9A` | |
+| Compressed peek name | Billboard | Inter | 600 | same as Artist name | Capitalize | Black | `writing-mode: vertical-rl`; no image |
+
+---
+
 ## C. Form Page (Submission)
 
 | Visual Role | UI Area | Font | Weight | Size / Line Height | Transform | Color | Notes |
@@ -71,9 +95,10 @@ Defines font family, weight, size, line-height, transform, and color for each te
 - Body text (long paragraphs)
 
 **Source Sans 3**
-- Navigation (Detail Panel)
+- Navigation (Detail Panel and White Site header)
 - Meta labels (Location, Date, Category, Organisers)
 - Meta values (location/date text)
+- Artist detail section titles (CV, Exhibitions, Press, Talks, Works)
 
 ---
 
@@ -113,6 +138,6 @@ Defines font family, weight, size, line-height, transform, and color for each te
 ---
 
 ## Version
-**Version:** 2026-02-05  
-**Source of truth:** Current codebase (`app/page.tsx`, `app/submit/page.tsx`, `app/login/page.tsx`, `app/about-us/page.tsx`, `app/partners/page.tsx`, `app/globals.css`)  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/page.tsx`, `app/submit/page.tsx`, `app/login/page.tsx`, `app/about-us/page.tsx`, `app/partners/page.tsx`, `app/artists/page.tsx`, `app/artists/[slug]/page.tsx`, `app/globals.css`)  
 **Intended use:** Reusable typography specification

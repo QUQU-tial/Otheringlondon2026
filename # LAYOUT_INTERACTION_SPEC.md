@@ -20,7 +20,7 @@ These models are mutually exclusive and must never be mixed.
 
 **Examples:**
 - Public exhibition browsing (master–detail)
-- Gallery list + detail interfaces
+- Gallery list + detail interfaces (do not use this model for `/artists`; see §1.3)
 
 **Characteristics:**
 - Multi-panel layout (exactly two panels)
@@ -41,6 +41,7 @@ These models are mutually exclusive and must never be mixed.
 - Login page (`/login`)
 - About us page (`/about-us`)
 - Partners page (`/partners`)
+- Artist join form (`/artists/join`)
 - Blog pages, preview pages
 
 **Characteristics:**
@@ -50,6 +51,41 @@ These models are mutually exclusive and must never be mixed.
 - No fixed top/bottom bars (unless explicitly specified)
 
 **Content Pages exist to present linear content or input flows.**
+
+---
+
+### 1.3 White Directory Pages (Artists) — authorised exception
+
+`/artists` is **not** a Workspace Page and **not** a standard Content Page.
+This exception is specified here so it is not inferred.
+
+**Used by:** `/artists` only.
+
+**Characteristics:**
+- Full-viewport shell: page does not scroll; header is sticky
+- Two white columns at `≥ 860px` (identity list + preview). Columns are **not** `Panel / Primary` / `Panel / Detail`
+- Left column: search + A–Z artist names; independent internal scroll; `scrollbar-hide`
+- Right column: collapsed Genre / Medium filters stay at the top of the column (not inside the scroller)
+- Right scroller: **billboard** fills the remaining viewport so its bottom edge sits on the screen bottom; a four-column artist grid follows below
+- Below `860px`: columns stack (list first, then filters + billboard + grid)
+- Scrollbars hidden
+
+**Billboard + grid (right scroller on `/artists`):**
+- Billboard is four overlapping artist “pages”. Default: each page is offset to the right so only a name and a slice of image (when a photo exists) is visible
+- Selecting an artist expands that page; the other three compress to ~`6%` width with the name rotated 90° (`writing-mode: vertical-rl`). Compressed peeks show **no image**
+- Billboard bottom edge aligns with the viewport bottom under the sticky header + filter row
+- A centred `∨` control at the billboard bottom scrolls the right column to the four-column grid
+- Grid: 4 columns from `1100px`, 2 from `700px`, 1 below; cell borders `1px` `rgba(0,0,0,0.2)`
+- Empty image slots are white (no grey fill, no broken-image glyph)
+
+---
+- White sticky header (`WhiteSiteHeader`)
+- Two independently scrolling white columns at `≥ 860px`
+- Left: name, birth, portrait (if present), biography, Join text control
+- Right: CV, Exhibitions, Press, Talks, Works (section headings remain even when a section is empty)
+- Stacks vertically below `860px`
+- Scrollbars hidden
+- Scroll-triggered reveals (`reveal-content`, `reveal-image`) apply here
 
 ---
 
@@ -182,6 +218,7 @@ When viewport width is **less than 860px**:
 - Workspace Pages: Horizontal layouts switch to vertical stacking
 - Stacking order: `Panel / Primary` first, then `Panel / Detail`
 - Content Pages: No layout change (single scroll remains)
+- White Directory (`/artists`) and White Split Content (`/artists/[slug]`): columns stack vertically, list / left column first
 
 **Rules:**
 - This switch is **layout-based only**
@@ -220,6 +257,6 @@ Any deviation from this specification is considered incorrect.
 ---
 
 ## Version
-**Version:** 2026-01-23  
-**Source of truth:** Current codebase (`app/page.tsx`, `app/globals.css`, `app/login/page.tsx`, `app/partners/page.tsx`)  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/page.tsx`, `app/globals.css`, `app/login/page.tsx`, `app/partners/page.tsx`, `app/artists/page.tsx`, `app/artists/[slug]/page.tsx`, `app/artists/join/page.tsx`)  
 **Intended use:** Reusable system specification

@@ -14,6 +14,7 @@ import {
   formatAuthorCredit,
   sentenceCaseFirst,
 } from "./lib/activity-areas";
+import { artistSlugFromName } from "./lib/artists";
 
 export default function Home() {
   const router = useRouter();
@@ -414,6 +415,19 @@ const handleMenuClose = () => {
                         All our partners
                       </a>
                       <a
+                        href="/artists"
+                        onClick={handleMenuClose}
+                        className="px-[24px] py-[16px] text-white transition-all duration-200 hover:opacity-70"
+                        style={{ 
+                          fontFamily: "var(--font-poppins)",
+                          fontSize: '16px',
+                          fontWeight: 300,
+                          lineHeight: 'normal'
+                        }}
+                      >
+                        Artists
+                      </a>
+                      <a
                         href="/submit"
                         onClick={handleMenuClose}
                         className="px-[24px] py-[16px] text-white transition-all duration-200 hover:opacity-70"
@@ -612,7 +626,25 @@ const handleMenuClose = () => {
                 className="detail-author-line reveal-content mb-[12px] text-[10px] tracking-[0.08em] text-[#9A9A9A]"
                 style={{ fontFamily: "var(--font-inter)" }}
               >
-                {formatAuthorCredit(selectedActivity.author_name || selectedActivity.username)}
+                {(() => {
+                  const authorName = selectedActivity.author_name || selectedActivity.username;
+                  const slug = artistSlugFromName(authorName);
+                  const credit = formatAuthorCredit(authorName);
+                  if (!slug) return credit;
+                  const prefix = credit.startsWith("by ") ? "by " : "";
+                  const nameText = prefix ? credit.slice(3) : credit;
+                  return (
+                    <>
+                      {prefix}
+                      <a
+                        href={`/artists/${slug}`}
+                        className="underline hover:no-underline"
+                      >
+                        {nameText}
+                      </a>
+                    </>
+                  );
+                })()}
                 {formatActivityCompactDate(selectedActivity.activity_date) ? (
                   <>
                     {" · "}

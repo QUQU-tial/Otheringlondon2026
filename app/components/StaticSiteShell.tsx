@@ -10,6 +10,7 @@ const NAV_DEFAULT = [
   { href: "/about-us", label: "About us" },
   { href: "/submit", label: "Take part" },
   { href: "/partners", label: "All our partners" },
+  { href: "/artists", label: "Artists" },
   { href: "/login", label: "Login" },
 ] as const;
 

@@ -213,6 +213,41 @@ Ensures predictable, calm, and reusable interaction behavior for future projects
 
 ---
 
+## 4b. Artists Directory
+
+**List name (left A–Z):**
+- Click: immediately sets the selected artist in the billboard (toggle off if the same name is clicked again)
+- Selected name: `#FF0000`, still underlined until hover
+- Hover: underline removed (same as organiser links)
+
+**Billboard peeks:**
+- Default: overlapping full-height pages; name overlays the image; image is full-bleed (no reserved white header strip)
+- Expand / compress: `700ms` `cubic-bezier(0.22, 1, 0.36, 1)` on `left` and `width`
+- Compressed peeks: vertical name only, **no image** (`opacity: 0`, `pointer-events: none`)
+- Clicking a compressed peek expands that artist
+- Clicking an A–Z name that is not in the four featured peeks inserts that artist into the stack and expands them
+- `prefers-reduced-motion: reduce`: no left/width/opacity transition
+
+**Read more →:**
+- Same as CTA with arrow: text opacity `70%` on hover; arrow translates `1px` right; `200ms ease-out`; gap `12px`
+
+**Genre / Medium filters:**
+- Collapsed by default
+- Open / close is instant (no animation)
+- Checkbox is visual only (12px square, black fill when on); row is the hit target
+
+**Billboard scroll cue:**
+- `∨` centred on the billboard bottom
+- Hover: opacity `70%`, `200ms ease-out`
+- Click: smooth-scrolls the right column to the grid (`scroll-behavior` disabled under reduced motion)
+
+**Images:**
+- Hover matches Workspace detail images (`400ms ease-out`, opacity `85%`, grayscale `10%`, brightness `98%`)
+- Missing or failed images render nothing (white). Never grey squares or broken-image icons
+- Do not use cityscapes, stock rooms, or other filler that is not a portrait or an artwork
+
+---
+
 ## 5. Modal Behavior
 
 ### Success Modal
@@ -405,6 +440,14 @@ Ensures predictable, calm, and reusable interaction behavior for future projects
 - No other motion
 - Focus on clarity and calmness
 
+### White Directory (`/artists`)
+
+**Interaction Intensity: Medium (structural only)**
+- Billboard squeeze is the only expressive-feeling motion, and it must stay editorial: `700ms` `cubic-bezier(0.22, 1, 0.36, 1)`
+- Filters and tab-like chrome remain instant
+- Image hover matches Workspace observation rules
+- No red hover bars on the A–Z list (selected name uses `#FF0000` as static selected state)
+
 ---
 
 ## 11. General Motion Rules
@@ -456,6 +499,8 @@ Ensures predictable, calm, and reusable interaction behavior for future projects
 - Activity list item hover (200ms color change)
 - Image hover (400ms opacity/filter)
 - Scroll-triggered reveals (1000ms fade/slide)
+- Artist billboard squeeze (`700ms`, `cubic-bezier(0.22, 1, 0.36, 1)` on `left` and `width`)
+- Compressed peek image fade (`500ms`, same easing, to `opacity: 0`)
 
 ### No Interaction Feedback
 - Form input hover
@@ -465,7 +510,7 @@ Ensures predictable, calm, and reusable interaction behavior for future projects
 ---
 
 ## Version
-**Version:** 2026-01-23  
-**Source of truth:** Current codebase (`app/page.tsx`, `app/submit/page.tsx`, `app/login/page.tsx`, `app/globals.css`)  
+**Version:** 2026-08-17  
+**Source of truth:** Current codebase (`app/page.tsx`, `app/submit/page.tsx`, `app/login/page.tsx`, `app/artists/page.tsx`, `app/globals.css`)  
 **Intended use:** Reusable system specification
 
