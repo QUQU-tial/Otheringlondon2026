@@ -72,13 +72,18 @@ export function AboutUsDarkNavBar() {
 
   const onLogin = () => {
     const returnTo = window.location.pathname;
-    if (returnTo !== "/login") sessionStorage.setItem("returnTo", returnTo);
-    router.push("/login");
+    if (returnTo !== "/login") {
+      sessionStorage.setItem("returnTo", returnTo);
+      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+    } else {
+      router.push("/login");
+    }
     closeMenu();
   };
 
   const onLogout = async () => {
     await signOut();
+    setUser(null);
     router.push("/");
     closeMenu();
   };

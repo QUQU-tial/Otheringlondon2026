@@ -24,7 +24,7 @@ export default function LoginPage() {
       if (user) {
         const urlReturnTo = searchParams.get("returnTo");
         const sessionReturnTo = sessionStorage.getItem("returnTo");
-        const defaultAfterLogin = "/submit/form";
+        const defaultAfterLogin = "/";
         const returnTo = urlReturnTo
           ? decodeURIComponent(urlReturnTo)
           : sessionReturnTo || defaultAfterLogin;
@@ -57,7 +57,7 @@ export default function LoginPage() {
       if (user) {
         const urlReturnTo = searchParams.get("returnTo");
         const sessionReturnTo = sessionStorage.getItem("returnTo");
-        const defaultAfterLogin = "/submit/form";
+        const defaultAfterLogin = "/";
         const returnTo = urlReturnTo
           ? decodeURIComponent(urlReturnTo)
           : sessionReturnTo || defaultAfterLogin;

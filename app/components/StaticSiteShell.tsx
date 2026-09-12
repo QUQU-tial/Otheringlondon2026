@@ -114,7 +114,16 @@ export function StaticSiteShell({ children, variant = "default" }: StaticSiteShe
                   </button>
                 ) : (
                   <Link
-                    href="/login"
+                    href={
+                      pathname && pathname !== "/login"
+                        ? `/login?returnTo=${encodeURIComponent(pathname)}`
+                        : "/login"
+                    }
+                    onClick={() => {
+                      if (pathname && pathname !== "/login") {
+                        sessionStorage.setItem("returnTo", pathname);
+                      }
+                    }}
                     className={`py-3 text-left text-white transition-opacity duration-200 hover:opacity-70 ${
                       pathname === "/login" || pathname.startsWith("/login/") ? "opacity-100" : "opacity-80"
                     }`}

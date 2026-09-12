@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { getCurrentUser, onAuthStateChange, signOut, type User } from "../lib/auth";
 
 const linkClass =
@@ -20,6 +20,7 @@ const linkStyle: CSSProperties = {
  */
 export function AboutUsWhiteTopBar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -32,6 +33,11 @@ export function AboutUsWhiteTopBar() {
     setUser(null);
     router.refresh();
   };
+
+  const loginHref =
+    pathname && pathname !== "/login"
+      ? `/login?returnTo=${encodeURIComponent(pathname)}`
+      : "/login";
 
   return (
     <header
@@ -50,7 +56,16 @@ export function AboutUsWhiteTopBar() {
             Sign out
           </button>
         ) : (
-          <Link href="/login" className={linkClass} style={linkStyle}>
+          <Link
+            href={loginHref}
+            className={linkClass}
+            style={linkStyle}
+            onClick={() => {
+              if (pathname && pathname !== "/login") {
+                sessionStorage.setItem("returnTo", pathname);
+              }
+            }}
+          >
             Login
           </Link>
         )}

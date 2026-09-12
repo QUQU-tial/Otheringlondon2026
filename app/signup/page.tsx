@@ -16,7 +16,7 @@ export default function SignupPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [duplicateEmailOpen, setDuplicateEmailOpen] = useState(false);
 
-  const defaultNext = "/submit/form";
+  const defaultNext = "/";
 
   useEffect(() => {
     getCurrentUser().then((user) => {
