@@ -45,17 +45,373 @@ export function artistSlugFromName(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Editorial roster drawn from living artists listed on newexhibitions.com (random sample). */
 const EDITORIAL_ARTISTS: Artist[] = [
   {
-    slug: "alex-reed",
-    name: "Alex Reed",
-    field: "Installation artist",
-    birth: "b. 1990, London",
-    photo: null,
-    bio: "Alex Reed is based in London. Their practice looks at how temporary rooms, streets and leftover civic spaces can hold a public without becoming a conventional exhibition.",
+    slug: "stacey-gillian-abe",
+    name: "Stacey Gillian Abe",
+    field: "Multidisciplinary artist",
+    birth: "b. 1990, Kampala",
+    photo:
+      "https://www.newexhibitions.com/uploads/f/3/large/636130bfb6c79.png",
+    photoAlt: "Stacey Gillian Abe",
+    bio: "Stacey Gillian Abe works across painting, embroidery and installation. Her images build surreal interiors that revisit memory, gender and spiritual inheritance, often through a cool indigo palette. She lives and works in Uganda.",
     cv: [
-      { year: "2012", title: "BA Fine Art", detail: "Goldsmiths, University of London" },
-      { year: "2015", title: "MA Contemporary Art", detail: "Royal College of Art, London" },
+      { year: "2014", title: "BA Art and Industrial Design", detail: "Kyambogo University, Kampala" },
+    ],
+    exhibitions: [
+      {
+        year: "2024",
+        title: "In Praise of Black Errantry",
+        detail: "60th Venice Biennale",
+        href: "https://www.labiennale.org/",
+      },
+      {
+        year: "2022",
+        title: "Shrub-let of Old Ayivu",
+        detail: "Unit London",
+        href: "https://unitlondon.com/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "zarouhie-abdalian",
+    name: "Zarouhie Abdalian",
+    field: "Installation artist",
+    birth: "b. 1982, New Orleans",
+    photo:
+      "https://www.newexhibitions.com/uploads/d/4/large/640a101720ffe.jpeg",
+    photoAlt: "Zarouhie Abdalian",
+    bio: "Zarouhie Abdalian makes site-responsive installations and sculptures that listen to rooms, streets and infrastructures already in use. Sound, light and subtle structural shifts often mark what a place is doing before art arrives. She lives and works in New Orleans.",
+    cv: [
+      { year: "2012", title: "SECA Art Award", detail: "SFMOMA" },
+      { year: "2020", title: "Painters & Sculptors Grant", detail: "Joan Mitchell Foundation" },
+    ],
+    exhibitions: [
+      {
+        year: "2017",
+        title: "Whitney Biennial",
+        detail: "Whitney Museum of American Art, New York",
+        href: "https://whitney.org/",
+      },
+      {
+        year: "2014",
+        title: "8th Berlin Biennale",
+        detail: "Berlin",
+        href: "https://www.berlinbiennale.de/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "nina-chanel-abney",
+    name: "Nina Chanel Abney",
+    field: "Painter",
+    birth: "b. 1982, Chicago",
+    photo:
+      "https://www.newexhibitions.com/uploads/a/2/large/6560d5f49a093.jpeg",
+    photoAlt: "Nina Chanel Abney",
+    bio: "Nina Chanel Abney paints dense, graphic scenes that cut between news cycles, popular culture and coded symbols. Colour and speed do the storytelling: figures, signs and headlines collide in a single plane. She lives and works in New York.",
+    cv: [],
+    exhibitions: [
+      {
+        year: "2017",
+        title: "Royal Flush",
+        detail: "Nasher Museum of Art",
+        href: "https://nasher.duke.edu/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "larry-achiampong",
+    name: "Larry Achiampong",
+    field: "Filmmaker",
+    birth: "b. 1984, London",
+    photo:
+      "https://www.newexhibitions.com/uploads/b/0/large/6218c9c7a2688.jpeg",
+    photoAlt: "Larry Achiampong",
+    bio: "Larry Achiampong works across film, sound, performance and installation. His projects revisit colonial histories, gaming aesthetics and speculative futures, often through avatars, scores and archive. He lives and works in London.",
+    cv: [
+      { year: "2008", title: "BA Fine Art", detail: "University of Westminster" },
+      { year: "2011", title: "MA Fine Art", detail: "Slade School of Fine Art, UCL" },
+    ],
+    exhibitions: [
+      {
+        year: "2022",
+        title: "Relic Traveller",
+        detail: "Turner Contemporary / touring",
+        href: "https://turnercontemporary.org/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "charles-avery",
+    name: "Charles Avery",
+    field: "Draughtsperson",
+    birth: "b. 1973, Oban",
+    photo:
+      "https://www.newexhibitions.com/uploads/3/b/large/66966a245c544.jpeg",
+    photoAlt: "Charles Avery",
+    bio: "Charles Avery has worked since 2004 on The Islanders, an evolving invented territory told through drawing, sculpture, text and objects. The project treats world-building as a way to test philosophy, mathematics and how places are imagined. He lives and works between London and Mull.",
+    cv: [],
+    exhibitions: [
+      {
+        year: "2007",
+        title: "Scotland + Venice",
+        detail: "52nd Venice Biennale",
+        href: "https://www.labiennale.org/",
+      },
+      {
+        year: "2008",
+        title: "The Islanders: An Introduction",
+        detail: "Parasol Unit, London",
+        href: "https://parasol-unit.org/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "tania-bruguera",
+    name: "Tania Bruguera",
+    field: "Performance artist",
+    birth: "b. 1968, Havana",
+    photo: null,
+    bio: "Tania Bruguera makes performance and long-term civic projects that treat art as a form of political behaviour. Her work asks what happens when spectators become citizens, and when institutions have to answer to the public they claim to serve.",
+    cv: [],
+    exhibitions: [
+      {
+        year: "2018",
+        title: "Untitled (Havana, 2000)",
+        detail: "MoMA, New York",
+        href: "https://www.moma.org/",
+      },
+      {
+        year: "2019",
+        title: "Commission for Turbine Hall",
+        detail: "Tate Modern, London",
+        href: "https://www.tate.org.uk/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "adam-buick",
+    name: "Adam Buick",
+    field: "Ceramicist",
+    birth: "b. 1978, Pembrokeshire",
+    photo:
+      "https://www.newexhibitions.com/uploads/2/9/large/6556558ded412.jpeg",
+    photoAlt: "Adam Buick",
+    bio: "Adam Buick works with a single jar form as a way of mapping landscape. Local clay, stone and coastal material enter the vessel so each firing records a specific place. He lives and works in Pembrokeshire, Wales.",
+    cv: [],
+    exhibitions: [
+      {
+        year: "2026",
+        title: "Oriel Tir",
+        detail: "St Davids",
+        href: "https://www.adambuick.com/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "helen-cammock",
+    name: "Helen Cammock",
+    field: "Moving-image artist",
+    birth: "b. 1970, Staffordshire",
+    photo:
+      "https://www.newexhibitions.com/uploads/0/7/large/624d5716072d3.jpeg",
+    photoAlt: "Helen Cammock",
+    bio: "Helen Cammock works across film, photography, print, text, song and performance. She layers voices and archives to follow how histories of Blackness, labour, gender and resistance keep returning in the present. She lives and works in London.",
+    cv: [
+      { year: "2017", title: "Max Mara Art Prize for Women", detail: "Whitechapel Gallery" },
+      { year: "2019", title: "Turner Prize", detail: "Joint recipient" },
+    ],
+    exhibitions: [
+      {
+        year: "2024",
+        title: "On WindTides",
+        detail: "The Line, London",
+        href: "https://the-line.org/",
+      },
+      {
+        year: "2021",
+        title: "Concrete and Porcelain Tacks",
+        detail: "The Photographers' Gallery, London",
+        href: "https://thephotographersgallery.org.uk/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "matt-connors",
+    name: "Matt Connors",
+    field: "Painter",
+    birth: "b. 1973, Chicago",
+    photo:
+      "https://www.newexhibitions.com/uploads/a/b/large/6a7c44c57d49c.jpeg",
+    photoAlt: "Matt Connors",
+    bio: "Matt Connors approaches painting as a way of thinking through images — pattern, reversal, scale shift and citation. Studio observation meets poetry, design and found pictures until the painting develops its own internal logic. He lives and works between New York and Los Angeles.",
+    cv: [
+      { year: "1995", title: "BFA", detail: "Bennington College" },
+      { year: "2006", title: "MFA", detail: "Yale University" },
+    ],
+    exhibitions: [
+      {
+        year: "2022",
+        title: "Whitney Biennial: Quiet as It's Kept",
+        detail: "Whitney Museum of American Art, New York",
+        href: "https://whitney.org/",
+      },
+      {
+        year: "2024",
+        title: "Finding Aid",
+        detail: "Goldsmiths CCA, London",
+        href: "https://goldsmithscca.art/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "erik-frydenborg",
+    name: "Erik Frydenborg",
+    field: "Sculptor",
+    birth: "b. 1977, Los Angeles",
+    photo:
+      "https://www.newexhibitions.com/uploads/f/0/large/62ea56163bfd0.jpeg",
+    photoAlt: "Erik Frydenborg",
+    bio: "Erik Frydenborg makes sculpture and wall works from cast, carved and painted materials that feel half-biological, half-industrial. Forms sit between specimen, signage and leftover product. He lives and works in Los Angeles.",
+    cv: [
+      { year: "1999", title: "BFA", detail: "Maryland Institute College of Art" },
+      { year: "2005", title: "MFA", detail: "University of Southern California" },
+    ],
+    exhibitions: [
+      {
+        year: "2021",
+        title: "Shear Stress",
+        detail: "The Pit, Glendale",
+        href: "https://www.the-pit.la/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "liam-gillick",
+    name: "Liam Gillick",
+    field: "Installation artist",
+    birth: "b. 1964, Aylesbury",
+    photo:
+      "https://www.newexhibitions.com/uploads/4/b/large/6794f85540a00.jpeg",
+    photoAlt: "Liam Gillick",
+    bio: "Liam Gillick works with installation, text, design and speculative scenarios that examine how social systems are organised. Platforms, screens and written propositions often stand in for the spaces where decisions are supposed to happen. He lives and works in New York.",
+    cv: [],
+    exhibitions: [
+      {
+        year: "2009",
+        title: "German Pavilion",
+        detail: "53rd Venice Biennale",
+        href: "https://www.labiennale.org/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "lydia-pettit",
+    name: "Lydia Pettit",
+    field: "Painter",
+    birth: "b. 1991, Maryland",
+    photo:
+      "https://www.newexhibitions.com/uploads/2/2/large/66a3b3773b683.jpeg",
+    photoAlt: "Lydia Pettit",
+    bio: "Lydia Pettit works with painting, textile and video to look at trauma, body politics and self-image. Horror cinema becomes a language for anger, fear and recovery rather than spectacle. She lives and works in London.",
+    cv: [
+      { year: "2014", title: "BFA Painting", detail: "Maryland Institute College of Art" },
+      { year: "2020", title: "MA Painting", detail: "Royal College of Art, London" },
+    ],
+    exhibitions: [
+      {
+        year: "2023",
+        title: "In Your Anger, I See Fear",
+        detail: "Galerie Judin, Berlin",
+        href: "https://www.galeriejudin.com/",
+      },
+      {
+        year: "2021",
+        title: "Solo exhibition",
+        detail: "White Cube, London",
+        href: "https://www.whitecube.com/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "tabita-rezaire",
+    name: "Tabita Rezaire",
+    field: "Moving-image artist",
+    birth: "b. 1989, Paris",
+    photo:
+      "https://www.newexhibitions.com/uploads/5/d/large/6245943045d26.jpeg",
+    photoAlt: "Tabita Rezaire",
+    bio: "Tabita Rezaire works across video, installation and collective practice where technology, spirituality and decolonial healing meet. Screens become sites for reconnecting body, network and ancestral knowledge. She lives and works in Cayenne, French Guiana.",
+    cv: [
+      { year: "2015", title: "MA Artist Moving Image", detail: "Central Saint Martins, London" },
+    ],
+    exhibitions: [
+      {
+        year: "2018",
+        title: "Guangzhou Triennial",
+        detail: "Guangzhou",
+      },
+      {
+        year: "2016",
+        title: "Berlin Biennale",
+        detail: "Berlin",
+        href: "https://www.berlinbiennale.de/",
+      },
+    ],
+    press: [],
+    talks: [],
+    works: [],
+  },
+  {
+    slug: "nigatu-tsehay",
+    name: "Nigatu Tsehay",
+    field: "Painter",
+    birth: "b. 1981, Addis Ababa",
+    photo:
+      "https://www.newexhibitions.com/uploads/6/2/large/626152a10c84e.png",
+    photoAlt: "Nigatu Tsehay",
+    bio: "Nigatu Tsehay paints figures that hold social and emotional ambiguity — skin tones shift, gestures pause, and identity stays open. The work connects Addis Ababa and Germany through a shared attention to the human form. He lives and works in Germany.",
+    cv: [
+      { year: "2005", title: "Fine Art", detail: "Alle School of Fine Arts & Design, Addis Ababa University" },
+      { year: "2014", title: "Studies", detail: "State Academy of Art and Design, Stuttgart" },
     ],
     exhibitions: [],
     press: [],
@@ -63,626 +419,28 @@ const EDITORIAL_ARTISTS: Artist[] = [
     works: [],
   },
   {
-    slug: "amara-okonkwo",
-    name: "Amara Okonkwo",
-    field: "Textile artist",
-    birth: "b. 1989, Lagos",
+    slug: "guimi-you",
+    name: "Guimi You",
+    field: "Painter",
+    birth: "b. 1985, South Korea",
     photo:
-      "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=1400&q=80",
-    photoAlt: "Amara Okonkwo",
-    bio: "Amara Okonkwo works with textile, sound and temporary architecture. Her practice begins in markets, stations and domestic interiors, treating pattern as a way of holding memory in public space. She lives and works between Lagos and London.",
+      "https://www.newexhibitions.com/uploads/6/9/large/66eaa546db5af.png",
+    photoAlt: "Guimi You",
+    bio: "Guimi You paints soft, dream-like scenes where domestic life and landscape blur. Trained in Korean portraiture and landscape traditions, she lets figures and places feel slightly unfixed in time. She studied in Seoul and London.",
     cv: [
-      { year: "2014", title: "BA Fine Art", detail: "Goldsmiths, University of London" },
-      { year: "2016", title: "MA Sculpture", detail: "Royal College of Art, London" },
-      { year: "2021", title: "Artist residency", detail: "Gasworks, London", href: "https://www.gasworks.org.uk/" },
-    ],
-    exhibitions: [
-      {
-        year: "2026",
-        title: "Othering London 2026",
-        detail: "London",
-        href: "/",
-      },
-      {
-        year: "2024",
-        title: "Cloth as Threshold",
-        detail: "South London Gallery",
-        href: "https://www.southlondongallery.org/",
-      },
-      {
-        year: "2022",
-        title: "Pattern and Passage",
-        detail: "The Showroom, London",
-        href: "https://www.theshowroom.org/",
-      },
-    ],
-    press: [
-      {
-        year: "2024",
-        title: "Weaving the city back into view",
-        detail: "Frieze",
-        href: "https://www.frieze.com/",
-      },
-      {
-        year: "2022",
-        title: "Amara Okonkwo on fabric, transit and care",
-        detail: "ArtReview",
-        href: "https://artreview.com/",
-      },
-    ],
-    talks: [
-      {
-        year: "2025",
-        title: "Place is already an exhibition",
-        detail: "Tate Modern, London",
-        href: "https://www.tate.org.uk/",
-      },
-      {
-        year: "2023",
-        title: "In conversation: textile and public space",
-        detail: "Whitechapel Gallery",
-        href: "https://www.whitechapelgallery.org/",
-      },
-    ],
-  },
-  {
-    slug: "chen-wei",
-    name: "Chen Wei",
-    field: "Photographer",
-    birth: "b. 1984, Guangzhou",
-    photo:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd722bf5d?auto=format&fit=crop&w=1400&q=80",
-    photoAlt: "Chen Wei",
-    bio: "Chen Wei uses photography and installation to reconstruct night interiors, shopfronts and after-hours rooms. His images treat the city as a set of paused scenes — lit, emptied, and held just before use.",
-    cv: [
-      { year: "2007", title: "BA Photography", detail: "Beijing Film Academy" },
-      { year: "2019", title: "Artist residency", detail: "Delfina Foundation, London", href: "https://www.delfinafoundation.com/" },
+      { year: "2014", title: "MA Painting", detail: "Royal College of Art, London" },
     ],
     exhibitions: [
       {
         year: "2023",
-        title: "After Hours",
-        detail: "Photographers' Gallery, London",
-        href: "https://thephotographersgallery.org.uk/",
-      },
-      {
-        year: "2021",
-        title: "Closed for the Night",
-        detail: "K11 Art Foundation",
-        href: "https://www.k11artfoundation.org/",
+        title: "NGV Triennial",
+        detail: "National Gallery of Victoria, Melbourne",
+        href: "https://www.ngv.vic.gov.au/",
       },
     ],
-    press: [
-      {
-        year: "2023",
-        title: "The rooms that remain when we leave",
-        detail: "Aperture",
-        href: "https://aperture.org/",
-      },
-    ],
-    talks: [
-      {
-        year: "2024",
-        title: "Staging the empty city",
-        detail: "The Photographers' Gallery",
-        href: "https://thephotographersgallery.org.uk/",
-      },
-    ],
-  },
-  {
-    slug: "elena-varga",
-    name: "Elena Varga",
-    field: "Performance artist",
-    birth: "b. 1991, Budapest",
-    photo: null,
-    bio: "Elena Varga makes performances and scores for streets, courtyards and borrowed rooms. She treats walking, waiting and gathering as materials, and writes instructions that can be carried out by anyone who finds them.",
-    cv: [
-      { year: "2015", title: "BA Theatre and Performance", detail: "University of Warwick" },
-      { year: "2018", title: "MA Contemporary Performance", detail: "Central Saint Martins, London" },
-    ],
-    exhibitions: [
-      {
-        year: "2025",
-        title: "Instructions for a Courtyard",
-        detail: "Block Universe, London",
-        href: "https://blockuniverse.co/",
-      },
-      {
-        year: "2022",
-        title: "If You Are Here, Begin",
-        detail: "LIFT, London",
-        href: "https://www.liftfestival.com/",
-      },
-    ],
-    press: [
-      {
-        year: "2025",
-        title: "Scores for the city that is already moving",
-        detail: "The Guardian",
-        href: "https://www.theguardian.com/artanddesign",
-      },
-    ],
-    talks: [
-      {
-        year: "2025",
-        title: "Performance without a stage",
-        detail: "ICA, London",
-        href: "https://www.ica.art/",
-      },
-    ],
-  },
-  {
-    slug: "farah-al-najjar",
-    name: "Farah Al-Najjar",
-    field: "Filmmaker",
-    birth: "b. 1987, Amman",
-    photo: null,
-    bio: "Farah Al-Najjar works across film, drawing and publication. Her projects follow routes of translation — between Arabic and English, archive and street, caption and image — and ask how a city holds more than one language at once.",
-    cv: [
-      { year: "2012", title: "BA Graphic Design", detail: "American University of Beirut" },
-      { year: "2016", title: "MA Visual Communication", detail: "Royal College of Art, London" },
-    ],
-    exhibitions: [
-      {
-        year: "2024",
-        title: "Caption, Margin, Street",
-        detail: "Mosaic Rooms, London",
-        href: "https://mosaicrooms.org/",
-      },
-      {
-        year: "2021",
-        title: "Two Scripts, One Pavement",
-        detail: "Auto Italia, London",
-        href: "https://autoitaliasoutheast.org/",
-      },
-    ],
-    press: [
-      {
-        year: "2024",
-        title: "Reading the city in two directions",
-        detail: "e-flux",
-        href: "https://www.e-flux.com/",
-      },
-    ],
-    talks: [
-      {
-        year: "2024",
-        title: "Translation as a public practice",
-        detail: "Mosaic Rooms",
-        href: "https://mosaicrooms.org/",
-      },
-    ],
-  },
-  {
-    slug: "hiroshi-nakamura",
-    name: "Hiroshi Nakamura",
-    field: "Architect",
-    birth: "b. 1978, Kyoto",
-    photo: null,
-    bio: "Hiroshi Nakamura builds quiet spatial interventions from timber, paper and borrowed light. He is interested in thresholds — doorways, station underpasses, the pause between two rooms — and in how a small change in structure can alter how a place is used.",
-    cv: [
-      { year: "2002", title: "BA Architecture", detail: "Kyoto Institute of Technology" },
-      { year: "2006", title: "MA Architecture", detail: "Architectural Association, London" },
-    ],
-    exhibitions: [
-      {
-        year: "2023",
-        title: "A Door That Remembers",
-        detail: "Design Museum, London",
-        href: "https://designmuseum.org/",
-      },
-      {
-        year: "2020",
-        title: "Underpass",
-        detail: "Architecture Foundation",
-        href: "https://www.architecturefoundation.org.uk/",
-      },
-    ],
-    press: [
-      {
-        year: "2023",
-        title: "Building less, holding more",
-        detail: "Dezeen",
-        href: "https://www.dezeen.com/",
-      },
-    ],
-    talks: [
-      {
-        year: "2023",
-        title: "Thresholds and temporary structure",
-        detail: "Architectural Association",
-        href: "https://www.aaschool.ac.uk/",
-      },
-    ],
-  },
-  {
-    slug: "ines-moreau",
-    name: "Inès Moreau",
-    field: "Moving-image artist",
-    birth: "b. 1993, Lyon",
-    photo: null,
-    bio: "Inès Moreau makes moving-image works from found footage, radio and field recording. She edits with the grain of public noise — announcements, weather, crowd — and treats the soundtrack of a city as an archive that is still being written.",
-    cv: [
-      { year: "2015", title: "BA Film Studies", detail: "Université Paris 8" },
-      { year: "2018", title: "MA Moving Image", detail: "Royal College of Art, London" },
-    ],
-    exhibitions: [
-      {
-        year: "2024",
-        title: "Announcement, Please Stand Clear",
-        detail: "LUX, London",
-        href: "https://lux.org.uk/",
-      },
-      {
-        year: "2022",
-        title: "Weather for the Platform",
-        detail: "Chisenhale Gallery",
-        href: "https://chisenhale.org.uk/",
-      },
-    ],
-    press: [
-      {
-        year: "2024",
-        title: "Listening to the leftover city",
-        detail: "Sight and Sound",
-        href: "https://www.bfi.org.uk/sight-and-sound",
-      },
-    ],
-    talks: [
-      {
-        year: "2024",
-        title: "Field recording as civic document",
-        detail: "LUX",
-        href: "https://lux.org.uk/",
-      },
-    ],
-  },
-  {
-    slug: "jordan-blake",
-    name: "Jordan Blake",
-    field: "Sculptor",
-    birth: "b. 1990, Manchester",
-    photo:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1400&q=80",
-    photoAlt: "Jordan Blake",
-    bio: "Jordan Blake works with sculpture, print and circulating objects. He is interested in how things move through a city — flyers, keys, tickets, leftover furniture — and how an exhibition can begin from what is already being passed from hand to hand.",
-    cv: [
-      { year: "2013", title: "BA Fine Art", detail: "Manchester School of Art" },
-      { year: "2017", title: "Postgraduate Diploma", detail: "Royal Academy Schools, London" },
-    ],
-    exhibitions: [
-      {
-        year: "2025",
-        title: "Pass It On",
-        detail: "Studio Voltaire, London",
-        href: "https://www.studiovoltaire.org/",
-      },
-      {
-        year: "2021",
-        title: "Ticket, Stub, Remainder",
-        detail: "Peckham Platform",
-        href: "https://www.peckhamplatform.com/",
-      },
-    ],
-    press: [
-      {
-        year: "2025",
-        title: "Objects that refuse to stay still",
-        detail: "Studio International",
-        href: "https://www.studiointernational.com/",
-      },
-    ],
-    talks: [
-      {
-        year: "2025",
-        title: "Circulation as a method",
-        detail: "Studio Voltaire",
-        href: "https://www.studiovoltaire.org/",
-      },
-    ],
-  },
-  {
-    slug: "lila-raman",
-    name: "Lila Raman",
-    field: "Draughtsperson",
-    birth: "b. 1986, Chennai",
-    photo:
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1400&q=80",
-    photoAlt: "Lila Raman",
-    bio: "Lila Raman makes drawings, maps and walking pieces that follow unofficial routes through London. Her work collects shortcuts, closed paths and vernacular names, treating the city as a document that is rewritten every time someone takes a different way home.",
-    cv: [
-      { year: "2009", title: "BFA Painting", detail: "Faculty of Fine Arts, MSU Baroda" },
-      { year: "2013", title: "MA Print", detail: "Royal College of Art, London" },
-      { year: "2020", title: "Artist residency", detail: "Hospitalfield", href: "https://hospitalfield.org.uk/" },
-    ],
-    exhibitions: [
-      {
-        year: "2024",
-        title: "Another Way Home",
-        detail: "Drawing Room, London",
-        href: "https://drawingroom.org.uk/",
-      },
-      {
-        year: "2019",
-        title: "Closed Path, Open Name",
-        detail: "Raven Row, London",
-        href: "https://www.ravenrow.org/",
-      },
-    ],
-    press: [
-      {
-        year: "2024",
-        title: "Maps that prefer the unofficial city",
-        detail: "Art Monthly",
-        href: "https://www.artmonthly.co.uk/",
-      },
-    ],
-    talks: [
-      {
-        year: "2024",
-        title: "Walking as research",
-        detail: "Drawing Room",
-        href: "https://drawingroom.org.uk/",
-      },
-    ],
-  },
-  {
-    slug: "mateo-silva",
-    name: "Mateo Silva",
-    field: "Sound artist",
-    birth: "b. 1982, Bogotá",
-    photo: null,
-    bio: "Mateo Silva works with sound, radio and temporary broadcast. He sets up listening stations in parks, underpasses and unused rooms, asking how a public can gather around a frequency rather than a wall.",
-    cv: [
-      { year: "2005", title: "BA Music", detail: "Universidad de los Andes, Bogotá" },
-      { year: "2011", title: "MA Sound Arts", detail: "London College of Communication" },
-    ],
-    exhibitions: [
-      {
-        year: "2023",
-        title: "Station for a Frequency",
-        detail: "Serpentine, London",
-        href: "https://www.serpentinegalleries.org/",
-      },
-      {
-        year: "2020",
-        title: "Hold the Line",
-        detail: "Resonance Extra",
-        href: "https://extra.resonance.fm/",
-      },
-    ],
-    press: [
-      {
-        year: "2023",
-        title: "When the exhibition is a broadcast",
-        detail: "The Wire",
-        href: "https://www.thewire.co.uk/",
-      },
-    ],
-    talks: [
-      {
-        year: "2023",
-        title: "Publics that gather by listening",
-        detail: "Serpentine",
-        href: "https://www.serpentinegalleries.org/",
-      },
-    ],
-  },
-  {
-    slug: "nadia-hassan",
-    name: "Nadia Hassan",
-    field: "Photographer",
-    birth: "b. 1992, Khartoum",
-    photo: null,
-    bio: "Nadia Hassan works with photography, writing and community workshops. Her projects stay with a single street or building long enough for its daily use to become the work — opening, closing, waiting, repair.",
-    cv: [
-      { year: "2014", title: "BA Photography", detail: "University of Westminster" },
-      { year: "2018", title: "MA Documentary", detail: "National Film and Television School" },
-    ],
-    exhibitions: [
-      {
-        year: "2025",
-        title: "The Building Keeps Hours",
-        detail: "Autograph, London",
-        href: "https://autograph.org.uk/",
-      },
-      {
-        year: "2022",
-        title: "Open / Closed",
-        detail: "Four Corners, London",
-        href: "https://www.fourcornersfilm.co.uk/",
-      },
-    ],
-    press: [
-      {
-        year: "2025",
-        title: "Staying with one address",
-        detail: "British Journal of Photography",
-        href: "https://www.1854.photography/",
-      },
-    ],
-    talks: [
-      {
-        year: "2025",
-        title: "Workshop as exhibition",
-        detail: "Autograph",
-        href: "https://autograph.org.uk/",
-      },
-    ],
-  },
-  {
-    slug: "priya-shah",
-    name: "Priya Shah",
-    field: "Installation artist",
-    birth: "b. 1988, Leicester",
-    photo:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1400&q=80",
-    photoAlt: "Priya Shah",
-    bio: "Priya Shah makes installations from light, glass and borrowed shopfronts. She is interested in display as a civic act — how a window, a vitrine or a closed gallery after hours can still hold an audience that is only passing.",
-    cv: [
-      { year: "2010", title: "BA Fine Art", detail: "Slade School of Fine Art, UCL" },
-      { year: "2014", title: "Associate Artist", detail: "Studio Voltaire, London", href: "https://www.studiovoltaire.org/" },
-    ],
-    exhibitions: [
-      {
-        year: "2024",
-        title: "After the Shutters",
-        detail: "Camden Art Centre",
-        href: "https://camdenartcentre.org/",
-      },
-      {
-        year: "2021",
-        title: "Vitrine for No One and Everyone",
-        detail: "Peer, London",
-        href: "https://www.peeruk.org/",
-      },
-    ],
-    press: [
-      {
-        year: "2024",
-        title: "The shop window as a public room",
-        detail: "Apollo",
-        href: "https://www.apollo-magazine.com/",
-      },
-    ],
-    talks: [
-      {
-        year: "2024",
-        title: "Display after hours",
-        detail: "Camden Art Centre",
-        href: "https://camdenartcentre.org/",
-      },
-    ],
-  },
-  {
-    slug: "rosa-delgado",
-    name: "Rosa Delgado",
-    field: "Ceramicist",
-    birth: "b. 1985, Mexico City",
-    photo:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=1400&q=80",
-    photoAlt: "Rosa Delgado",
-    bio: "Rosa Delgado works with ceramics, food and shared tables. Her projects turn kitchens, markets and leftover civic rooms into places of assembly, asking what an exhibition owes to the people who already use a space.",
-    cv: [
-      { year: "2008", title: "BA Visual Arts", detail: "ENPEG La Esmeralda, Mexico City" },
-      { year: "2015", title: "MA Ceramics", detail: "Royal College of Art, London" },
-    ],
-    exhibitions: [
-      {
-        year: "2023",
-        title: "A Table Is Already a Room",
-        detail: "Studio Voltaire, London",
-        href: "https://www.studiovoltaire.org/",
-      },
-      {
-        year: "2019",
-        title: "Market Hours",
-        detail: "Jerwood Arts",
-        href: "https://jerwoodarts.org/",
-      },
-    ],
-    press: [
-      {
-        year: "2023",
-        title: "Hospitality as sculpture",
-        detail: "Ceramic Review",
-        href: "https://www.ceramicreview.com/",
-      },
-    ],
-    talks: [
-      {
-        year: "2023",
-        title: "Who is already here",
-        detail: "Studio Voltaire",
-        href: "https://www.studiovoltaire.org/",
-      },
-    ],
-  },
-  {
-    slug: "soren-lindqvist",
-    name: "Soren Lindqvist",
-    field: "Filmmaker",
-    birth: "b. 1976, Malmö",
-    photo: null,
-    bio: "Soren Lindqvist makes slow films and written durations for specific rooms. He is interested in how long a place can be looked at before it changes, and in the ethics of staying with a site that was not built for art.",
-    cv: [
-      { year: "2001", title: "BA Film", detail: "Stockholm University of the Arts" },
-      { year: "2009", title: "Artist residency", detail: "Kunstlerhaus Bethanien, Berlin" },
-    ],
-    exhibitions: [
-      {
-        year: "2022",
-        title: "Duration for a Waiting Room",
-        detail: "Tate Britain",
-        href: "https://www.tate.org.uk/",
-      },
-      {
-        year: "2018",
-        title: "Still Here",
-        detail: "Moderna Museet",
-        href: "https://www.modernamuseet.se/stockholm/en/",
-      },
-    ],
-    press: [
-      {
-        year: "2022",
-        title: "Looking until the room answers",
-        detail: "Artforum",
-        href: "https://www.artforum.com/",
-      },
-    ],
-    talks: [
-      {
-        year: "2022",
-        title: "Duration and the uncommissioned site",
-        detail: "Tate Britain",
-        href: "https://www.tate.org.uk/",
-      },
-    ],
-  },
-  {
-    slug: "yara-haddad",
-    name: "Yara Haddad",
-    field: "Printmaker",
-    birth: "b. 1994, Beirut",
-    photo:
-      "https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?auto=format&fit=crop&w=1400&q=80",
-    photoAlt: "Yara Haddad",
-    bio: "Yara Haddad works with print, protest ephemera and small-run publications. She collects what a city leaves on walls and pavements — notices, refusals, invitations — and reprints them as a record of public speech that was never meant to last.",
-    cv: [
-      { year: "2016", title: "BA Graphic Design", detail: "American University of Beirut" },
-      { year: "2020", title: "MA Print", detail: "Royal College of Art, London" },
-    ],
-    exhibitions: [
-      {
-        year: "2025",
-        title: "Notices That Did Not Stay",
-        detail: "The Mosaic Rooms, London",
-        href: "https://mosaicrooms.org/",
-      },
-      {
-        year: "2023",
-        title: "Reprint the Street",
-        detail: "Book Works",
-        href: "https://www.bookworks.org.uk/",
-      },
-    ],
-    press: [
-      {
-        year: "2025",
-        title: "The wall as a publishing house",
-        detail: "Afterall",
-        href: "https://www.afterall.org/",
-      },
-    ],
-    talks: [
-      {
-        year: "2025",
-        title: "Ephemera and public speech",
-        detail: "Book Works",
-        href: "https://www.bookworks.org.uk/",
-      },
-    ],
+    press: [],
+    talks: [],
+    works: [],
   },
 ];
 
@@ -881,7 +639,9 @@ export function artistWhenId(artist: Artist): Exclude<ArtistWhenId, "all"> | "ot
 
 export function artistGenreId(artist: Artist): Exclude<ArtistGenreId, "all"> | null {
   const field = (artist.field || "").toLowerCase();
-  if (field.includes("install") || field.includes("architect")) return "spatial";
+  if (field.includes("install") || field.includes("architect") || field.includes("multidisciplinary")) {
+    return "spatial";
+  }
   if (field.includes("performance")) return "performance";
   if (field.includes("film") || field.includes("moving") || field.includes("sound")) return "time-based";
   if (field.includes("photo")) return "lens";
@@ -891,6 +651,7 @@ export function artistGenreId(artist: Artist): Exclude<ArtistGenreId, "all"> | n
     field.includes("print") ||
     field.includes("draught") ||
     field.includes("draw") ||
+    field.includes("paint") ||
     field.includes("textile")
   ) {
     return "material";
@@ -900,7 +661,9 @@ export function artistGenreId(artist: Artist): Exclude<ArtistGenreId, "all"> | n
 
 export function artistMediumId(artist: Artist): Exclude<ArtistMediumId, "all"> | null {
   const field = (artist.field || "").toLowerCase();
-  if (field.includes("install") || field.includes("architect")) return "installation";
+  if (field.includes("install") || field.includes("architect") || field.includes("multidisciplinary")) {
+    return "installation";
+  }
   if (field.includes("sculpt") || field.includes("ceramic")) return "sculpture";
   if (field.includes("photo")) return "photography";
   if (field.includes("film") || field.includes("moving")) return "film";
@@ -908,7 +671,7 @@ export function artistMediumId(artist: Artist): Exclude<ArtistMediumId, "all"> |
   if (field.includes("performance")) return "performance";
   if (field.includes("textile")) return "textile";
   if (field.includes("print")) return "print";
-  if (field.includes("draught") || field.includes("draw")) return "paper";
+  if (field.includes("draught") || field.includes("draw") || field.includes("paint")) return "paper";
   return null;
 }
 

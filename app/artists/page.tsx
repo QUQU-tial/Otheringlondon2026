@@ -151,20 +151,20 @@ function ArtistPeek({
 
   const body = (
     <>
-      <span className="artist-peek-name z-10 text-black capitalize" style={nameStyle}>
+      <span className="artist-peek-name z-10 capitalize text-white min-[860px]:text-black" style={nameStyle}>
         {artist.name}
       </span>
       {isSelected ? (
         <>
           <div className="artist-peek-copy relative z-10 flex flex-col gap-[12px] px-[16px]">
             {artist.bio ? (
-              <p className="max-w-[40ch] text-black" style={bioStyle}>
+              <p className="max-w-[40ch] text-white min-[860px]:text-black" style={bioStyle}>
                 {artist.bio}
               </p>
             ) : null}
             <Link
               href={`/artists/${artist.slug}`}
-              className="group inline-flex w-fit items-center gap-[12px] text-black capitalize transition-opacity duration-200 ease-out hover:opacity-70 motion-reduce:transition-none"
+              className="group inline-flex w-fit items-center gap-[12px] capitalize text-white transition-opacity duration-200 ease-out hover:opacity-70 motion-reduce:transition-none min-[860px]:text-black"
               style={ctaStyle}
             >
               Read more
@@ -220,9 +220,9 @@ function ArtistGridCell({ artist }: { artist: Artist }) {
     <Link
       id={`artist-grid-${artist.slug}`}
       href={`/artists/${artist.slug}`}
-      className="flex min-h-[200px] flex-col justify-between border-b border-r border-black/20 p-[16px]"
+      className="flex min-h-[200px] flex-col justify-between border-b border-r border-white/20 p-[16px] min-[860px]:border-black/20"
     >
-      <span className="text-black capitalize" style={nameStyle}>
+      <span className="capitalize text-white min-[860px]:text-black" style={nameStyle}>
         {artist.name}
       </span>
       <div className="mt-[16px] flex items-end justify-between gap-[12px]">
@@ -250,12 +250,12 @@ function FilterCheckbox({
   onChange: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-[12px] text-black">
+    <label className="flex cursor-pointer items-center gap-[12px] text-white min-[860px]:text-black">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-[12px] w-[12px] shrink-0 appearance-none rounded-[2px] border border-black bg-white checked:bg-black"
+        className="h-[12px] w-[12px] shrink-0 appearance-none rounded-[2px] border border-white bg-black checked:bg-white min-[860px]:border-black min-[860px]:bg-white min-[860px]:checked:bg-black"
       />
       <span style={filterItemStyle}>{label}</span>
     </label>
@@ -282,7 +282,7 @@ function FilterGroup({
       <button
         type="button"
         onClick={onToggle}
-        className={`flex w-full items-center justify-between gap-[12px] uppercase text-black ${
+        className={`flex w-full items-center justify-between gap-[12px] uppercase text-white min-[860px]:text-black ${
           open ? "mb-[12px]" : ""
         }`}
         style={filterHeadingStyle}
@@ -309,6 +309,7 @@ function FilterGroup({
 
 export default function ArtistsPage() {
   const mainRef = useRef<HTMLDivElement>(null);
+  const billboardRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
@@ -372,7 +373,13 @@ export default function ArtistsPage() {
 
   const handleSelect = (slug: string) => {
     setSelectedSlug((current) => (current === slug ? null : slug));
-    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    const narrow =
+      typeof window !== "undefined" && window.matchMedia("(max-width: 859px)").matches;
+    if (narrow) {
+      billboardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const scrollToGrid = () => {
@@ -380,11 +387,11 @@ export default function ArtistsPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-white">
+    <div className="flex min-h-screen flex-col bg-black text-white min-[860px]:h-screen min-[860px]:overflow-hidden min-[860px]:bg-white min-[860px]:text-[#1C1C1C]">
       <WhiteSiteHeader current="artists" />
-      <div className="flex min-h-0 flex-1 flex-col min-[860px]:flex-row">
-        <aside className="flex w-full shrink-0 flex-col border-b border-black/20 min-[860px]:w-[min(320px,28vw)] min-[860px]:border-b-0 min-[860px]:border-r">
-          <div className="border-b border-black/10 px-[36px] py-[16px]">
+      <div className="flex min-h-0 flex-1 flex-col min-[860px]:flex-row min-[860px]:overflow-hidden">
+        <aside className="flex w-full shrink-0 flex-col border-b border-white/20 min-[860px]:h-full min-[860px]:w-[min(320px,28vw)] min-[860px]:border-b-0 min-[860px]:border-r min-[860px]:border-black/20">
+          <div className="border-b border-white/10 px-[36px] py-[16px] min-[860px]:border-black/10">
             <label className="block">
               <span className="sr-only">Search artists</span>
               <input
@@ -392,7 +399,7 @@ export default function ArtistsPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search artists"
-                className="w-full rounded-[2px] border border-black/20 bg-white px-[12px] py-[8px] text-black placeholder:text-[#999999] focus:outline-none"
+                className="w-full rounded-[2px] border border-white/25 bg-black px-[12px] py-[8px] text-white placeholder:text-[#999999] focus:outline-none min-[860px]:border-black/20 min-[860px]:bg-white min-[860px]:text-black"
                 style={{
                   fontFamily: "var(--font-inter)",
                   fontSize: "16px",
@@ -402,10 +409,10 @@ export default function ArtistsPage() {
               />
             </label>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-[36px] py-[24px] scrollbar-hide">
+          <div className="min-h-0 px-[36px] py-[24px] min-[860px]:flex-1 min-[860px]:overflow-y-auto min-[860px]:scrollbar-hide">
             {groups.length === 0 ? (
               <p
-                className="text-black/50"
+                className="text-white/50 min-[860px]:text-black/50"
                 style={{
                   fontFamily: "var(--font-inter)",
                   fontSize: "16px",
@@ -427,10 +434,20 @@ export default function ArtistsPage() {
                     <ul className="flex flex-col gap-[12px]">
                       {group.artists.map((artist) => (
                         <li key={artist.slug}>
+                          {/* Mobile: go to detail (expand UX is desktop-only). Desktop: expand peek. */}
+                          <Link
+                            href={`/artists/${artist.slug}`}
+                            className={`capitalize underline hover:no-underline min-[860px]:hidden ${
+                              selectedSlug === artist.slug ? "text-red-600" : "text-white"
+                            }`}
+                            style={nameStyle}
+                          >
+                            {artist.name}
+                          </Link>
                           <button
                             type="button"
                             onClick={() => handleSelect(artist.slug)}
-                            className={`text-left capitalize underline hover:no-underline ${
+                            className={`hidden text-left capitalize underline hover:no-underline min-[860px]:inline ${
                               selectedSlug === artist.slug ? "text-red-600" : "text-black"
                             }`}
                             style={nameStyle}
@@ -448,7 +465,7 @@ export default function ArtistsPage() {
         </aside>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="grid shrink-0 grid-cols-1 gap-[36px] border-b border-black/20 px-[24px] py-[16px] min-[860px]:grid-cols-2">
+          <div className="grid shrink-0 grid-cols-1 gap-[36px] border-b border-white/20 px-[24px] py-[16px] min-[860px]:grid-cols-2 min-[860px]:border-black/20">
             <FilterGroup
               title="Genre"
               open={openFilters.genre}
@@ -473,9 +490,9 @@ export default function ArtistsPage() {
 
           <div
             ref={mainRef}
-            className="grid min-h-0 flex-1 overflow-y-auto scrollbar-hide [grid-template-rows:100%_auto]"
+            className="grid min-h-0 flex-1 [grid-template-rows:auto_auto] min-[860px]:overflow-y-auto min-[860px]:scrollbar-hide min-[860px]:[grid-template-rows:100%_auto]"
           >
-            <div className="relative min-h-0">
+            <div ref={billboardRef} className="relative min-h-[70vh] min-[860px]:min-h-0">
               <div className="artist-page-stack absolute inset-0">
                 {stacked.map((artist, index) => (
                   <ArtistPeek
@@ -491,7 +508,7 @@ export default function ArtistsPage() {
               <button
                 type="button"
                 onClick={scrollToGrid}
-                className="absolute bottom-[16px] left-1/2 z-20 -translate-x-1/2 text-black transition-opacity duration-200 ease-out hover:opacity-70 motion-reduce:transition-none"
+                className="absolute bottom-[16px] left-1/2 z-20 -translate-x-1/2 text-white transition-opacity duration-200 ease-out hover:opacity-70 motion-reduce:transition-none min-[860px]:text-black"
                 style={ctaStyle}
                 aria-label="See all artists"
               >
@@ -501,7 +518,7 @@ export default function ArtistsPage() {
 
             <div
               ref={gridRef}
-              className="grid grid-cols-1 border-t border-black/20 min-[700px]:grid-cols-2 min-[1100px]:grid-cols-4"
+              className="grid grid-cols-1 border-t border-white/20 min-[700px]:grid-cols-2 min-[860px]:border-black/20 min-[1100px]:grid-cols-4"
             >
               {filtered.map((artist) => (
                 <ArtistGridCell key={artist.slug} artist={artist} />

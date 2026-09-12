@@ -164,11 +164,18 @@ html {
   top: 0;
   bottom: 0;
   overflow: hidden;
-  background: #ffffff;
-  border-left: 1px solid rgba(0, 0, 0, 0.2);
+  background: #000000;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
   transition:
     left 700ms cubic-bezier(0.22, 1, 0.36, 1),
     width 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 860px) {
+  .artist-page-peek {
+    background: #ffffff;
+    border-left-color: rgba(0, 0, 0, 0.2);
+  }
 }
 
 .artist-page-peek:first-child {

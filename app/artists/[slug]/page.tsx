@@ -215,7 +215,7 @@ export default function ArtistDetailPage() {
       <div className="workspace-container flex h-full flex-col overflow-y-auto min-[860px]:flex-row min-[860px]:overflow-hidden">
         <div className="relative flex h-auto min-h-0 w-full shrink-0 flex-col bg-white min-[860px]:h-full min-[860px]:min-w-0 min-[860px]:flex-1 min-[860px]:border-r min-[860px]:border-black/20">
           <header
-            className="panel-column-header sticky top-0 z-10 flex shrink-0 items-center justify-between bg-white/95 px-[36px] backdrop-blur-sm"
+            className="panel-column-header sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-white/15 bg-black px-[36px]"
             style={{ fontFamily: "var(--font-inter)" }}
           >
             <Link
@@ -224,7 +224,7 @@ export default function ArtistDetailPage() {
               aria-label="Home"
             >
               <img
-                src="/othering-logo-on-white.png"
+                src="/othering-logo.png"
                 alt="Festival logo"
                 className="block w-auto"
                 style={{ height: SITE_LOGO_HEIGHT }}
@@ -274,19 +274,19 @@ export default function ArtistDetailPage() {
 
         <div className="relative flex h-auto min-h-0 w-full shrink-0 flex-col bg-white min-[860px]:h-full min-[860px]:min-w-0 min-[860px]:flex-1">
           <header
-            className="panel-column-header sticky top-0 z-10 flex shrink-0 items-center justify-between bg-white/95 px-[36px] backdrop-blur-sm"
+            className="panel-column-header sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-white/15 bg-black px-[36px]"
             style={{ fontFamily: "var(--font-inter)" }}
           >
             <Link
               href="/artists"
-              className="text-black capitalize transition-opacity hover:opacity-70"
+              className="capitalize text-white transition-opacity hover:opacity-70"
               style={navStyle}
             >
               Artists
             </Link>
             <Link
               href="/artists/join"
-              className="inline-flex shrink-0 items-center justify-center bg-transparent px-[24px] py-[4px] font-medium uppercase text-black transition-opacity duration-200 hover:opacity-70 motion-reduce:transition-none"
+              className="inline-flex shrink-0 items-center justify-center bg-transparent px-[24px] py-[4px] font-medium uppercase text-white transition-opacity duration-200 hover:opacity-70 motion-reduce:transition-none"
               style={{
                 fontFamily: "var(--font-inter)",
                 fontSize: "clamp(16px, 1.39vw, 20px)",

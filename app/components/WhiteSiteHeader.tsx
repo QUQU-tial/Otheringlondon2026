@@ -25,7 +25,7 @@ type WhiteSiteHeaderProps = {
 export function WhiteSiteHeader({ current }: WhiteSiteHeaderProps) {
   return (
     <header
-      className="panel-column-header sticky top-0 z-20 flex shrink-0 items-center justify-between border-b border-black/10 bg-white px-[36px]"
+      className="panel-column-header sticky top-0 z-20 flex shrink-0 items-center justify-between border-b border-white/15 bg-black px-[36px]"
       style={{ fontFamily: "var(--font-inter)" }}
     >
       <Link
@@ -34,7 +34,7 @@ export function WhiteSiteHeader({ current }: WhiteSiteHeaderProps) {
         aria-label="Home"
       >
         <img
-          src="/othering-logo-on-white.png"
+          src="/othering-logo.png"
           alt="Festival logo"
           className="block w-auto"
           style={{ height: SITE_LOGO_HEIGHT }}
@@ -43,24 +43,20 @@ export function WhiteSiteHeader({ current }: WhiteSiteHeaderProps) {
       <nav className="flex items-center gap-[24px]">
         <Link
           href="/submit"
-          className="text-black capitalize transition-opacity hover:opacity-70"
+          className="capitalize text-white transition-opacity hover:opacity-70"
           style={navStyle}
         >
           Become a Partner
         </Link>
-        {current === "artists" ? (
-          <span className="text-black capitalize" style={navStyle}>
-            Artists
-          </span>
-        ) : (
+        {current !== "artists" ? (
           <Link
             href="/artists"
-            className="text-black capitalize transition-opacity hover:opacity-70"
+            className="capitalize text-white transition-opacity hover:opacity-70"
             style={navStyle}
           >
             Artists
           </Link>
-        )}
+        ) : null}
         <Link
           href="/"
           className="capitalize text-[#9A9A9A] transition-opacity hover:opacity-70"

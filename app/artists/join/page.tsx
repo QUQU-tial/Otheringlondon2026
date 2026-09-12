@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SubmitShell } from "../../components/SubmitShell";
 import { PrimaryButton, SecondaryButton } from "../../components/othering";
@@ -19,6 +20,9 @@ import {
   type ArtistLinkedDraft,
 } from "../../lib/artist-submissions";
 import type { ArtistWork } from "../../lib/artists";
+
+/** Example profile for join-form preview (photo + bio + CV + exhibitions). */
+const PREVIEW_ARTIST_HREF = "/artists/helen-cammock";
 
 const TAB_LABELS = ["Basic Info", "CV / Exhibitions", "Press / Talks / Works"] as const;
 
@@ -212,7 +216,7 @@ export default function ArtistJoinPage() {
     <SubmitShell>
       <div className="mx-auto w-full max-w-[874px] px-0 py-[36px]">
         <h1
-          className="mb-[36px] capitalize text-black"
+          className="mb-[12px] capitalize text-black"
           style={{
             fontFamily: "var(--font-inter)",
             fontSize: "clamp(40px, 4.17vw, 60px)",
@@ -223,6 +227,23 @@ export default function ArtistJoinPage() {
         >
           Join
         </h1>
+        <p className="mb-[36px]">
+          <Link
+            href={PREVIEW_ARTIST_HREF}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-[8px] text-[#1C1C1C] underline decoration-black/30 underline-offset-4 transition-opacity hover:opacity-70 hover:decoration-black"
+            style={{
+              fontFamily: "var(--font-inter)",
+              fontSize: "clamp(16px, 1.39vw, 20px)",
+              fontWeight: 500,
+              lineHeight: "clamp(24px, 2.08vw, 30px)",
+            }}
+          >
+            Preview — see artist page
+            <span aria-hidden>↗</span>
+          </Link>
+        </p>
 
         <div className="mb-[24px] flex gap-[16px] border-b border-black">
           {TAB_LABELS.map((label, i) => {
