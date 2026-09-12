@@ -191,7 +191,7 @@ export function AboutUsDarkNavBar() {
               </Link>
               {user ? (
                 <button type="button" onClick={onLogout} className="px-[24px] py-[16px] text-left text-white transition-opacity hover:opacity-70" style={menuLink}>
-                  Logout
+                  Sign out
                 </button>
               ) : (
                 <button type="button" onClick={onLogin} className="px-[24px] py-[16px] text-left text-white transition-opacity hover:opacity-70" style={menuLink}>

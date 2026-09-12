@@ -464,7 +464,7 @@ const handleMenuClose = () => {
                             lineHeight: 'normal'
                           }}
                         >
-                          Logout
+                          Sign out
                         </button>
                       ) : (
                         <button

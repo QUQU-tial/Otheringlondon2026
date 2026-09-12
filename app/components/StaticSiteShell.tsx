@@ -1,9 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AboutUsDarkNavBar } from "./AboutUsDarkNavBar";
+import { getCurrentUser, onAuthStateChange, signOut, type User } from "../lib/auth";
 
 const NAV_DEFAULT = [
   { href: "/", label: "Home" },
@@ -11,7 +12,6 @@ const NAV_DEFAULT = [
   { href: "/submit", label: "Take part" },
   { href: "/partners", label: "All our partners" },
   { href: "/artists", label: "Artists" },
-  { href: "/login", label: "Login" },
 ] as const;
 
 type StaticSiteShellProps = {
@@ -22,7 +22,20 @@ type StaticSiteShellProps = {
 
 export function StaticSiteShell({ children, variant = "default" }: StaticSiteShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const isAboutShell = variant === "about";
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+    return onAuthStateChange(setUser);
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+    router.refresh();
+  };
 
   const asideClasses = isAboutShell
     ? "flex shrink-0 flex-col bg-black min-[860px]:min-w-0 min-[860px]:flex-[3] min-[860px]:shrink"
@@ -85,6 +98,36 @@ export function StaticSiteShell({ children, variant = "default" }: StaticSiteShe
                     </Link>
                   );
                 })}
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleSignOut()}
+                    className="py-3 text-left text-white opacity-80 transition-opacity duration-200 hover:opacity-70"
+                    style={{
+                      fontFamily: "var(--font-poppins)",
+                      fontSize: "15px",
+                      fontWeight: 300,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    className={`py-3 text-left text-white transition-opacity duration-200 hover:opacity-70 ${
+                      pathname === "/login" || pathname.startsWith("/login/") ? "opacity-100" : "opacity-80"
+                    }`}
+                    style={{
+                      fontFamily: "var(--font-poppins)",
+                      fontSize: "15px",
+                      fontWeight: 300,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Login
+                  </Link>
+                )}
               </nav>
             </>
           )}

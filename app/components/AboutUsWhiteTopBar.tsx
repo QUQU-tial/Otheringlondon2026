@@ -1,7 +1,9 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getCurrentUser, onAuthStateChange, signOut, type User } from "../lib/auth";
 
 const linkClass =
   "text-white transition-opacity hover:opacity-65 focus:outline-none focus-visible:underline";
@@ -14,9 +16,23 @@ const linkStyle: CSSProperties = {
 };
 
 /**
- * White panel top strip (black bar): map · artists · login.
+ * White panel top strip (black bar): map · artists · login/sign out.
  */
 export function AboutUsWhiteTopBar() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+    return onAuthStateChange(setUser);
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+    router.refresh();
+  };
+
   return (
     <header
       className="flex min-h-[3.25rem] shrink-0 items-center justify-between border-b border-white/15 bg-black px-6 py-[clamp(14px,1.4vw,20px)] min-[860px]:px-10"
@@ -29,9 +45,15 @@ export function AboutUsWhiteTopBar() {
         <Link href="/artists" className={linkClass} style={linkStyle}>
           Artists
         </Link>
-        <Link href="/login" className={linkClass} style={linkStyle}>
-          Login
-        </Link>
+        {user ? (
+          <button type="button" onClick={() => void handleSignOut()} className={linkClass} style={linkStyle}>
+            Sign out
+          </button>
+        ) : (
+          <Link href="/login" className={linkClass} style={linkStyle}>
+            Login
+          </Link>
+        )}
       </nav>
     </header>
   );
