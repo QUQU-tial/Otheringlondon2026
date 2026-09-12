@@ -2,8 +2,8 @@ import type { Artist, ArtistLinkedItem, ArtistWork } from "./artists";
 import { artistSlugFromName, limitArtistWorks } from "./artists";
 import { getSupabaseClient } from "./supabase";
 
-export const ARTIST_JOIN_DRAFT_KEY = "othering_artist_join_draft_v1";
-export const ARTIST_JOIN_GUEST_DRAFT_KEY = "othering_artist_join_draft_guest_v1";
+export const ARTIST_JOIN_DRAFT_KEY = "othering_artist_join_draft_v2";
+export const ARTIST_JOIN_GUEST_DRAFT_KEY = "othering_artist_join_draft_guest_v2";
 export const ARTIST_SUBMISSIONS_KEY = "othering_artist_submissions_v1";
 
 export type ArtistLinkedDraft = {
@@ -55,6 +55,27 @@ export const emptyArtistJoinForm = (): ArtistJoinForm => ({
   works: [],
   accept_terms: false,
 });
+
+/** Old QA test persona — never restore into the join form. */
+function isLegacyMayaChenTestDraft(form: Pick<ArtistJoinForm, "name" | "birth" | "bio">): boolean {
+  if (form.name.trim().toLowerCase() !== "maya chen") return false;
+  const birth = form.birth.trim().toLowerCase();
+  const bio = form.bio.trim().toLowerCase();
+  return (
+    birth.includes("singapore") ||
+    bio.includes("maya chen works with light") ||
+    bio.includes("temporary shopfronts") ||
+    bio.length === 0
+  );
+}
+
+function isLegacyMayaChenArtist(artist: { name: string; birth?: string; bio?: string }): boolean {
+  return isLegacyMayaChenTestDraft({
+    name: artist.name,
+    birth: artist.birth || "",
+    bio: artist.bio || "",
+  });
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -228,7 +249,16 @@ export function loadGuestArtistJoinDraft(): ArtistJoinForm | null {
 /** Move guest draft onto the signed-in account when it has content. */
 export function claimGuestDraftForUser(userId: string): ArtistJoinForm | null {
   const guest = loadGuestArtistJoinDraft();
-  if (!guest || !formHasContent(guest)) return null;
+  if (!guest || !formHasContent(guest) || isLegacyMayaChenTestDraft(guest)) {
+    if (guest && isLegacyMayaChenTestDraft(guest)) {
+      try {
+        localStorage.removeItem(ARTIST_JOIN_GUEST_DRAFT_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
+    return null;
+  }
   saveArtistJoinDraft(guest, userId);
   try {
     localStorage.removeItem(ARTIST_JOIN_GUEST_DRAFT_KEY);
@@ -245,10 +275,15 @@ export function loadSubmittedArtists(): StoredArtist[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.flatMap((item) => {
+    const list = parsed.flatMap((item) => {
       const artist = parseStoredArtist(item);
       return artist ? [artist] : [];
     });
+    const cleaned = list.filter((artist) => !isLegacyMayaChenArtist(artist));
+    if (cleaned.length !== list.length) {
+      localStorage.setItem(ARTIST_SUBMISSIONS_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch {
     return [];
   }
@@ -284,12 +319,27 @@ export function saveArtistJoinDraft(form: ArtistJoinForm, userId?: string | null
 export function loadArtistJoinDraft(userId?: string | null): ArtistJoinForm | null {
   if (typeof window === "undefined") return null;
   try {
+    let draft: ArtistJoinForm | null = null;
     if (!userId) {
-      return loadGuestArtistJoinDraft() ?? parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY));
+      draft =
+        loadGuestArtistJoinDraft() ??
+        parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY));
+    } else {
+      draft =
+        parseArtistJoinForm(localStorage.getItem(draftStorageKey(userId))) ??
+        parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY));
     }
-    const keyed = parseArtistJoinForm(localStorage.getItem(draftStorageKey(userId)));
-    if (keyed) return keyed;
-    return parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY));
+    if (draft && isLegacyMayaChenTestDraft(draft)) {
+      try {
+        localStorage.removeItem(ARTIST_JOIN_GUEST_DRAFT_KEY);
+        localStorage.removeItem(ARTIST_JOIN_DRAFT_KEY);
+        if (userId) localStorage.removeItem(draftStorageKey(userId));
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    return draft;
   } catch {
     return null;
   }
@@ -298,15 +348,17 @@ export function loadArtistJoinDraft(userId?: string | null): ArtistJoinForm | nu
 /** Prefer claimed guest draft, then account draft, then published profile. */
 export function loadJoinFormForUser(userId: string): ArtistJoinForm {
   const claimed = claimGuestDraftForUser(userId);
-  if (claimed) return claimed;
+  if (claimed && !isLegacyMayaChenTestDraft(claimed)) return claimed;
 
   const draft = loadArtistJoinDraft(userId);
   if (draft && formHasContent(draft)) {
     return draft;
   }
   const published = loadSubmittedArtistForUser(userId);
-  if (published) return artistToJoinForm(published, true);
-  return draft ?? emptyArtistJoinForm();
+  if (published && !isLegacyMayaChenArtist(published)) {
+    return artistToJoinForm(published, true);
+  }
+  return emptyArtistJoinForm();
 }
 
 /** Form for visitors who are not signed in yet. */
@@ -341,10 +393,11 @@ function rowToArtist(row: Record<string, unknown>): StoredArtist | null {
   };
 }
 
-/** Best-effort remote publish. Falls back silently if table is missing. */
+/** Best-effort remote publish. Never hangs the UI (times out). */
 export async function publishArtistRemote(
   artist: Artist,
-  ownerId: string
+  ownerId: string,
+  timeoutMs = 5000
 ): Promise<{ ok: boolean; error?: string }> {
   const client = getSupabaseClient();
   if (!client) return { ok: false, error: "Supabase not configured" };
@@ -367,12 +420,26 @@ export async function publishArtistRemote(
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await client.from("artists").upsert(payload, { onConflict: "slug" });
-  if (error) {
-    console.warn("[artists] remote publish skipped:", error.message);
-    return { ok: false, error: error.message };
+  try {
+    const result = await Promise.race([
+      client.from("artists").upsert(payload, { onConflict: "slug" }),
+      new Promise<{ data: null; error: { message: string } }>((resolve) =>
+        setTimeout(
+          () => resolve({ data: null, error: { message: "Remote publish timed out" } }),
+          timeoutMs
+        )
+      ),
+    ]);
+    if (result.error) {
+      console.warn("[artists] remote publish skipped:", result.error.message);
+      return { ok: false, error: result.error.message };
+    }
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Remote publish failed";
+    console.warn("[artists] remote publish failed:", message);
+    return { ok: false, error: message };
   }
-  return { ok: true };
 }
 
 /** Load published artists from Supabase when the table exists. */
@@ -390,7 +457,8 @@ export async function loadRemotePublishedArtists(): Promise<StoredArtist[]> {
     }
     return data.flatMap((row) => {
       const artist = rowToArtist(row as Record<string, unknown>);
-      return artist ? [artist] : [];
+      if (!artist || isLegacyMayaChenArtist(artist)) return [];
+      return [artist];
     });
   } catch (error) {
     console.warn("[artists] remote load failed", error);

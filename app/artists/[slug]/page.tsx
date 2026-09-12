@@ -165,11 +165,20 @@ export default function ArtistDetailPage() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getActivities(), loadAllSubmittedArtists()]).then(([activities, submitted]) => {
-      if (cancelled) return;
-      setArtist(findArtistBySlug(slug, activities, submitted));
-      setImageError(false);
-    });
+    (async () => {
+      try {
+        const submitted = await loadAllSubmittedArtists();
+        if (cancelled) return;
+        setArtist(findArtistBySlug(slug, [], submitted));
+        setImageError(false);
+        const activities = await getActivities().catch(() => [] as Awaited<ReturnType<typeof getActivities>>);
+        if (cancelled) return;
+        setArtist(findArtistBySlug(slug, activities, submitted));
+      } catch {
+        if (cancelled) return;
+        setArtist(findArtistBySlug(slug, [], []));
+      }
+    })();
     return () => {
       cancelled = true;
     };

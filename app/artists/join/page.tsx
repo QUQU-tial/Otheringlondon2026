@@ -159,7 +159,7 @@ function LoginToPublishModal({
           Log in to publish
         </h2>
         <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-          Your form is saved. Sign in or create an account, then return here and click Submit to publish your artist page.
+          Your form is saved. Sign in or create an account, then return here and click Publish to publish your artist page.
         </p>
         <div className="flex flex-wrap gap-[12px]">
           <PrimaryButton type="button" onClick={onLogin}>
@@ -188,7 +188,7 @@ function PublishSuccessModal({
           Published
         </h2>
         <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-          Your artist page is live in the artists directory. You can keep editing this form and submit again to update it.
+          Your artist page is live in the artists directory. You can keep editing this form and click Publish again anytime to update it.
         </p>
         <div className="flex flex-wrap gap-[12px]">
           <PrimaryButton href={`/artists/${slug}`}>View your page</PrimaryButton>
@@ -216,13 +216,26 @@ export default function ArtistJoinPage() {
 
   useEffect(() => {
     let cancelled = false;
-    getCurrentUser().then((current) => {
-      if (cancelled) return;
-      setUser(current);
-      setAuthReady(true);
-      setForm(current ? loadJoinFormForUser(current.id) : loadJoinFormForGuest());
-      setFormReady(true);
-    });
+    const load = async () => {
+      try {
+        const current = await Promise.race([
+          getCurrentUser(),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+        ]);
+        if (cancelled) return;
+        setUser(current);
+        setAuthReady(true);
+        setForm(current ? loadJoinFormForUser(current.id) : loadJoinFormForGuest());
+        setFormReady(true);
+      } catch {
+        if (cancelled) return;
+        setUser(null);
+        setAuthReady(true);
+        setForm(loadJoinFormForGuest());
+        setFormReady(true);
+      }
+    };
+    void load();
     const unsubscribe = onAuthStateChange((next) => {
       setUser(next);
       if (next) {
@@ -298,21 +311,21 @@ export default function ArtistJoinPage() {
       return;
     }
     setSubmitting(true);
-    const artist = formToArtist(form);
-    if (!artist) {
-      setSubmitting(false);
-      return;
-    }
     try {
+      const artist = formToArtist(form);
+      if (!artist) return;
+      // Local directory update is the source of truth for the public page.
       saveSubmittedArtist(artist, user.id);
       persistDraft(form);
-      await publishArtistRemote(artist, user.id);
       setSubmittedSlug(artist.slug);
       setSubmitSuccessOpen(true);
+      // Remote sync is best-effort and must not block re-publish.
+      void publishArtistRemote(artist, user.id);
     } catch (e) {
       console.error("Artist submit failed", e);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const canSubmit = isArtistJoinValid(form);
@@ -366,7 +379,7 @@ export default function ArtistJoinPage() {
           style={{ fontFamily: "var(--font-inter)" }}
         >
           {user
-            ? `Signed in as ${user.email || "artist"}. Fill in your profile, then click Submit to publish.`
+            ? `Signed in as ${user.email || "artist"}. Fill in your profile, then click Publish. You can publish again anytime to update your page.`
             : "Fill in your artist profile first. You will be asked to log in when you publish."}
         </p>
 
@@ -401,7 +414,7 @@ export default function ArtistJoinPage() {
                   value={form.name}
                   onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                   className={inputCls}
-                  placeholder="Full name"
+                  placeholder="Your name"
                 />
               </FormRow>
               <FormRow label="Birth">
@@ -410,7 +423,7 @@ export default function ArtistJoinPage() {
                   value={form.birth}
                   onChange={(e) => setForm((p) => ({ ...p, birth: e.target.value }))}
                   className={inputCls}
-                  placeholder="b. 1990, London"
+                  placeholder="e.g. b. 1990, London"
                 />
               </FormRow>
               <FormRow label="Field">
@@ -419,7 +432,7 @@ export default function ArtistJoinPage() {
                   value={form.field}
                   onChange={(e) => setForm((p) => ({ ...p, field: e.target.value }))}
                   className={inputCls}
-                  placeholder="Oil painter"
+                  placeholder="e.g. Painter / sculptor / filmmaker"
                 />
               </FormRow>
               <FormRow label="Photo">
@@ -442,7 +455,7 @@ export default function ArtistJoinPage() {
                   value={form.bio}
                   onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
                   className={`${inputCls} min-h-[180px]`}
-                  placeholder="Short biography"
+                  placeholder="Write a short biography about your practice"
                 />
               </FormRow>
             </div>
@@ -545,7 +558,7 @@ export default function ArtistJoinPage() {
               </PrimaryButton>
             ) : (
               <PrimaryButton type="button" disabled={submitting || !canSubmit} onClick={() => void handleSubmit()}>
-                {submitting ? "Publishing" : "Submit"}
+                {submitting ? "Publishing…" : "Publish"}
               </PrimaryButton>
             )}
           </div>
