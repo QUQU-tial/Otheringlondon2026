@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { StaticSiteShell } from "./StaticSiteShell";
 import { AboutUsWhiteTopBar } from "./AboutUsWhiteTopBar";
+import { StaticSiteShell } from "./StaticSiteShell";
 
 export function SubmitShell({ children }: { children: ReactNode }) {
   return (
