@@ -3,6 +3,7 @@ import { artistSlugFromName, limitArtistWorks } from "./artists";
 import { getSupabaseClient } from "./supabase";
 
 export const ARTIST_JOIN_DRAFT_KEY = "othering_artist_join_draft_v1";
+export const ARTIST_JOIN_GUEST_DRAFT_KEY = "othering_artist_join_draft_guest_v1";
 export const ARTIST_SUBMISSIONS_KEY = "othering_artist_submissions_v1";
 
 export type ArtistLinkedDraft = {
@@ -200,6 +201,43 @@ function draftStorageKey(userId?: string | null): string {
   return userId ? `${ARTIST_JOIN_DRAFT_KEY}:${userId}` : ARTIST_JOIN_DRAFT_KEY;
 }
 
+function formHasContent(form: ArtistJoinForm): boolean {
+  return Boolean(
+    form.name.trim() ||
+      form.bio.trim() ||
+      form.photo ||
+      form.works.length > 0 ||
+      form.field.trim() ||
+      form.birth.trim()
+  );
+}
+
+export function saveGuestArtistJoinDraft(form: ArtistJoinForm): void {
+  localStorage.setItem(ARTIST_JOIN_GUEST_DRAFT_KEY, JSON.stringify(form));
+}
+
+export function loadGuestArtistJoinDraft(): ArtistJoinForm | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_GUEST_DRAFT_KEY));
+  } catch {
+    return null;
+  }
+}
+
+/** Move guest draft onto the signed-in account when it has content. */
+export function claimGuestDraftForUser(userId: string): ArtistJoinForm | null {
+  const guest = loadGuestArtistJoinDraft();
+  if (!guest || !formHasContent(guest)) return null;
+  saveArtistJoinDraft(guest, userId);
+  try {
+    localStorage.removeItem(ARTIST_JOIN_GUEST_DRAFT_KEY);
+  } catch {
+    /* ignore */
+  }
+  return guest;
+}
+
 export function loadSubmittedArtists(): StoredArtist[] {
   if (typeof window === "undefined") return [];
   try {
@@ -234,36 +272,46 @@ export function saveSubmittedArtist(artist: Artist, ownerId?: string): StoredArt
 }
 
 export function saveArtistJoinDraft(form: ArtistJoinForm, userId?: string | null): void {
+  if (!userId) {
+    saveGuestArtistJoinDraft(form);
+    return;
+  }
   localStorage.setItem(draftStorageKey(userId), JSON.stringify(form));
   // Keep legacy key in sync for older reads
-  if (userId) {
-    localStorage.setItem(ARTIST_JOIN_DRAFT_KEY, JSON.stringify(form));
-  }
+  localStorage.setItem(ARTIST_JOIN_DRAFT_KEY, JSON.stringify(form));
 }
 
 export function loadArtistJoinDraft(userId?: string | null): ArtistJoinForm | null {
   if (typeof window === "undefined") return null;
   try {
+    if (!userId) {
+      return loadGuestArtistJoinDraft() ?? parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY));
+    }
     const keyed = parseArtistJoinForm(localStorage.getItem(draftStorageKey(userId)));
     if (keyed) return keyed;
-    if (userId) {
-      return parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY));
-    }
-    return null;
+    return parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY));
   } catch {
     return null;
   }
 }
 
-/** Prefer draft, then previously published profile for this user. */
+/** Prefer claimed guest draft, then account draft, then published profile. */
 export function loadJoinFormForUser(userId: string): ArtistJoinForm {
+  const claimed = claimGuestDraftForUser(userId);
+  if (claimed) return claimed;
+
   const draft = loadArtistJoinDraft(userId);
-  if (draft && (draft.name.trim() || draft.bio.trim() || draft.photo)) {
+  if (draft && formHasContent(draft)) {
     return draft;
   }
   const published = loadSubmittedArtistForUser(userId);
   if (published) return artistToJoinForm(published, true);
   return draft ?? emptyArtistJoinForm();
+}
+
+/** Form for visitors who are not signed in yet. */
+export function loadJoinFormForGuest(): ArtistJoinForm {
+  return loadArtistJoinDraft(null) ?? emptyArtistJoinForm();
 }
 
 function rowToArtist(row: Record<string, unknown>): StoredArtist | null {

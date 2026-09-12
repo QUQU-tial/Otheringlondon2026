@@ -25,9 +25,7 @@ export const ALWAYS_PUBLIC_ROUTES = [
   '/auth/callback',
 ] as const;
 
-export const PRIVATE_ROUTES = [
-  '/artists/join',
-] as const;
+export const PRIVATE_ROUTES = [] as const;
 
 /**
  * Check if a route is public (no login required)
@@ -51,11 +49,8 @@ export function isPublicRoute(pathname: string): boolean {
     return true;
   }
 
-  // Artist directory + detail are public; join requires login
+  // Artist directory, detail, and join form are public (publish still requires login in-app)
   if (pathname.startsWith('/artists')) {
-    if (pathname === '/artists/join' || pathname.startsWith('/artists/join/')) {
-      return false;
-    }
     return true;
   }
   

@@ -4,6 +4,7 @@
 
 import { getSupabaseClient } from "./supabase";
 import { assignProgrammeWindowDates } from "./programme-window";
+import { getEditorialActivities } from "./editorial-activities";
 
 export type MediaLink = {
   media_name: string;
@@ -273,6 +274,18 @@ export const saveSubmission = async (submission: Submission): Promise<void> => {
 };
 
 export const getActivities = async (): Promise<Activity[]> => {
+  const editorial = getEditorialActivities();
+  const editorialIds = new Set(editorial.map((a) => a.id));
+
+  /** Placeholder programme rows from early seeds — replaced by NE editorial set. */
+  const DEMO_SEED_TITLES = new Set([
+    "Electric Silence",
+    "Urban Fragment",
+    "Between Floors",
+    "Signal Interference",
+    "Concrete Memories",
+  ]);
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let supabaseHost = "MISSING_URL";
@@ -293,7 +306,7 @@ export const getActivities = async (): Promise<Activity[]> => {
     console.error(
       "[getActivities] Supabase client not configured (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing at build time)"
     );
-    return [];
+    return assignProgrammeWindowDates(editorial);
   }
 
   // Equivalent REST: GET /rest/v1/activities?select=*&status=eq.published&order=created_at.desc
@@ -305,8 +318,8 @@ export const getActivities = async (): Promise<Activity[]> => {
 
   if (error) {
     logSupabaseError("getActivities", error);
-    console.error("[getActivities] query error — rowCount: 0", error);
-    return [];
+    console.error("[getActivities] query error — falling back to editorial", error);
+    return assignProgrammeWindowDates(editorial);
   }
 
   const rawRows = (data as ActivityRow[] | null) ?? [];
@@ -323,13 +336,21 @@ export const getActivities = async (): Promise<Activity[]> => {
     );
   }
 
-  const list = rawRows
+  const remote = rawRows
     .filter((row) => row.is_deleted !== true)
-    .map(mapRowToActivity);
+    .map(mapRowToActivity)
+    .filter(
+      (a) =>
+        !editorialIds.has(a.id) &&
+        !DEMO_SEED_TITLES.has(a.activity_title.trim())
+    );
 
-  console.info("[getActivities] after map + is_deleted filter", { rowCount: list.length });
+  console.info("[getActivities] after map + filters", {
+    editorial: editorial.length,
+    remote: remote.length,
+  });
 
-  const withDates = assignProgrammeWindowDates(list);
+  const withDates = assignProgrammeWindowDates([...editorial, ...remote]);
   console.info("[getActivities] final activities returned", { rowCount: withDates.length });
 
   return withDates;

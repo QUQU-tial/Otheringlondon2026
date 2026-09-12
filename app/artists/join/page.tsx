@@ -13,6 +13,7 @@ import {
   emptyLinkedDraft,
   formToArtist,
   isArtistJoinValid,
+  loadJoinFormForGuest,
   loadJoinFormForUser,
   publishArtistRemote,
   saveArtistJoinDraft,
@@ -124,7 +125,7 @@ function LinkedEntryFields({
   );
 }
 
-function DraftSavedModal({ onOk }: { onOk: () => void }) {
+function DraftSavedModal({ onOk, signedIn }: { onOk: () => void; signedIn: boolean }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal>
       <div className="w-full max-w-[400px] border border-black bg-white p-[24px]">
@@ -132,11 +133,42 @@ function DraftSavedModal({ onOk }: { onOk: () => void }) {
           Draft saved
         </h2>
         <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-          Your form is saved to this account. You can keep editing anytime.
+          {signedIn
+            ? "Your form is saved to this account. You can keep editing anytime."
+            : "Your form is saved on this device. Log in when you are ready to publish."}
         </p>
         <PrimaryButton type="button" onClick={onOk}>
           OK
         </PrimaryButton>
+      </div>
+    </div>
+  );
+}
+
+function LoginToPublishModal({
+  onLogin,
+  onCancel,
+}: {
+  onLogin: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal>
+      <div className="w-full max-w-[420px] border border-black bg-white p-[24px]">
+        <h2 className="mb-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", fontWeight: 500 }}>
+          Log in to publish
+        </h2>
+        <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
+          Your form is saved. Sign in or create an account, then return here and click Submit to publish your artist page.
+        </p>
+        <div className="flex flex-wrap gap-[12px]">
+          <PrimaryButton type="button" onClick={onLogin}>
+            Login
+          </PrimaryButton>
+          <SecondaryButton type="button" onClick={onCancel}>
+            Keep editing
+          </SecondaryButton>
+        </div>
       </div>
     </div>
   );
@@ -178,6 +210,7 @@ export default function ArtistJoinPage() {
   const [savingDraft, setSavingDraft] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [draftSavedOpen, setDraftSavedOpen] = useState(false);
+  const [loginToPublishOpen, setLoginToPublishOpen] = useState(false);
   const [submitSuccessOpen, setSubmitSuccessOpen] = useState(false);
   const [submittedSlug, setSubmittedSlug] = useState<string | null>(null);
 
@@ -187,36 +220,31 @@ export default function ArtistJoinPage() {
       if (cancelled) return;
       setUser(current);
       setAuthReady(true);
-      if (!current) {
-        sessionStorage.setItem("returnTo", "/artists/join");
-        router.replace("/login?returnTo=%2Fartists%2Fjoin");
-        return;
-      }
-      setForm(loadJoinFormForUser(current.id));
+      setForm(current ? loadJoinFormForUser(current.id) : loadJoinFormForGuest());
       setFormReady(true);
     });
     const unsubscribe = onAuthStateChange((next) => {
       setUser(next);
-      if (!next) {
-        sessionStorage.setItem("returnTo", "/artists/join");
-        router.replace("/login?returnTo=%2Fartists%2Fjoin");
+      if (next) {
+        setForm(loadJoinFormForUser(next.id));
+        setFormReady(true);
         return;
       }
-      setForm(loadJoinFormForUser(next.id));
+      setForm(loadJoinFormForGuest());
       setFormReady(true);
     });
     return () => {
       cancelled = true;
       unsubscribe();
     };
-  }, [router]);
+  }, []);
 
-  // Keep filled content for this account while editing
+  // Autosave while editing (guest device draft or account draft)
   useEffect(() => {
-    if (!user || !formReady) return;
+    if (!formReady) return;
     const timer = window.setTimeout(() => {
       try {
-        saveArtistJoinDraft(form, user.id);
+        saveArtistJoinDraft(form, user?.id ?? null);
       } catch {
         /* quota */
       }
@@ -228,9 +256,8 @@ export default function ArtistJoinPage() {
 
   const persistDraft = useCallback(
     (next: ArtistJoinForm) => {
-      if (!user) return;
       try {
-        saveArtistJoinDraft(next, user.id);
+        saveArtistJoinDraft(next, user?.id ?? null);
       } catch {
         /* quota */
       }
@@ -238,8 +265,14 @@ export default function ArtistJoinPage() {
     [user]
   );
 
+  const goToLoginForPublish = () => {
+    persistDraft(form);
+    sessionStorage.setItem("returnTo", "/artists/join");
+    setLoginToPublishOpen(false);
+    router.push("/login?returnTo=%2Fartists%2Fjoin");
+  };
+
   const handleSaveDraft = () => {
-    if (!user) return;
     setSavingDraft(true);
     persistDraft(form);
     setSavingDraft(false);
@@ -258,12 +291,12 @@ export default function ArtistJoinPage() {
   };
 
   const handleSubmit = async () => {
+    if (!isArtistJoinValid(form)) return;
     if (!user) {
-      sessionStorage.setItem("returnTo", "/artists/join");
-      router.replace("/login?returnTo=%2Fartists%2Fjoin");
+      persistDraft(form);
+      setLoginToPublishOpen(true);
       return;
     }
-    if (!isArtistJoinValid(form)) return;
     setSubmitting(true);
     const artist = formToArtist(form);
     if (!artist) {
@@ -284,52 +317,12 @@ export default function ArtistJoinPage() {
 
   const canSubmit = isArtistJoinValid(form);
 
-  if (!authReady) {
+  if (!authReady || !formReady) {
     return (
       <SubmitShell>
         <div className="mx-auto w-full max-w-[874px] px-0 py-[36px]">
           <p className="text-black/60" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
-            Checking account…
-          </p>
-        </div>
-      </SubmitShell>
-    );
-  }
-
-  if (!user) {
-    return (
-      <SubmitShell>
-        <div className="mx-auto w-full max-w-[874px] px-0 py-[36px]">
-          <h1
-            className="mb-[16px] capitalize text-black"
-            style={{
-              fontFamily: "var(--font-inter)",
-              fontSize: "clamp(40px, 4.17vw, 60px)",
-              fontWeight: 500,
-              lineHeight: "clamp(40px, 4.17vw, 60px)",
-              letterSpacing: "-4.8px",
-            }}
-          >
-            Join
-          </h1>
-          <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", lineHeight: "24px" }}>
-            You need an account to create an artist page. Log in or sign up to continue.
-          </p>
-          <div className="flex flex-wrap gap-[12px]">
-            <PrimaryButton href="/login?returnTo=%2Fartists%2Fjoin">Login</PrimaryButton>
-            <SecondaryButton href="/signup?returnTo=%2Fartists%2Fjoin">Sign up</SecondaryButton>
-          </div>
-        </div>
-      </SubmitShell>
-    );
-  }
-
-  if (!formReady) {
-    return (
-      <SubmitShell>
-        <div className="mx-auto w-full max-w-[874px] px-0 py-[36px]">
-          <p className="text-black/60" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
-            Loading your form…
+            Loading…
           </p>
         </div>
       </SubmitShell>
@@ -372,7 +365,9 @@ export default function ArtistJoinPage() {
           className="mb-[36px] text-[13px] text-black/55"
           style={{ fontFamily: "var(--font-inter)" }}
         >
-          Signed in as {user.email || "artist"}. Your answers stay in this form and remain editable.
+          {user
+            ? `Signed in as ${user.email || "artist"}. Fill in your profile, then click Submit to publish.`
+            : "Fill in your artist profile first. You will be asked to log in when you publish."}
         </p>
 
         <div className="mb-[24px] flex gap-[16px] border-b border-black">
@@ -557,7 +552,12 @@ export default function ArtistJoinPage() {
         </form>
       </div>
 
-      {draftSavedOpen ? <DraftSavedModal onOk={() => setDraftSavedOpen(false)} /> : null}
+      {draftSavedOpen ? (
+        <DraftSavedModal signedIn={Boolean(user)} onOk={() => setDraftSavedOpen(false)} />
+      ) : null}
+      {loginToPublishOpen ? (
+        <LoginToPublishModal onLogin={goToLoginForPublish} onCancel={() => setLoginToPublishOpen(false)} />
+      ) : null}
       {submitSuccessOpen && submittedSlug ? (
         <PublishSuccessModal slug={submittedSlug} onStay={() => setSubmitSuccessOpen(false)} />
       ) : null}
