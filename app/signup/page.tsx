@@ -41,7 +41,7 @@ export default function SignupPage() {
     }
     setLoading(true);
     try {
-      const { user, error: err } = await signUp(email, password);
+      const { user, error: err, needsEmailConfirmation } = await signUp(email, password);
       if (err) {
         if (isSignupDuplicateEmailError(err)) {
           setDuplicateEmailOpen(true);
@@ -51,10 +51,18 @@ export default function SignupPage() {
         setLoading(false);
         return;
       }
+      if (needsEmailConfirmation) {
+        setError("Account created. Please confirm your email, then log in.");
+        setLoading(false);
+        return;
+      }
       if (user) {
         const returnTo = searchParams.get("returnTo") || sessionStorage.getItem("returnTo") || defaultNext;
         sessionStorage.removeItem("returnTo");
         router.push(returnTo.startsWith("/") ? returnTo : defaultNext);
+      } else {
+        setError("Could not create a session. Please try logging in.");
+        setLoading(false);
       }
     } catch {
       setError("An error occurred. Please try again.");

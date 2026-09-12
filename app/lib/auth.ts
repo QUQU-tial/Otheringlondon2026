@@ -10,14 +10,25 @@ export function isSignupDuplicateEmailError(err: Error): boolean {
     msg.includes("user already exists") ||
     msg.includes("email address is already") ||
     msg.includes("email is already") ||
-    msg.includes("already in use")
+    msg.includes("already in use") ||
+    msg.includes("account already exists")
   );
+}
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
 }
 
 export interface User {
   id: string;
   email?: string;
 }
+
+export type AuthResult = {
+  user: User | null;
+  error: Error | null;
+  needsEmailConfirmation?: boolean;
+};
 
 // Get current user session
 export const getCurrentUser = async (): Promise<User | null> => {
@@ -40,66 +51,119 @@ export const getCurrentUser = async (): Promise<User | null> => {
   }
 };
 
+async function ensureProfileFor(userId: string) {
+  const { ensureProfile } = await import("./profiles");
+  await ensureProfile(userId);
+}
+
 // Create account (Supabase email/password)
-export const signUp = async (
-  email: string,
-  password: string
-): Promise<{ user: User | null; error: Error | null }> => {
+export const signUp = async (email: string, password: string): Promise<AuthResult> => {
   const client = getSupabaseClient();
   if (!client) {
     return { user: null, error: new Error("Supabase client not configured") };
   }
 
+  const normalizedEmail = normalizeEmail(email);
+
   try {
-    const { data, error } = await client.auth.signUp({ email, password });
+    const { data, error } = await client.auth.signUp({
+      email: normalizedEmail,
+      password,
+    });
     if (error) {
       return { user: null, error };
     }
-    if (data.user) {
-      // No session until email is confirmed — RLS would block ensureProfile as anon
-      if (data.session) {
-        const { ensureProfile } = await import("./profiles");
-        await ensureProfile(data.user.id);
-      }
+
+    if (!data.user) {
+      return { user: null, error: new Error("No user returned") };
+    }
+
+    // Supabase soft-fails duplicate signups: returns a user with empty identities
+    if ((data.user.identities?.length ?? 0) === 0) {
       return {
-        user: { id: data.user.id, email: data.user.email ?? undefined },
+        user: null,
+        error: new Error("Account already exists. Please log in."),
+      };
+    }
+
+    // Prefer an active session. If confirm-email is on, session is null.
+    if (data.session) {
+      await ensureProfileFor(data.user.id);
+      return {
+        user: { id: data.user.id, email: data.user.email ?? normalizedEmail },
         error: null,
       };
     }
-    return { user: null, error: new Error("No user returned") };
+
+    // Try password sign-in immediately (works when email confirmation is disabled)
+    const login = await client.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
+    if (login.data.session?.user) {
+      await ensureProfileFor(login.data.session.user.id);
+      return {
+        user: {
+          id: login.data.session.user.id,
+          email: login.data.session.user.email ?? normalizedEmail,
+        },
+        error: null,
+      };
+    }
+
+    return {
+      user: null,
+      error: new Error(
+        "Account created. Please confirm your email, then log in. If you used Google before, use Continue with Google."
+      ),
+      needsEmailConfirmation: true,
+    };
   } catch (error) {
     return { user: null, error: error as Error };
   }
 };
 
 // Sign in with email and password
-export const signIn = async (
-  email: string,
-  password: string
-): Promise<{ user: User | null; error: Error | null }> => {
+export const signIn = async (email: string, password: string): Promise<AuthResult> => {
   const client = getSupabaseClient();
   if (!client) {
     return { user: null, error: new Error("Supabase client not configured") };
   }
 
+  const normalizedEmail = normalizeEmail(email);
+
   try {
     const { data, error } = await client.auth.signInWithPassword({
-      email,
+      email: normalizedEmail,
       password,
     });
 
     if (error) {
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("invalid login credentials") || msg.includes("invalid_credentials")) {
+        return {
+          user: null,
+          error: new Error(
+            "Invalid email or password. If you signed up with Google, use Continue with Google. If you just registered, confirm your email first."
+          ),
+        };
+      }
+      if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+        return {
+          user: null,
+          error: new Error("Please confirm your email before logging in. Check your inbox."),
+          needsEmailConfirmation: true,
+        };
+      }
       return { user: null, error };
     }
 
     if (data.user) {
-      const { ensureProfile } = await import("./profiles");
-      await ensureProfile(data.user.id);
-
+      await ensureProfileFor(data.user.id);
       return {
         user: {
           id: data.user.id,
-          email: data.user.email,
+          email: data.user.email ?? normalizedEmail,
         },
         error: null,
       };
@@ -153,7 +217,8 @@ export const signOut = async (): Promise<{ error: Error | null }> => {
   }
 
   try {
-    const { error } = await client.auth.signOut();
+    // Global clears refresh token so the next password/Google login is clean.
+    const { error } = await client.auth.signOut({ scope: "global" });
     return { error };
   } catch (error) {
     return { error: error as Error };
@@ -173,8 +238,7 @@ export const onAuthStateChange = (callback: (user: User | null) => void) => {
   } = client.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        const { ensureProfile } = await import("./profiles");
-        await ensureProfile(session.user.id);
+        await ensureProfileFor(session.user.id);
       }
 
       callback({
