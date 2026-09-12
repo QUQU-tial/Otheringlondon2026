@@ -12,9 +12,9 @@ function AuthCallbackInner() {
 
   useEffect(() => {
     const run = async () => {
-      const returnToRaw = searchParams.get("returnTo") || sessionStorage.getItem("returnTo") || "/artists/join";
+      const returnToRaw =
+        searchParams.get("returnTo") || sessionStorage.getItem("returnTo") || "/artists/join";
       const returnTo = returnToRaw.startsWith("/") ? returnToRaw : "/artists/join";
-      sessionStorage.removeItem("returnTo");
 
       const client = getSupabaseClient();
       if (!client) {
@@ -30,6 +30,9 @@ function AuthCallbackInner() {
             setMessage(error.message || "Could not complete sign-in.");
             return;
           }
+        } else {
+          // Allow detectSessionInUrl / hash tokens a moment to settle
+          await new Promise((resolve) => setTimeout(resolve, 250));
         }
 
         const {
@@ -37,10 +40,11 @@ function AuthCallbackInner() {
         } = await client.auth.getSession();
 
         if (!session?.user) {
-          setMessage("No session found. Please try again.");
+          setMessage("No session found. Please try again from Login.");
           return;
         }
 
+        sessionStorage.removeItem("returnTo");
         await ensureProfile(session.user.id);
         router.replace(returnTo);
       } catch (error) {

@@ -125,18 +125,17 @@ export const signInWithGoogle = async (
     if (typeof window !== "undefined") {
       sessionStorage.setItem("returnTo", safeReturn);
     }
+    // Keep redirect URL path-only so it matches Supabase allow-list exactly.
     const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(safeReturn)}`
-        : undefined;
+      typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
 
     const { error } = await client.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo,
+        // Do not force prompt=consent — it causes repeated Google re-login screens.
         queryParams: {
           access_type: "offline",
-          prompt: "consent",
         },
       },
     });
