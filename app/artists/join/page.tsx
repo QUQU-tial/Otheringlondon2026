@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SubmitShell } from "../../components/SubmitShell";
 import { PrimaryButton, SecondaryButton } from "../../components/othering";
+import { getCurrentUser, onAuthStateChange, type User } from "../../lib/auth";
 import { uploadImageToSupabase } from "../../lib/supabase";
 import { isImageUrl } from "../../submit/form/form-helpers";
 import {
@@ -12,14 +13,14 @@ import {
   emptyLinkedDraft,
   formToArtist,
   isArtistJoinValid,
-  loadArtistJoinDraft,
+  loadJoinFormForUser,
+  publishArtistRemote,
   saveArtistJoinDraft,
   saveSubmittedArtist,
   type ArtistJoinForm,
   type ArtistJoinTab,
   type ArtistLinkedDraft,
 } from "../../lib/artist-submissions";
-import type { ArtistWork } from "../../lib/artists";
 
 /** Example profile for join-form preview (photo + bio + CV + exhibitions). */
 const PREVIEW_ARTIST_HREF = "/artists/helen-cammock";
@@ -123,23 +124,15 @@ function LinkedEntryFields({
   );
 }
 
-function SuccessModal({
-  title,
-  body,
-  onOk,
-}: {
-  title: string;
-  body: string;
-  onOk: () => void;
-}) {
+function DraftSavedModal({ onOk }: { onOk: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal>
       <div className="w-full max-w-[400px] border border-black bg-white p-[24px]">
         <h2 className="mb-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", fontWeight: 500 }}>
-          {title}
+          Draft saved
         </h2>
         <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-          {body}
+          Your form is saved to this account. You can keep editing anytime.
         </p>
         <PrimaryButton type="button" onClick={onOk}>
           OK
@@ -149,9 +142,39 @@ function SuccessModal({
   );
 }
 
+function PublishSuccessModal({
+  slug,
+  onStay,
+}: {
+  slug: string;
+  onStay: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal>
+      <div className="w-full max-w-[420px] border border-black bg-white p-[24px]">
+        <h2 className="mb-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", fontWeight: 500 }}>
+          Published
+        </h2>
+        <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
+          Your artist page is live in the artists directory. You can keep editing this form and submit again to update it.
+        </p>
+        <div className="flex flex-wrap gap-[12px]">
+          <PrimaryButton href={`/artists/${slug}`}>View your page</PrimaryButton>
+          <SecondaryButton type="button" onClick={onStay}>
+            Keep editing
+          </SecondaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ArtistJoinPage() {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [form, setForm] = useState<ArtistJoinForm>(() => emptyArtistJoinForm());
+  const [formReady, setFormReady] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [draftSavedOpen, setDraftSavedOpen] = useState(false);
@@ -159,21 +182,64 @@ export default function ArtistJoinPage() {
   const [submittedSlug, setSubmittedSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    const draft = loadArtistJoinDraft();
-    if (draft) setForm(draft);
-  }, []);
+    let cancelled = false;
+    getCurrentUser().then((current) => {
+      if (cancelled) return;
+      setUser(current);
+      setAuthReady(true);
+      if (!current) {
+        sessionStorage.setItem("returnTo", "/artists/join");
+        router.replace("/login?returnTo=%2Fartists%2Fjoin");
+        return;
+      }
+      setForm(loadJoinFormForUser(current.id));
+      setFormReady(true);
+    });
+    const unsubscribe = onAuthStateChange((next) => {
+      setUser(next);
+      if (!next) {
+        sessionStorage.setItem("returnTo", "/artists/join");
+        router.replace("/login?returnTo=%2Fartists%2Fjoin");
+        return;
+      }
+      setForm(loadJoinFormForUser(next.id));
+      setFormReady(true);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [router]);
+
+  // Keep filled content for this account while editing
+  useEffect(() => {
+    if (!user || !formReady) return;
+    const timer = window.setTimeout(() => {
+      try {
+        saveArtistJoinDraft(form, user.id);
+      } catch {
+        /* quota */
+      }
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [form, formReady, user]);
 
   const setTab = (tab: ArtistJoinTab) => setForm((p) => ({ ...p, activeTab: tab }));
 
-  const persistDraft = useCallback((next: ArtistJoinForm) => {
-    try {
-      saveArtistJoinDraft(next);
-    } catch {
-      /* quota */
-    }
-  }, []);
+  const persistDraft = useCallback(
+    (next: ArtistJoinForm) => {
+      if (!user) return;
+      try {
+        saveArtistJoinDraft(next, user.id);
+      } catch {
+        /* quota */
+      }
+    },
+    [user]
+  );
 
   const handleSaveDraft = () => {
+    if (!user) return;
     setSavingDraft(true);
     persistDraft(form);
     setSavingDraft(false);
@@ -191,7 +257,12 @@ export default function ArtistJoinPage() {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!user) {
+      sessionStorage.setItem("returnTo", "/artists/join");
+      router.replace("/login?returnTo=%2Fartists%2Fjoin");
+      return;
+    }
     if (!isArtistJoinValid(form)) return;
     setSubmitting(true);
     const artist = formToArtist(form);
@@ -200,8 +271,9 @@ export default function ArtistJoinPage() {
       return;
     }
     try {
-      saveSubmittedArtist(artist);
+      saveSubmittedArtist(artist, user.id);
       persistDraft(form);
+      await publishArtistRemote(artist, user.id);
       setSubmittedSlug(artist.slug);
       setSubmitSuccessOpen(true);
     } catch (e) {
@@ -211,6 +283,58 @@ export default function ArtistJoinPage() {
   };
 
   const canSubmit = isArtistJoinValid(form);
+
+  if (!authReady) {
+    return (
+      <SubmitShell>
+        <div className="mx-auto w-full max-w-[874px] px-0 py-[36px]">
+          <p className="text-black/60" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
+            Checking account…
+          </p>
+        </div>
+      </SubmitShell>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SubmitShell>
+        <div className="mx-auto w-full max-w-[874px] px-0 py-[36px]">
+          <h1
+            className="mb-[16px] capitalize text-black"
+            style={{
+              fontFamily: "var(--font-inter)",
+              fontSize: "clamp(40px, 4.17vw, 60px)",
+              fontWeight: 500,
+              lineHeight: "clamp(40px, 4.17vw, 60px)",
+              letterSpacing: "-4.8px",
+            }}
+          >
+            Join
+          </h1>
+          <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", lineHeight: "24px" }}>
+            You need an account to create an artist page. Log in or sign up to continue.
+          </p>
+          <div className="flex flex-wrap gap-[12px]">
+            <PrimaryButton href="/login?returnTo=%2Fartists%2Fjoin">Login</PrimaryButton>
+            <SecondaryButton href="/signup?returnTo=%2Fartists%2Fjoin">Sign up</SecondaryButton>
+          </div>
+        </div>
+      </SubmitShell>
+    );
+  }
+
+  if (!formReady) {
+    return (
+      <SubmitShell>
+        <div className="mx-auto w-full max-w-[874px] px-0 py-[36px]">
+          <p className="text-black/60" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
+            Loading your form…
+          </p>
+        </div>
+      </SubmitShell>
+    );
+  }
 
   return (
     <SubmitShell>
@@ -227,7 +351,7 @@ export default function ArtistJoinPage() {
         >
           Join
         </h1>
-        <p className="mb-[36px]">
+        <p className="mb-[12px]">
           <Link
             href={PREVIEW_ARTIST_HREF}
             target="_blank"
@@ -243,6 +367,12 @@ export default function ArtistJoinPage() {
             Preview — see artist page
             <span aria-hidden>↗</span>
           </Link>
+        </p>
+        <p
+          className="mb-[36px] text-[13px] text-black/55"
+          style={{ fontFamily: "var(--font-inter)" }}
+        >
+          Signed in as {user.email || "artist"}. Your answers stay in this form and remain editable.
         </p>
 
         <div className="mb-[24px] flex gap-[16px] border-b border-black">
@@ -265,7 +395,7 @@ export default function ArtistJoinPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (form.activeTab === 2) handleSubmit();
+            if (form.activeTab === 2) void handleSubmit();
           }}
         >
           {form.activeTab === 0 ? (
@@ -419,26 +549,17 @@ export default function ArtistJoinPage() {
                 Next
               </PrimaryButton>
             ) : (
-              <PrimaryButton type="button" disabled={submitting || !canSubmit} onClick={handleSubmit}>
-                {submitting ? "Sending" : "Submit"}
+              <PrimaryButton type="button" disabled={submitting || !canSubmit} onClick={() => void handleSubmit()}>
+                {submitting ? "Publishing" : "Submit"}
               </PrimaryButton>
             )}
           </div>
         </form>
       </div>
 
-      {draftSavedOpen ? (
-        <SuccessModal title="Success" body="Upload successful" onOk={() => setDraftSavedOpen(false)} />
-      ) : null}
-      {submitSuccessOpen ? (
-        <SuccessModal
-          title="Success"
-          body="Upload successful"
-          onOk={() => {
-            setSubmitSuccessOpen(false);
-            if (submittedSlug) router.push(`/artists/${submittedSlug}`);
-          }}
-        />
+      {draftSavedOpen ? <DraftSavedModal onOk={() => setDraftSavedOpen(false)} /> : null}
+      {submitSuccessOpen && submittedSlug ? (
+        <PublishSuccessModal slug={submittedSlug} onStay={() => setSubmitSuccessOpen(false)} />
       ) : null}
     </SubmitShell>
   );

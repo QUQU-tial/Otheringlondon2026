@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signUp, getCurrentUser, isSignupDuplicateEmailError } from "../lib/auth";
+import { signUp, getCurrentUser, isSignupDuplicateEmailError, signInWithGoogle } from "../lib/auth";
 import { BodyText, PrimaryButton, SecondaryButton } from "../components/othering";
 
 export default function SignupPage() {
@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [duplicateEmailOpen, setDuplicateEmailOpen] = useState(false);
 
   const defaultNext = "/submit/form";
@@ -68,6 +69,19 @@ export default function SignupPage() {
   const loginHref = searchParams.get("returnTo")
     ? `/login?returnTo=${encodeURIComponent(searchParams.get("returnTo")!)}`
     : "/login";
+
+  const handleGoogle = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    const returnTo = searchParams.get("returnTo") || sessionStorage.getItem("returnTo") || "/artists/join";
+    const { error: googleError } = await signInWithGoogle(
+      returnTo.startsWith("/") ? returnTo : "/artists/join"
+    );
+    if (googleError) {
+      setError(googleError.message || "Google sign-in failed");
+      setGoogleLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#1C1C1C] min-[860px]:flex-row">
@@ -173,11 +187,29 @@ export default function SignupPage() {
           ) : null}
 
           <div className="flex flex-wrap items-center gap-4">
-            <PrimaryButton type="submit" disabled={loading}>
+            <PrimaryButton type="submit" disabled={loading || googleLoading}>
               {loading ? "…" : "Sign up"}
             </PrimaryButton>
             <SecondaryButton href={loginHref}>Login</SecondaryButton>
           </div>
+
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center" aria-hidden>
+              <div className="w-full border-t border-[#1C1C1C]/15" />
+            </div>
+            <div className="relative flex justify-center">
+              <span
+                className="bg-white px-3 text-[11px] uppercase tracking-[0.14em] text-[#1C1C1C]/45"
+                style={{ fontFamily: "var(--font-inter)" }}
+              >
+                Or
+              </span>
+            </div>
+          </div>
+
+          <SecondaryButton type="button" onClick={() => void handleGoogle()} disabled={loading || googleLoading}>
+            {googleLoading ? "…" : "Continue with Google"}
+          </SecondaryButton>
         </form>
       </div>
 

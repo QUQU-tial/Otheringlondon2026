@@ -17,7 +17,14 @@ export const getSupabaseClient = (): SupabaseClient | null => {
     }
     
     try {
-      supabaseClient = createClient(supabaseUrl, supabaseKey);
+      supabaseClient = createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: "pkce",
+        },
+      });
     } catch (error) {
       console.warn('Failed to create Supabase client:', error);
       return null;

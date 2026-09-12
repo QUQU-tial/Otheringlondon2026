@@ -13,7 +13,7 @@ import {
   recentlyAddedArtists,
   type Artist,
 } from "../lib/artists";
-import { loadSubmittedArtists } from "../lib/artist-submissions";
+import { loadAllSubmittedArtists } from "../lib/artist-submissions";
 import { WhiteSiteHeader } from "../components/WhiteSiteHeader";
 
 const PEEK_COUNT = 4;
@@ -319,17 +319,19 @@ export default function ArtistsPage() {
     genre: false,
     medium: false,
   });
-  const [submitted, setSubmitted] = useState<Artist[]>(() => loadSubmittedArtists());
-  const [artists, setArtists] = useState(() =>
-    buildArtistDirectory([], loadSubmittedArtists())
-  );
+  const [submitted, setSubmitted] = useState<Artist[]>([]);
+  const [artists, setArtists] = useState(() => buildArtistDirectory([], []));
 
   useEffect(() => {
-    const loadedSubmitted = loadSubmittedArtists();
-    setSubmitted(loadedSubmitted);
-    getActivities().then((activities) => {
+    let cancelled = false;
+    Promise.all([getActivities(), loadAllSubmittedArtists()]).then(([activities, loadedSubmitted]) => {
+      if (cancelled) return;
+      setSubmitted(loadedSubmitted);
       setArtists(buildArtistDirectory(activities, loadedSubmitted));
     });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filtered = useMemo(() => {

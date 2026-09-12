@@ -23,16 +23,19 @@ export interface User {
 export const getCurrentUser = async (): Promise<User | null> => {
   const client = getSupabaseClient();
   if (!client) return null;
-  
+
   try {
-    const { data: { user }, error } = await client.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await client.auth.getUser();
     if (error || !user) return null;
     return {
       id: user.id,
       email: user.email,
     };
   } catch (error) {
-    console.error('Error getting user:', error);
+    console.error("Error getting user:", error);
     return null;
   }
 };
@@ -70,27 +73,29 @@ export const signUp = async (
 };
 
 // Sign in with email and password
-export const signIn = async (email: string, password: string): Promise<{ user: User | null; error: Error | null }> => {
+export const signIn = async (
+  email: string,
+  password: string
+): Promise<{ user: User | null; error: Error | null }> => {
   const client = getSupabaseClient();
   if (!client) {
-    return { user: null, error: new Error('Supabase client not configured') };
+    return { user: null, error: new Error("Supabase client not configured") };
   }
-  
+
   try {
     const { data, error } = await client.auth.signInWithPassword({
       email,
       password,
     });
-    
+
     if (error) {
       return { user: null, error };
     }
-    
+
     if (data.user) {
-      // Ensure profile exists on successful login
-      const { ensureProfile } = await import('./profiles');
+      const { ensureProfile } = await import("./profiles");
       await ensureProfile(data.user.id);
-      
+
       return {
         user: {
           id: data.user.id,
@@ -99,10 +104,45 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
         error: null,
       };
     }
-    
-    return { user: null, error: new Error('No user returned') };
+
+    return { user: null, error: new Error("No user returned") };
   } catch (error) {
     return { user: null, error: error as Error };
+  }
+};
+
+/** Google OAuth — redirects to provider then `/auth/callback`. */
+export const signInWithGoogle = async (
+  returnTo = "/artists/join"
+): Promise<{ error: Error | null }> => {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { error: new Error("Supabase client not configured") };
+  }
+
+  try {
+    const safeReturn = returnTo.startsWith("/") ? returnTo : "/artists/join";
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("returnTo", safeReturn);
+    }
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(safeReturn)}`
+        : undefined;
+
+    const { error } = await client.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
+    });
+    return { error: error ?? null };
+  } catch (error) {
+    return { error: error as Error };
   }
 };
 
@@ -110,9 +150,9 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
 export const signOut = async (): Promise<{ error: Error | null }> => {
   const client = getSupabaseClient();
   if (!client) {
-    return { error: new Error('Supabase client not configured') };
+    return { error: new Error("Supabase client not configured") };
   }
-  
+
   try {
     const { error } = await client.auth.signOut();
     return { error };
@@ -128,15 +168,16 @@ export const onAuthStateChange = (callback: (user: User | null) => void) => {
     callback(null);
     return () => {};
   }
-  
-  const { data: { subscription } } = client.auth.onAuthStateChange(async (event, session) => {
+
+  const {
+    data: { subscription },
+  } = client.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
-      // Ensure profile exists on login
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        const { ensureProfile } = await import('./profiles');
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        const { ensureProfile } = await import("./profiles");
         await ensureProfile(session.user.id);
       }
-      
+
       callback({
         id: session.user.id,
         email: session.user.email,
@@ -145,9 +186,8 @@ export const onAuthStateChange = (callback: (user: User | null) => void) => {
       callback(null);
     }
   });
-  
+
   return () => {
     subscription.unsubscribe();
   };
 };
-

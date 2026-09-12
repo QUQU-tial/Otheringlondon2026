@@ -12,26 +12,38 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    setIsChecking(true);
+    setAllowed(false);
+
     const protectRoute = async () => {
       const { needsRedirect, redirectUrl } = await checkRouteAccess(pathname);
-      
+
+      if (cancelled) return;
+
       if (needsRedirect && redirectUrl) {
-        router.push(redirectUrl);
-      } else {
+        router.replace(redirectUrl);
+        setAllowed(false);
         setIsChecking(false);
+        return;
       }
+
+      setAllowed(true);
+      setIsChecking(false);
     };
 
-    protectRoute();
+    void protectRoute();
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, router]);
 
-  // Show nothing while checking (prevents flash of protected content)
-  if (isChecking) {
+  if (isChecking || !allowed) {
     return null;
   }
 
   return <>{children}</>;
 }
-

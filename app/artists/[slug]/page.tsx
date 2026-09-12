@@ -11,7 +11,7 @@ import {
   type ArtistLinkedItem,
   type ArtistWork,
 } from "../../lib/artists";
-import { loadSubmittedArtists } from "../../lib/artist-submissions";
+import { loadAllSubmittedArtists } from "../../lib/artist-submissions";
 import { SITE_LOGO_HEIGHT } from "../../lib/activity-areas";
 
 const navStyle = {
@@ -165,9 +165,9 @@ export default function ArtistDetailPage() {
 
   useEffect(() => {
     let cancelled = false;
-    getActivities().then((activities) => {
+    Promise.all([getActivities(), loadAllSubmittedArtists()]).then(([activities, submitted]) => {
       if (cancelled) return;
-      setArtist(findArtistBySlug(slug, activities, loadSubmittedArtists()));
+      setArtist(findArtistBySlug(slug, activities, submitted));
       setImageError(false);
     });
     return () => {

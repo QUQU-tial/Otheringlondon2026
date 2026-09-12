@@ -16,15 +16,17 @@ export const PUBLIC_ROUTES = [
   '/signup',
   '/admin', // Admin review (viewable without login)
   '/event', // Event detail pages (public, including preview)
+  '/auth/callback',
 ] as const;
 
 // Routes that should never be protected (even if they match private patterns)
 export const ALWAYS_PUBLIC_ROUTES = [
   '/login',
+  '/auth/callback',
 ] as const;
 
 export const PRIVATE_ROUTES = [
-  // /admin is public so you can view without login
+  '/artists/join',
 ] as const;
 
 /**
@@ -45,7 +47,15 @@ export function isPublicRoute(pathname: string): boolean {
     return true;
   }
 
+  if (pathname.startsWith('/auth/')) {
+    return true;
+  }
+
+  // Artist directory + detail are public; join requires login
   if (pathname.startsWith('/artists')) {
+    if (pathname === '/artists/join' || pathname.startsWith('/artists/join/')) {
+      return false;
+    }
     return true;
   }
   
@@ -107,4 +117,3 @@ export async function checkRouteAccess(pathname: string): Promise<{ needsRedirec
   
   return { needsRedirect: false };
 }
-
