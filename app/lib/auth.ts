@@ -30,12 +30,22 @@ export type AuthResult = {
   needsEmailConfirmation?: boolean;
 };
 
-// Get current user session
+// Get current user session (prefer local session so UI is not blocked on network)
 export const getCurrentUser = async (): Promise<User | null> => {
   const client = getSupabaseClient();
   if (!client) return null;
 
   try {
+    const {
+      data: { session },
+    } = await client.auth.getSession();
+    if (session?.user) {
+      return {
+        id: session.user.id,
+        email: session.user.email,
+      };
+    }
+
     const {
       data: { user },
       error,
@@ -159,7 +169,11 @@ export const signIn = async (email: string, password: string): Promise<AuthResul
     }
 
     if (data.user) {
-      await ensureProfileFor(data.user.id);
+      try {
+        await ensureProfileFor(data.user.id);
+      } catch (profileError) {
+        console.warn("Profile ensure after sign-in failed", profileError);
+      }
       return {
         user: {
           id: data.user.id,
@@ -226,6 +240,8 @@ export const signOut = async (): Promise<{ error: Error | null }> => {
 };
 
 // Listen to auth state changes
+// IMPORTANT: keep this callback synchronous — awaiting inside onAuthStateChange
+// can deadlock getSession/getUser in supabase-js.
 export const onAuthStateChange = (callback: (user: User | null) => void) => {
   const client = getSupabaseClient();
   if (!client) {
@@ -235,10 +251,10 @@ export const onAuthStateChange = (callback: (user: User | null) => void) => {
 
   const {
     data: { subscription },
-  } = client.auth.onAuthStateChange(async (event, session) => {
+  } = client.auth.onAuthStateChange((event, session) => {
     if (session?.user) {
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        await ensureProfileFor(session.user.id);
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+        void ensureProfileFor(session.user.id);
       }
 
       callback({

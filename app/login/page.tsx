@@ -63,7 +63,9 @@ export default function LoginPage() {
           : sessionReturnTo || defaultAfterLogin;
         sessionStorage.removeItem("returnTo");
         setLoading(false);
-        router.push(returnTo.startsWith("/") ? returnTo : defaultAfterLogin);
+        // Give the persisted session a tick before navigating so /artists/join sees it.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        router.replace(returnTo.startsWith("/") ? returnTo : defaultAfterLogin);
       }
     } catch {
       setError("An error occurred. Please try again.");

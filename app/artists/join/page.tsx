@@ -218,10 +218,7 @@ export default function ArtistJoinPage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const current = await Promise.race([
-          getCurrentUser(),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
-        ]);
+        const current = await getCurrentUser();
         if (cancelled) return;
         setUser(current);
         setAuthReady(true);
@@ -237,13 +234,16 @@ export default function ArtistJoinPage() {
     };
     void load();
     const unsubscribe = onAuthStateChange((next) => {
+      if (cancelled) return;
       setUser(next);
+      setAuthReady(true);
       if (next) {
         setForm(loadJoinFormForUser(next.id));
         setFormReady(true);
         return;
       }
-      setForm(loadJoinFormForGuest());
+      // Keep guest draft if auth briefly reports null during hydration
+      setForm((prev) => (prev.name.trim() || prev.bio.trim() ? prev : loadJoinFormForGuest()));
       setFormReady(true);
     });
     return () => {
@@ -305,7 +305,12 @@ export default function ArtistJoinPage() {
 
   const handleSubmit = async () => {
     if (!isArtistJoinValid(form)) return;
-    if (!user) {
+    let activeUser = user;
+    if (!activeUser) {
+      activeUser = await getCurrentUser();
+      if (activeUser) setUser(activeUser);
+    }
+    if (!activeUser) {
       persistDraft(form);
       setLoginToPublishOpen(true);
       return;
@@ -315,12 +320,12 @@ export default function ArtistJoinPage() {
       const artist = formToArtist(form);
       if (!artist) return;
       // Local directory update is the source of truth for the public page.
-      saveSubmittedArtist(artist, user.id);
+      saveSubmittedArtist(artist, activeUser.id);
       persistDraft(form);
       setSubmittedSlug(artist.slug);
       setSubmitSuccessOpen(true);
       // Remote sync is best-effort and must not block re-publish.
-      void publishArtistRemote(artist, user.id);
+      void publishArtistRemote(artist, activeUser.id);
     } catch (e) {
       console.error("Artist submit failed", e);
     } finally {
