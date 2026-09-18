@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getSubmissions, updateActivityStatus, type Submission } from "../lib/storage";
 import { formatDisplayDateFromDate } from "../lib/calendar";
+import { AdminShell } from "../components/AdminShell";
 
 type StatusFilter = "all" | "pending" | "published" | "rejected" | "removed";
 
@@ -102,197 +103,146 @@ export default function AdminPage() {
     }
   };
 
-  if (loading && activities.length === 0) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
-          Loading...
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-[900px] mx-auto px-[36px] py-[36px]">
-        <h1
-          className="font-medium text-black capitalize mb-[36px]"
-          style={{
-            fontFamily: "var(--font-inter)",
-            fontSize: "clamp(40px, 4.17vw, 60px)",
-            lineHeight: "clamp(40px, 4.17vw, 60px)",
-            letterSpacing: "-4.8px",
-          }}
-        >
-          Admin Review
-        </h1>
+    <AdminShell title="Admin Review">
+      <div className="mb-[24px] flex flex-wrap gap-[12px]">
+        {(
+          [
+            ["all", "All"],
+            ["pending", "Pending Review"],
+            ["published", "Published"],
+            ["rejected", "Rejected"],
+            ["removed", "Removed"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setStatusFilter(key)}
+            className={`border px-[16px] py-[8px] transition-colors ${
+              statusFilter === key
+                ? "border-black bg-black text-white"
+                : "border-black/20 bg-white text-black hover:bg-black/5"
+            }`}
+            style={{
+              fontFamily: "var(--font-inter)",
+              fontSize: "14px",
+              lineHeight: "20px",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-        <div className="flex flex-wrap gap-[12px] mb-[24px]">
-          {(
-            [
-              ["all", "All"],
-              ["pending", "Pending Review"],
-              ["published", "Published"],
-              ["rejected", "Rejected"],
-              ["removed", "Removed"],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setStatusFilter(key)}
-              className={`px-[16px] py-[8px] border transition-colors ${
-                statusFilter === key
-                  ? "bg-black text-white border-black"
-                  : "bg-white text-black border-black/20 hover:bg-black/5"
-              }`}
-              style={{
-                fontFamily: "var(--font-inter)",
-                fontSize: "14px",
-                lineHeight: "20px",
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-black">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b border-black">
+              {["Activity Title", "Author", "Status", "Created", "Location", "Actions"].map((label) => (
                 <th
-                  className="text-left py-[12px] pr-[16px] font-medium text-black uppercase"
+                  key={label}
+                  className="py-[12px] pr-[16px] text-left font-medium uppercase text-black"
                   style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
                 >
-                  Activity Title
+                  {label}
                 </th>
-                <th
-                  className="text-left py-[12px] pr-[16px] font-medium text-black uppercase"
-                  style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                >
-                  Author
-                </th>
-                <th
-                  className="text-left py-[12px] pr-[16px] font-medium text-black uppercase"
-                  style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                >
-                  Status
-                </th>
-                <th
-                  className="text-left py-[12px] pr-[16px] font-medium text-black uppercase"
-                  style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                >
-                  Created
-                </th>
-                <th
-                  className="text-left py-[12px] pr-[16px] font-medium text-black uppercase"
-                  style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                >
-                  Location
-                </th>
-                <th
-                  className="text-left py-[12px] pr-[16px] font-medium text-black uppercase"
-                  style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                >
-                  Actions
-                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="py-[24px] text-center text-black/50" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
+                  Loading...
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="py-[24px] text-center text-black/50" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
-                    Loading...
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-[24px] text-center text-black/50" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
+                  No items in this filter
+                </td>
+              </tr>
+            ) : (
+              filtered.map((item) => (
+                <tr key={item.id} className="border-b border-black/20">
+                  <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", lineHeight: "24px" }}>
+                    {item.activity_title || "—"}
                   </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-[24px] text-center text-black/50" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
-                    No items in this filter
+                  <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", lineHeight: "24px" }}>
+                    {item.author_name || "—"}
                   </td>
-                </tr>
-              ) : (
-                filtered.map((item) => (
-                  <tr key={item.id} className="border-b border-black/20">
-                    <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", lineHeight: "24px" }}>
-                      {item.activity_title || "—"}
-                    </td>
-                    <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", lineHeight: "24px" }}>
-                      {item.author_name || "—"}
-                    </td>
-                    <td className="py-[12px] pr-[16px] text-black uppercase" style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}>
-                      {item.status}
-                    </td>
-                    <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-                      {formatDate(item.createdAt)}
-                    </td>
-                    <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-                      {item.activity_location || "—"}
-                    </td>
-                    <td className="py-[12px] pr-[16px]">
-                      <div className="flex flex-wrap gap-[8px]">
-                        <a
-                          href={`/event/${item.id}?preview=true`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-[12px] py-[6px] border border-black/40 text-black/80 hover:bg-black/5"
+                  <td className="py-[12px] pr-[16px] uppercase text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}>
+                    {item.status}
+                  </td>
+                  <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
+                    {formatDate(item.createdAt)}
+                  </td>
+                  <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
+                    {item.activity_location || "—"}
+                  </td>
+                  <td className="py-[12px] pr-[16px]">
+                    <div className="flex flex-wrap gap-[8px]">
+                      <a
+                        href={`/event/${item.id}?preview=true`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border border-black/40 px-[12px] py-[6px] text-black/80 hover:bg-black/5"
+                        style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
+                      >
+                        Preview
+                      </a>
+                      {item.status !== "published" && (
+                        <button
+                          type="button"
+                          disabled={!!actingId}
+                          onClick={() => void handlePublish(item)}
+                          className="bg-black px-[12px] py-[6px] text-white hover:opacity-90 disabled:opacity-50"
                           style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
                         >
-                          Preview
-                        </a>
-                        {item.status !== "published" && (
-                          <button
-                            type="button"
-                            disabled={!!actingId}
-                            onClick={() => handlePublish(item)}
-                            className="px-[12px] py-[6px] bg-black text-white hover:opacity-90 disabled:opacity-50"
-                            style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                          >
-                            Publish
-                          </button>
-                        )}
-                        {item.status !== "rejected" && (
-                          <button
-                            type="button"
-                            disabled={!!actingId}
-                            onClick={() => handleReject(item)}
-                            className="px-[12px] py-[6px] border border-black text-black hover:bg-black/5 disabled:opacity-50"
-                            style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                          >
-                            Reject
-                          </button>
-                        )}
-                        {!item.is_deleted ? (
-                          <button
-                            type="button"
-                            disabled={!!actingId}
-                            onClick={() => handleRemove(item)}
-                            className="px-[12px] py-[6px] border border-black/40 text-black/70 hover:bg-black/5 disabled:opacity-50"
-                            style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                          >
-                            Remove
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            disabled={!!actingId}
-                            onClick={() => handleRestore(item)}
-                            className="px-[12px] py-[6px] border border-black/40 text-black/70 hover:bg-black/5 disabled:opacity-50"
-                            style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                          >
-                            Restore
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                          Publish
+                        </button>
+                      )}
+                      {item.status !== "rejected" && (
+                        <button
+                          type="button"
+                          disabled={!!actingId}
+                          onClick={() => void handleReject(item)}
+                          className="border border-black/40 px-[12px] py-[6px] text-black hover:bg-black/5 disabled:opacity-50"
+                          style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
+                        >
+                          Reject
+                        </button>
+                      )}
+                      {!item.is_deleted ? (
+                        <button
+                          type="button"
+                          disabled={!!actingId}
+                          onClick={() => void handleRemove(item)}
+                          className="border border-black/40 px-[12px] py-[6px] text-black hover:bg-black/5 disabled:opacity-50"
+                          style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={!!actingId}
+                          onClick={() => void handleRestore(item)}
+                          className="border border-black/40 px-[12px] py-[6px] text-black hover:bg-black/5 disabled:opacity-50"
+                          style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
+                        >
+                          Restore
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-    </div>
+    </AdminShell>
   );
 }

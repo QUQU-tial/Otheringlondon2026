@@ -32,6 +32,17 @@ export type ArtistJoinForm = {
 
 export type StoredArtist = Artist & {
   ownerId?: string;
+  ownerEmail?: string;
+  status?: "draft" | "pending_review" | "published" | "rejected";
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type AdminArtistRecord = StoredArtist & {
+  ownerEmail: string;
+  status: "draft" | "pending_review" | "published" | "rejected";
+  createdAt: string;
+  updatedAt: string;
 };
 
 export const emptyLinkedDraft = (): ArtistLinkedDraft => ({
@@ -201,6 +212,14 @@ function parseStoredArtist(value: unknown): StoredArtist | null {
   const slug =
     typeof value.slug === "string" && value.slug ? value.slug : artistSlugFromName(value.name);
   if (!slug) return null;
+  const statusRaw = typeof value.status === "string" ? value.status : undefined;
+  const status =
+    statusRaw === "draft" ||
+    statusRaw === "pending_review" ||
+    statusRaw === "published" ||
+    statusRaw === "rejected"
+      ? statusRaw
+      : undefined;
   return {
     slug,
     name: value.name.trim(),
@@ -214,7 +233,31 @@ function parseStoredArtist(value: unknown): StoredArtist | null {
     press: Array.isArray(value.press) ? (value.press as ArtistLinkedItem[]) : [],
     talks: Array.isArray(value.talks) ? (value.talks as ArtistLinkedItem[]) : [],
     works: parseWorks(value.works),
-    ownerId: typeof value.ownerId === "string" ? value.ownerId : undefined,
+    ownerId:
+      typeof value.ownerId === "string"
+        ? value.ownerId
+        : typeof value.owner_id === "string"
+          ? value.owner_id
+          : undefined,
+    ownerEmail:
+      typeof value.ownerEmail === "string"
+        ? value.ownerEmail
+        : typeof value.owner_email === "string"
+          ? value.owner_email
+          : undefined,
+    status,
+    createdAt:
+      typeof value.createdAt === "string"
+        ? value.createdAt
+        : typeof value.created_at === "string"
+          ? value.created_at
+          : undefined,
+    updatedAt:
+      typeof value.updatedAt === "string"
+        ? value.updatedAt
+        : typeof value.updated_at === "string"
+          ? value.updated_at
+          : undefined,
   };
 }
 
@@ -294,8 +337,23 @@ export function loadSubmittedArtistForUser(userId: string): StoredArtist | null 
   return owned ?? null;
 }
 
-export function saveSubmittedArtist(artist: Artist, ownerId?: string): StoredArtist[] {
-  const stored: StoredArtist = ownerId ? { ...artist, ownerId } : { ...artist };
+export function saveSubmittedArtist(
+  artist: Artist,
+  ownerId?: string,
+  ownerEmail?: string
+): StoredArtist[] {
+  const now = new Date().toISOString();
+  const existing = loadSubmittedArtists().find(
+    (item) => item.slug === artist.slug || (ownerId && item.ownerId === ownerId)
+  );
+  const stored: StoredArtist = {
+    ...artist,
+    ownerId: ownerId || existing?.ownerId,
+    ownerEmail: ownerEmail || existing?.ownerEmail,
+    status: "published",
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+  };
   const current = loadSubmittedArtists().filter((item) => {
     if (item.slug === stored.slug) return false;
     if (ownerId && item.ownerId === ownerId) return false;
@@ -371,6 +429,14 @@ function rowToArtist(row: Record<string, unknown>): StoredArtist | null {
   const slug =
     typeof row.slug === "string" && row.slug ? row.slug : artistSlugFromName(name);
   if (!name || !slug) return null;
+  const statusRaw = typeof row.status === "string" ? row.status : undefined;
+  const status =
+    statusRaw === "draft" ||
+    statusRaw === "pending_review" ||
+    statusRaw === "published" ||
+    statusRaw === "rejected"
+      ? statusRaw
+      : "published";
   return {
     slug,
     name,
@@ -390,6 +456,10 @@ function rowToArtist(row: Record<string, unknown>): StoredArtist | null {
     talks: Array.isArray(row.talks) ? (row.talks as ArtistLinkedItem[]) : [],
     works: parseWorks(row.works),
     ownerId: typeof row.owner_id === "string" ? row.owner_id : undefined,
+    ownerEmail: typeof row.owner_email === "string" ? row.owner_email : undefined,
+    status,
+    createdAt: typeof row.created_at === "string" ? row.created_at : undefined,
+    updatedAt: typeof row.updated_at === "string" ? row.updated_at : undefined,
   };
 }
 
@@ -397,12 +467,14 @@ function rowToArtist(row: Record<string, unknown>): StoredArtist | null {
 export async function publishArtistRemote(
   artist: Artist,
   ownerId: string,
+  ownerEmail?: string,
   timeoutMs = 5000
 ): Promise<{ ok: boolean; error?: string }> {
   const client = getSupabaseClient();
   if (!client) return { ok: false, error: "Supabase not configured" };
 
-  const payload = {
+  const now = new Date().toISOString();
+  const payload: Record<string, unknown> = {
     slug: artist.slug,
     name: artist.name,
     field: artist.field ?? null,
@@ -417,8 +489,9 @@ export async function publishArtistRemote(
     works: artist.works ?? [],
     status: "published",
     owner_id: ownerId,
-    updated_at: new Date().toISOString(),
+    updated_at: now,
   };
+  if (ownerEmail) payload.owner_email = ownerEmail;
 
   try {
     const result = await Promise.race([
@@ -439,6 +512,151 @@ export async function publishArtistRemote(
     const message = error instanceof Error ? error.message : "Remote publish failed";
     console.warn("[artists] remote publish failed:", message);
     return { ok: false, error: message };
+  }
+}
+
+function toAdminRecord(artist: StoredArtist): AdminArtistRecord {
+  const now = new Date().toISOString();
+  return {
+    ...artist,
+    ownerEmail: artist.ownerEmail || "",
+    status: artist.status || "published",
+    createdAt: artist.createdAt || now,
+    updatedAt: artist.updatedAt || artist.createdAt || now,
+  };
+}
+
+/** Load all artist rows for admin review (admins see every status when RLS allows). */
+export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
+  const local = loadSubmittedArtists().map(toAdminRecord);
+  const bySlug = new Map<string, AdminArtistRecord>();
+  for (const artist of local) {
+    bySlug.set(artist.slug, artist);
+  }
+
+  const client = getSupabaseClient();
+  if (client) {
+    try {
+      // Prefer full list (admin policy). Fall back to published-only public policy.
+      let { data, error } = await client
+        .from("artists")
+        .select("*")
+        .order("updated_at", { ascending: false });
+      if (error) {
+        const published = await client
+          .from("artists")
+          .select("*")
+          .eq("status", "published")
+          .order("updated_at", { ascending: false });
+        data = published.data;
+        error = published.error;
+      }
+      if (!error && data) {
+        for (const row of data) {
+          const artist = rowToArtist(row as Record<string, unknown>);
+          if (!artist || isLegacyMayaChenArtist(artist)) continue;
+          const next = toAdminRecord(artist);
+          const prev = bySlug.get(next.slug);
+          if (!prev) {
+            bySlug.set(next.slug, next);
+            continue;
+          }
+          // Prefer the record with the newer update, keep email if only one side has it.
+          const prevTime = new Date(prev.updatedAt).getTime();
+          const nextTime = new Date(next.updatedAt).getTime();
+          bySlug.set(next.slug, {
+            ...(nextTime >= prevTime ? next : prev),
+            ownerEmail: next.ownerEmail || prev.ownerEmail,
+            ownerId: next.ownerId || prev.ownerId,
+            createdAt:
+              new Date(next.createdAt).getTime() <= new Date(prev.createdAt).getTime()
+                ? next.createdAt
+                : prev.createdAt,
+            updatedAt: nextTime >= prevTime ? next.updatedAt : prev.updatedAt,
+          });
+        }
+      }
+    } catch (error) {
+      console.warn("[artists] admin load failed", error);
+    }
+  }
+
+  return Array.from(bySlug.values()).sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  );
+}
+
+export async function loadAdminArtistBySlug(slug: string): Promise<AdminArtistRecord | null> {
+  const all = await loadAdminArtistRecords();
+  return all.find((artist) => artist.slug === slug) ?? null;
+}
+
+/** Record that an artist account reached the join flow (best-effort). */
+export async function recordArtistRegistration(
+  ownerId: string,
+  ownerEmail?: string
+): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) return;
+  const now = new Date().toISOString();
+  try {
+    const { data: existing } = await client
+      .from("artist_registrations")
+      .select("id")
+      .eq("owner_id", ownerId)
+      .maybeSingle();
+    if (existing) {
+      await client
+        .from("artist_registrations")
+        .update({ last_seen_at: now, owner_email: ownerEmail || null })
+        .eq("owner_id", ownerId);
+      return;
+    }
+    await client.from("artist_registrations").insert({
+      owner_id: ownerId,
+      owner_email: ownerEmail || null,
+      first_seen_at: now,
+      last_seen_at: now,
+    });
+  } catch (error) {
+    console.warn("[artists] registration log skipped", error);
+  }
+}
+
+export type ArtistRegistrationRecord = {
+  ownerId: string;
+  ownerEmail: string;
+  firstSeenAt: string;
+  lastSeenAt: string;
+};
+
+export async function loadArtistRegistrations(): Promise<ArtistRegistrationRecord[]> {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  try {
+    const { data, error } = await client
+      .from("artist_registrations")
+      .select("*")
+      .order("last_seen_at", { ascending: false });
+    if (error || !data) {
+      if (error) console.warn("[artists] registration load skipped:", error.message);
+      return [];
+    }
+    return data.flatMap((row) => {
+      const r = row as Record<string, unknown>;
+      if (typeof r.owner_id !== "string") return [];
+      return [
+        {
+          ownerId: r.owner_id,
+          ownerEmail: typeof r.owner_email === "string" ? r.owner_email : "",
+          firstSeenAt: typeof r.first_seen_at === "string" ? r.first_seen_at : "",
+          lastSeenAt: typeof r.last_seen_at === "string" ? r.last_seen_at : "",
+        },
+      ];
+    });
+  } catch (error) {
+    console.warn("[artists] registration load failed", error);
+    return [];
   }
 }
 

@@ -16,6 +16,7 @@ import {
   loadJoinFormForGuest,
   loadJoinFormForUser,
   publishArtistRemote,
+  recordArtistRegistration,
   saveArtistJoinDraft,
   saveSubmittedArtist,
   type ArtistJoinForm,
@@ -224,6 +225,9 @@ export default function ArtistJoinPage() {
         setAuthReady(true);
         setForm(current ? loadJoinFormForUser(current.id) : loadJoinFormForGuest());
         setFormReady(true);
+        if (current) {
+          void recordArtistRegistration(current.id, current.email);
+        }
       } catch {
         if (cancelled) return;
         setUser(null);
@@ -240,6 +244,7 @@ export default function ArtistJoinPage() {
       if (next) {
         setForm(loadJoinFormForUser(next.id));
         setFormReady(true);
+        void recordArtistRegistration(next.id, next.email);
         return;
       }
       // Keep guest draft if auth briefly reports null during hydration
@@ -320,12 +325,12 @@ export default function ArtistJoinPage() {
       const artist = formToArtist(form);
       if (!artist) return;
       // Local directory update is the source of truth for the public page.
-      saveSubmittedArtist(artist, activeUser.id);
+      saveSubmittedArtist(artist, activeUser.id, activeUser.email);
       persistDraft(form);
       setSubmittedSlug(artist.slug);
       setSubmitSuccessOpen(true);
       // Remote sync is best-effort and must not block re-publish.
-      void publishArtistRemote(artist, activeUser.id);
+      void publishArtistRemote(artist, activeUser.id, activeUser.email);
     } catch (e) {
       console.error("Artist submit failed", e);
     } finally {
