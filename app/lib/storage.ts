@@ -201,58 +201,109 @@ const normalizeSubmissionForSave = (submission: Submission): Submission => {
 
 // --- Submissions / Activities (single table: activities) ---
 
+/** Map a live programme Activity (incl. editorial seed) into admin Submission shape. */
+export function activityToSubmission(activity: Activity): Submission {
+  return {
+    id: activity.id,
+    owner_id: "",
+    first_name: "",
+    last_name: "",
+    username: activity.username || "",
+    organization_name: activity.partner_name || activity.organizer || "",
+    email: "",
+    role: "editorial",
+    is_student: false,
+    activity_title: activity.activity_title,
+    author_name: activity.author_name,
+    activity_type: activity.activity_type,
+    activity_description: activity.activity_description,
+    activity_location: activity.activity_location,
+    activity_area: activity.activity_area,
+    activity_date: activity.activity_date,
+    primary_image: activity.primary_image ?? null,
+    primary_image_alt: "",
+    website_link: activity.website_link || "",
+    body_text_1: activity.body_text_1 || "",
+    additional_images_1: activity.additional_images_1 ?? null,
+    additional_images_1_alt: "",
+    body_text_2: activity.body_text_2 || "",
+    additional_images_2: activity.additional_images_2 ?? null,
+    additional_images_2_alt: [],
+    organizer: activity.organizer || "",
+    partner: activity.partner || "",
+    additional_media_links: activity.additional_media_links || [],
+    accept_terms: true,
+    status: "published",
+    createdAt: activity.createdAt,
+    is_deleted: activity.is_deleted === true,
+    is_locked: true,
+  };
+}
+
 export const getSubmissions = async (options?: {
   includeDrafts?: boolean;
   includeRemoved?: boolean;
+  includeEditorial?: boolean;
   userId?: string;
 }): Promise<Submission[]> => {
-  const client = getClient();
+  const client = getSupabaseClient();
+  let remote: Submission[] = [];
 
-  let query = client.from("activities").select("*");
+  if (client) {
+    let query = client.from("activities").select("*");
 
-  if (!options?.includeDrafts) {
-    query = query.neq("status", "draft");
+    if (!options?.includeDrafts) {
+      query = query.neq("status", "draft");
+    }
+
+    if (options?.userId) {
+      query = query.eq("owner_id", options.userId);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
+
+    if (error) {
+      logSupabaseError("getSubmissions", error);
+    } else if (data) {
+      const rows = data as ActivityRow[];
+      const filtered = options?.includeRemoved ? rows : rows.filter((row) => row.is_deleted !== true);
+      remote = filtered.map(mapRowToSubmission);
+    }
   }
 
-  if (options?.userId) {
-    query = query.eq("owner_id", options.userId);
+  if (!options?.includeEditorial) {
+    return remote;
   }
 
-  const { data, error } = await query.order("created_at", { ascending: false });
+  const remoteIds = new Set(remote.map((row) => row.id));
+  const editorial = getEditorialActivities()
+    .map(activityToSubmission)
+    .filter((row) => !remoteIds.has(row.id));
 
-  if (error) {
-    logSupabaseError("getSubmissions", error);
-    return [];
-  }
-
-  if (!data) {
-    return [];
-  }
-
-  const rows = data as ActivityRow[];
-  const filtered = options?.includeRemoved ? rows : rows.filter((row) => row.is_deleted !== true);
-  return filtered.map(mapRowToSubmission);
+  return [...editorial, ...remote].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 };
 
 export const getSubmission = async (id: string): Promise<Submission | null> => {
-  const client = getClient();
+  const client = getSupabaseClient();
 
-  const { data, error } = await client
-    .from("activities")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  if (client) {
+    const { data, error } = await client
+      .from("activities")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
 
-  if (error) {
-    logSupabaseError("getSubmission", error);
-    return null;
+    if (error) {
+      logSupabaseError("getSubmission", error);
+    } else if (data) {
+      return mapRowToSubmission(data as ActivityRow);
+    }
   }
 
-  if (!data) {
-    return null;
-  }
-
-  return mapRowToSubmission(data as ActivityRow);
+  const editorial = getEditorialActivities().find((a) => a.id === id);
+  return editorial ? activityToSubmission(editorial) : null;
 };
 
 export const saveSubmission = async (submission: Submission): Promise<void> => {

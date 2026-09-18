@@ -25,19 +25,26 @@ export default function AdminPage() {
 
   const loadActivities = useCallback(async () => {
     setLoading(true);
-    const raw = await getSubmissions({
-      includeDrafts: true,
-      includeRemoved: true,
-    });
-    setActivities(raw);
-    if (isDev) {
-      const pendingCount = raw.filter((r) => r.status === "pending_review").length;
-      const statuses = [...new Set(raw.map((r) => r.status))];
-      console.log("[admin] raw rows from Supabase:", raw.length);
-      console.log("[admin] pending_review count:", pendingCount);
-      console.log("[admin] distinct statuses:", statuses);
+    try {
+      const raw = await getSubmissions({
+        includeDrafts: true,
+        includeRemoved: true,
+        includeEditorial: true,
+      });
+      setActivities(raw);
+      if (isDev) {
+        const pendingCount = raw.filter((r) => r.status === "pending_review").length;
+        const statuses = [...new Set(raw.map((r) => r.status))];
+        console.log("[admin] rows (supabase + editorial):", raw.length);
+        console.log("[admin] pending_review count:", pendingCount);
+        console.log("[admin] distinct statuses:", statuses);
+      }
+    } catch (error) {
+      console.error("[admin] load failed", error);
+      setActivities([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [isDev]);
 
   useEffect(() => {
@@ -173,7 +180,7 @@ export default function AdminPage() {
                     {item.author_name || "—"}
                   </td>
                   <td className="py-[12px] pr-[16px] uppercase text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}>
-                    {item.status}
+                    {item.is_locked ? "live (site)" : item.status}
                   </td>
                   <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
                     {formatDate(item.createdAt)}
@@ -184,7 +191,7 @@ export default function AdminPage() {
                   <td className="py-[12px] pr-[16px]">
                     <div className="flex flex-wrap gap-[8px]">
                       <a
-                        href={`/event/${item.id}?preview=true`}
+                        href={item.is_locked ? `/event/${item.id}` : `/event/${item.id}?preview=true`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="border border-black/40 px-[12px] py-[6px] text-black/80 hover:bg-black/5"
@@ -192,7 +199,7 @@ export default function AdminPage() {
                       >
                         Preview
                       </a>
-                      {item.status !== "published" && (
+                      {!item.is_locked && item.status !== "published" && (
                         <button
                           type="button"
                           disabled={!!actingId}
@@ -203,7 +210,7 @@ export default function AdminPage() {
                           Publish
                         </button>
                       )}
-                      {item.status !== "rejected" && (
+                      {!item.is_locked && item.status !== "rejected" && (
                         <button
                           type="button"
                           disabled={!!actingId}
@@ -214,27 +221,28 @@ export default function AdminPage() {
                           Reject
                         </button>
                       )}
-                      {!item.is_deleted ? (
-                        <button
-                          type="button"
-                          disabled={!!actingId}
-                          onClick={() => void handleRemove(item)}
-                          className="border border-black/40 px-[12px] py-[6px] text-black hover:bg-black/5 disabled:opacity-50"
-                          style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                        >
-                          Remove
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          disabled={!!actingId}
-                          onClick={() => void handleRestore(item)}
-                          className="border border-black/40 px-[12px] py-[6px] text-black hover:bg-black/5 disabled:opacity-50"
-                          style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
-                        >
-                          Restore
-                        </button>
-                      )}
+                      {!item.is_locked &&
+                        (!item.is_deleted ? (
+                          <button
+                            type="button"
+                            disabled={!!actingId}
+                            onClick={() => void handleRemove(item)}
+                            className="border border-black/40 px-[12px] py-[6px] text-black hover:bg-black/5 disabled:opacity-50"
+                            style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
+                          >
+                            Remove
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={!!actingId}
+                            onClick={() => void handleRestore(item)}
+                            className="border border-black/40 px-[12px] py-[6px] text-black hover:bg-black/5 disabled:opacity-50"
+                            style={{ fontFamily: "var(--font-inter)", fontSize: "12px", lineHeight: "16px" }}
+                          >
+                            Restore
+                          </button>
+                        ))}
                     </div>
                   </td>
                 </tr>
