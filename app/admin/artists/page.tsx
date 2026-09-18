@@ -42,13 +42,26 @@ export default function AdminArtistsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [artistRows, regRows] = await Promise.all([
-      loadAdminArtistRecords(),
-      loadArtistRegistrations(),
-    ]);
-    setArtists(artistRows);
-    setRegistrations(regRows);
-    setLoading(false);
+    try {
+      const [artistRows, regRows] = await Promise.all([
+        Promise.race([
+          loadAdminArtistRecords(),
+          new Promise<AdminArtistRecord[]>((resolve) => setTimeout(() => resolve([]), 8000)),
+        ]),
+        Promise.race([
+          loadArtistRegistrations(),
+          new Promise<ArtistRegistrationRecord[]>((resolve) => setTimeout(() => resolve([]), 8000)),
+        ]),
+      ]);
+      setArtists(artistRows);
+      setRegistrations(regRows);
+    } catch (error) {
+      console.error("[admin/artists] load failed", error);
+      setArtists([]);
+      setRegistrations([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {

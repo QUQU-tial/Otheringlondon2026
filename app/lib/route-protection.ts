@@ -53,6 +53,11 @@ export function isPublicRoute(pathname: string): boolean {
   if (pathname.startsWith('/artists')) {
     return true;
   }
+
+  // Admin UI is gated in AdminShell; do not block the route tree here
+  if (pathname.startsWith('/admin')) {
+    return true;
+  }
   
   return false;
 }

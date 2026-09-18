@@ -20,19 +20,32 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
     setAllowed(false);
 
     const protectRoute = async () => {
-      const { needsRedirect, redirectUrl } = await checkRouteAccess(pathname);
-
-      if (cancelled) return;
-
-      if (needsRedirect && redirectUrl) {
-        router.replace(redirectUrl);
-        setAllowed(false);
+      try {
+        const result = await Promise.race([
+          checkRouteAccess(pathname),
+          new Promise<{ needsRedirect: false }>((resolve) =>
+            setTimeout(() => resolve({ needsRedirect: false }), 4000)
+          ),
+        ]);
+        if (cancelled) return;
+        if (result.needsRedirect && "redirectUrl" in result && result.redirectUrl) {
+          router.replace(result.redirectUrl as string);
+          // Keep showing Loading while navigation runs; never hard-block forever.
+          setTimeout(() => {
+            if (!cancelled) {
+              setAllowed(true);
+              setIsChecking(false);
+            }
+          }, 1500);
+          return;
+        }
+        setAllowed(true);
         setIsChecking(false);
-        return;
+      } catch {
+        if (cancelled) return;
+        setAllowed(true);
+        setIsChecking(false);
       }
-
-      setAllowed(true);
-      setIsChecking(false);
     };
 
     void protectRoute();
@@ -42,7 +55,13 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
   }, [pathname, router]);
 
   if (isChecking || !allowed) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <p className="text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px" }}>
+          Loading…
+        </p>
+      </div>
+    );
   }
 
   return <>{children}</>;

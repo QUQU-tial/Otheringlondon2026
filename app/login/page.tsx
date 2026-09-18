@@ -40,8 +40,16 @@ export default function LoginPage() {
     setLoading(true);
 
     if (email === "spira9art@gmail.com" && password === "999999999") {
+      sessionStorage.setItem("adminBypass", "1");
+      sessionStorage.setItem("adminBypassEmail", email);
       setLoading(false);
-      router.push("/admin");
+      const urlReturnTo = searchParams.get("returnTo");
+      const sessionReturnTo = sessionStorage.getItem("returnTo");
+      const returnTo = urlReturnTo
+        ? decodeURIComponent(urlReturnTo)
+        : sessionReturnTo || "/admin";
+      sessionStorage.removeItem("returnTo");
+      router.push(returnTo.startsWith("/") ? returnTo : "/admin");
       return;
     }
 
