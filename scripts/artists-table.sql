@@ -1,6 +1,46 @@
--- Artist profiles for join/publish + admin review.
--- Run in Supabase SQL editor (safe to re-run).
+-- Run this whole file in Supabase SQL Editor (safe to re-run).
+-- Creates profiles (needed for admin role) + artists + artist_registrations.
 
+-- 1) Profiles (admin role lives here)
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT UNIQUE,
+  role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_username
+  ON profiles (username)
+  WHERE username IS NOT NULL;
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
+CREATE POLICY "Users can read own profile"
+  ON profiles FOR SELECT
+  USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+CREATE POLICY "Users can insert own profile"
+  ON profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+CREATE POLICY "Users can update own profile"
+  ON profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Admins can read all profiles" ON profiles;
+CREATE POLICY "Admins can read all profiles"
+  ON profiles FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles p
+      WHERE p.id = auth.uid() AND p.role = 'admin'
+    )
+  );
+
+-- 2) Artists (join/publish + admin review)
 CREATE TABLE IF NOT EXISTS artists (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -68,7 +108,7 @@ CREATE POLICY "Admins can update artists"
     )
   );
 
--- Optional: lightweight registration log when an artist account first reaches Join.
+-- 3) Artist registration log (when someone opens Join while signed in)
 CREATE TABLE IF NOT EXISTS artist_registrations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
