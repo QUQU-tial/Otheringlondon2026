@@ -2,20 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { checkRouteAccess } from "../lib/route-protection";
+import { checkRouteAccess, isPublicRoute } from "../lib/route-protection";
 
 /**
  * Route Guard Component
  * Protects private routes by redirecting unauthenticated users to login
  */
 export default function RouteGuard({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
-  const [allowed, setAllowed] = useState(false);
+  const initiallyPublic = isPublicRoute(pathname) || pathname.startsWith("/admin");
+  const [isChecking, setIsChecking] = useState(!initiallyPublic);
+  const [allowed, setAllowed] = useState(initiallyPublic);
 
   useEffect(() => {
     let cancelled = false;
+    const publicNow = isPublicRoute(pathname) || pathname.startsWith("/admin");
+
+    // Public routes (including /admin/*) never block the UI.
+    if (publicNow) {
+      setAllowed(true);
+      setIsChecking(false);
+      return;
+    }
+
     setIsChecking(true);
     setAllowed(false);
 
@@ -30,7 +40,6 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
         if (cancelled) return;
         if (result.needsRedirect && "redirectUrl" in result && result.redirectUrl) {
           router.replace(result.redirectUrl as string);
-          // Keep showing Loading while navigation runs; never hard-block forever.
           setTimeout(() => {
             if (!cancelled) {
               setAllowed(true);
