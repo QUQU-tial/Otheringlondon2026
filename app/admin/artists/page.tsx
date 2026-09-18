@@ -169,11 +169,15 @@ export default function AdminArtistsPage() {
                     <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "15px" }}>
                       <div className="font-medium">{artist.name}</div>
                       <div className="text-[12px] text-black/50">{artist.slug}</div>
-                      <div className="mt-1 text-[11px] uppercase tracking-wide text-black/45">{artist.status}</div>
+                      <div className="mt-1 text-[11px] uppercase tracking-wide text-black/45">
+                        {artist.source === "editorial" ? "live (site)" : artist.status}
+                      </div>
                     </td>
                     <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "14px" }}>
-                      <div>{artist.ownerEmail || "—"}</div>
-                      <div className="text-[11px] text-black/45">{artist.ownerId || "—"}</div>
+                      <div>{artist.source === "editorial" ? "Editorial roster" : artist.ownerEmail || "—"}</div>
+                      <div className="text-[11px] text-black/45">
+                        {artist.source === "editorial" ? "—" : artist.ownerId || "—"}
+                      </div>
                     </td>
                     <td className="py-[12px] pr-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "14px" }}>
                       <div>{formatDate(artist.updatedAt)}</div>

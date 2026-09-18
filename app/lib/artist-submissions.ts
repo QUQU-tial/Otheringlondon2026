@@ -1,5 +1,5 @@
 import type { Artist, ArtistLinkedItem, ArtistWork } from "./artists";
-import { artistSlugFromName, limitArtistWorks } from "./artists";
+import { artistSlugFromName, getEditorialArtists, limitArtistWorks } from "./artists";
 import { getSupabaseClient } from "./supabase";
 
 export const ARTIST_JOIN_DRAFT_KEY = "othering_artist_join_draft_v2";
@@ -43,6 +43,8 @@ export type AdminArtistRecord = StoredArtist & {
   status: "draft" | "pending_review" | "published" | "rejected";
   createdAt: string;
   updatedAt: string;
+  /** Site roster seed (not a user submission). */
+  source?: "editorial" | "user";
 };
 
 export const emptyLinkedDraft = (): ArtistLinkedDraft => ({
@@ -515,7 +517,10 @@ export async function publishArtistRemote(
   }
 }
 
-function toAdminRecord(artist: StoredArtist): AdminArtistRecord {
+function toAdminRecord(
+  artist: StoredArtist,
+  source: "editorial" | "user" = "user"
+): AdminArtistRecord {
   const now = new Date().toISOString();
   return {
     ...artist,
@@ -523,14 +528,31 @@ function toAdminRecord(artist: StoredArtist): AdminArtistRecord {
     status: artist.status || "published",
     createdAt: artist.createdAt || now,
     updatedAt: artist.updatedAt || artist.createdAt || now,
+    source,
   };
 }
 
 /** Load all artist rows for admin review (admins see every status when RLS allows). */
 export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
-  const local = loadSubmittedArtists().map(toAdminRecord);
   const bySlug = new Map<string, AdminArtistRecord>();
-  for (const artist of local) {
+
+  // Match the public /artists directory: include editorial roster first.
+  for (const artist of getEditorialArtists()) {
+    bySlug.set(
+      artist.slug,
+      toAdminRecord(
+        {
+          ...artist,
+          status: "published",
+          createdAt: "2020-01-01T00:00:00.000Z",
+          updatedAt: "2020-01-01T00:00:00.000Z",
+        },
+        "editorial"
+      )
+    );
+  }
+
+  for (const artist of loadSubmittedArtists().map((row) => toAdminRecord(row, "user"))) {
     bySlug.set(artist.slug, artist);
   }
 
@@ -555,9 +577,9 @@ export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
         for (const row of data) {
           const artist = rowToArtist(row as Record<string, unknown>);
           if (!artist || isLegacyMayaChenArtist(artist)) continue;
-          const next = toAdminRecord(artist);
+          const next = toAdminRecord(artist, "user");
           const prev = bySlug.get(next.slug);
-          if (!prev) {
+          if (!prev || prev.source === "editorial") {
             bySlug.set(next.slug, next);
             continue;
           }
@@ -573,6 +595,7 @@ export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
                 ? next.createdAt
                 : prev.createdAt,
             updatedAt: nextTime >= prevTime ? next.updatedAt : prev.updatedAt,
+            source: "user",
           });
         }
       }
@@ -581,9 +604,15 @@ export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
     }
   }
 
-  return Array.from(bySlug.values()).sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  );
+  return Array.from(bySlug.values()).sort((a, b) => {
+    // User submissions first by recency; editorial roster A–Z after.
+    if (a.source === "editorial" && b.source !== "editorial") return 1;
+    if (b.source === "editorial" && a.source !== "editorial") return -1;
+    if (a.source === "editorial" && b.source === "editorial") {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    }
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  });
 }
 
 export async function loadAdminArtistBySlug(slug: string): Promise<AdminArtistRecord | null> {
