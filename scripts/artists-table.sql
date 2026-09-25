@@ -76,6 +76,11 @@ CREATE POLICY "Public can read published artists"
   ON artists FOR SELECT
   USING (status = 'published');
 
+DROP POLICY IF EXISTS "Owners can read own artists" ON artists;
+CREATE POLICY "Owners can read own artists"
+  ON artists FOR SELECT
+  USING (auth.uid() = owner_id);
+
 DROP POLICY IF EXISTS "Admins can read all artists" ON artists;
 CREATE POLICY "Admins can read all artists"
   ON artists FOR SELECT
@@ -100,6 +105,17 @@ CREATE POLICY "Owners can update own artists"
 DROP POLICY IF EXISTS "Admins can update artists" ON artists;
 CREATE POLICY "Admins can update artists"
   ON artists FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+        AND profiles.role = 'admin'
+    )
+  );
+
+DROP POLICY IF EXISTS "Admins can delete artists" ON artists;
+CREATE POLICY "Admins can delete artists"
+  ON artists FOR DELETE
   USING (
     EXISTS (
       SELECT 1 FROM profiles

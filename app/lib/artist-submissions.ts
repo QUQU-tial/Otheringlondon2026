@@ -267,7 +267,7 @@ function draftStorageKey(userId?: string | null): string {
   return userId ? `${ARTIST_JOIN_DRAFT_KEY}:${userId}` : ARTIST_JOIN_DRAFT_KEY;
 }
 
-function formHasContent(form: ArtistJoinForm): boolean {
+export function formHasContent(form: ArtistJoinForm): boolean {
   return Boolean(
     form.name.trim() ||
       form.bio.trim() ||
@@ -342,7 +342,8 @@ export function loadSubmittedArtistForUser(userId: string): StoredArtist | null 
 export function saveSubmittedArtist(
   artist: Artist,
   ownerId?: string,
-  ownerEmail?: string
+  ownerEmail?: string,
+  status: StoredArtist["status"] = "published"
 ): StoredArtist[] {
   const now = new Date().toISOString();
   const existing = loadSubmittedArtists().find(
@@ -352,7 +353,7 @@ export function saveSubmittedArtist(
     ...artist,
     ownerId: ownerId || existing?.ownerId,
     ownerEmail: ownerEmail || existing?.ownerEmail,
-    status: "published",
+    status: status || "published",
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };
@@ -364,6 +365,16 @@ export function saveSubmittedArtist(
   const next = [...current, stored];
   localStorage.setItem(ARTIST_SUBMISSIONS_KEY, JSON.stringify(next));
   return next;
+}
+
+export function removeSubmittedArtistLocal(slug: string, ownerId?: string): void {
+  if (typeof window === "undefined") return;
+  const next = loadSubmittedArtists().filter((item) => {
+    if (item.slug === slug) return false;
+    if (ownerId && item.ownerId === ownerId) return false;
+    return true;
+  });
+  localStorage.setItem(ARTIST_SUBMISSIONS_KEY, JSON.stringify(next));
 }
 
 export function saveArtistJoinDraft(form: ArtistJoinForm, userId?: string | null): void {
@@ -465,16 +476,12 @@ function rowToArtist(row: Record<string, unknown>): StoredArtist | null {
   };
 }
 
-/** Best-effort remote publish. Never hangs the UI (times out). */
-export async function publishArtistRemote(
+function artistPayload(
   artist: Artist,
   ownerId: string,
-  ownerEmail?: string,
-  timeoutMs = 5000
-): Promise<{ ok: boolean; error?: string }> {
-  const client = getSupabaseClient();
-  if (!client) return { ok: false, error: "Supabase not configured" };
-
+  ownerEmail: string | undefined,
+  status: NonNullable<StoredArtist["status"]>
+): Record<string, unknown> {
   const now = new Date().toISOString();
   const payload: Record<string, unknown> = {
     slug: artist.slug,
@@ -489,31 +496,162 @@ export async function publishArtistRemote(
     press: artist.press ?? [],
     talks: artist.talks ?? [],
     works: artist.works ?? [],
-    status: "published",
+    status,
     owner_id: ownerId,
     updated_at: now,
   };
   if (ownerEmail) payload.owner_email = ownerEmail;
+  return payload;
+}
+
+/**
+ * Upsert artist row for the signed-in owner.
+ * Prefers updating by owner_id so slug renames don’t create orphans.
+ */
+export async function upsertArtistRemote(
+  artist: Artist,
+  ownerId: string,
+  ownerEmail?: string,
+  status: NonNullable<StoredArtist["status"]> = "published",
+  timeoutMs = 12000
+): Promise<{ ok: boolean; error?: string }> {
+  const client = getSupabaseClient();
+  if (!client) return { ok: false, error: "Supabase not configured" };
+
+  const payload = artistPayload(artist, ownerId, ownerEmail, status);
 
   try {
+    const run = async () => {
+      const existing = await client
+        .from("artists")
+        .select("id, slug, status")
+        .eq("owner_id", ownerId)
+        .maybeSingle();
+
+      if (existing.error) {
+        return { data: null, error: existing.error };
+      }
+
+      if (existing.data && typeof (existing.data as { id?: string }).id === "string") {
+        const id = (existing.data as { id: string }).id;
+        // Don't demote a live published profile back to draft on autosave.
+        const currentStatus = (existing.data as { status?: string }).status;
+        const nextStatus =
+          status === "draft" && currentStatus === "published" ? "published" : status;
+        return client
+          .from("artists")
+          .update({ ...payload, status: nextStatus })
+          .eq("id", id);
+      }
+
+      return client.from("artists").upsert(payload, { onConflict: "slug" });
+    };
+
     const result = await Promise.race([
-      client.from("artists").upsert(payload, { onConflict: "slug" }),
+      run(),
       new Promise<{ data: null; error: { message: string } }>((resolve) =>
         setTimeout(
-          () => resolve({ data: null, error: { message: "Remote publish timed out" } }),
+          () => resolve({ data: null, error: { message: "Remote sync timed out" } }),
           timeoutMs
         )
       ),
     ]);
+
     if (result.error) {
-      console.warn("[artists] remote publish skipped:", result.error.message);
+      console.warn("[artists] remote upsert skipped:", result.error.message);
       return { ok: false, error: result.error.message };
     }
     return { ok: true };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Remote publish failed";
-    console.warn("[artists] remote publish failed:", message);
+    const message = error instanceof Error ? error.message : "Remote sync failed";
+    console.warn("[artists] remote upsert failed:", message);
     return { ok: false, error: message };
+  }
+}
+
+/** Sync a join draft to Supabase so admin can review unfinished profiles. */
+export async function saveArtistDraftRemote(
+  form: ArtistJoinForm,
+  ownerId: string,
+  ownerEmail?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const artist = formToArtist(form);
+  if (!artist) return { ok: false, error: "Name is required to sync draft" };
+  return upsertArtistRemote(artist, ownerId, ownerEmail, "draft");
+}
+
+/** Artist-facing publish: lands in pending_review for admin approval. */
+export async function publishArtistRemote(
+  artist: Artist,
+  ownerId: string,
+  ownerEmail?: string,
+  timeoutMs = 12000
+): Promise<{ ok: boolean; error?: string }> {
+  return upsertArtistRemote(artist, ownerId, ownerEmail, "pending_review", timeoutMs);
+}
+
+/** Admin: set status (publish / reject / revert to draft). */
+export async function updateArtistStatusAdmin(
+  slug: string,
+  status: NonNullable<StoredArtist["status"]>
+): Promise<{ ok: boolean; error?: string }> {
+  const client = getSupabaseClient();
+  if (!client) return { ok: false, error: "Supabase not configured" };
+  try {
+    const { error } = await client
+      .from("artists")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("slug", slug);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Status update failed",
+    };
+  }
+}
+
+/** Admin: permanently delete an artist row. */
+export async function deleteArtistAdmin(
+  slug: string,
+  ownerId?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const client = getSupabaseClient();
+  if (!client) return { ok: false, error: "Supabase not configured" };
+  try {
+    const { error } = await client.from("artists").delete().eq("slug", slug);
+    if (error) return { ok: false, error: error.message };
+    removeSubmittedArtistLocal(slug, ownerId);
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Delete failed",
+    };
+  }
+}
+
+/** Load a single artist's own remote row (draft or otherwise). */
+export async function loadRemoteArtistForUser(ownerId: string): Promise<StoredArtist | null> {
+  const client = getSupabaseClient();
+  if (!client) return null;
+  try {
+    const { data, error } = await client
+      .from("artists")
+      .select("*")
+      .eq("owner_id", ownerId)
+      .maybeSingle();
+    if (error || !data) {
+      if (error) console.warn("[artists] owner load skipped:", error.message);
+      return null;
+    }
+    const artist = rowToArtist(data as Record<string, unknown>);
+    if (!artist || isLegacyMayaChenArtist(artist)) return null;
+    return artist;
+  } catch (error) {
+    console.warn("[artists] owner load failed", error);
+    return null;
   }
 }
 
@@ -559,21 +697,26 @@ export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
   const client = getSupabaseClient();
   if (client) {
     try {
-      // Prefer full list (admin policy). Fall back to published-only public policy.
-      let { data, error } = await client
+      const { data, error } = await client
         .from("artists")
         .select("*")
         .order("updated_at", { ascending: false });
       if (error) {
+        console.warn("[artists] admin load error (need admin role + RLS):", error.message);
+        // Fallback: published-only for non-admin sessions.
         const published = await client
           .from("artists")
           .select("*")
           .eq("status", "published")
           .order("updated_at", { ascending: false });
-        data = published.data;
-        error = published.error;
-      }
-      if (!error && data) {
+        if (!published.error && published.data) {
+          for (const row of published.data) {
+            const artist = rowToArtist(row as Record<string, unknown>);
+            if (!artist || isLegacyMayaChenArtist(artist)) continue;
+            bySlug.set(artist.slug, toAdminRecord(artist, "user"));
+          }
+        }
+      } else if (data) {
         for (const row of data) {
           const artist = rowToArtist(row as Record<string, unknown>);
           if (!artist || isLegacyMayaChenArtist(artist)) continue;
@@ -583,7 +726,6 @@ export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
             bySlug.set(next.slug, next);
             continue;
           }
-          // Prefer the record with the newer update, keep email if only one side has it.
           const prevTime = new Date(prev.updatedAt).getTime();
           const nextTime = new Date(next.updatedAt).getTime();
           bySlug.set(next.slug, {
@@ -596,6 +738,7 @@ export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
                 : prev.createdAt,
             updatedAt: nextTime >= prevTime ? next.updatedAt : prev.updatedAt,
             source: "user",
+            status: nextTime >= prevTime ? next.status : prev.status,
           });
         }
       }

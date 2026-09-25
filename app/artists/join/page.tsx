@@ -9,14 +9,18 @@ import { getCurrentUser, onAuthStateChange, type User } from "../../lib/auth";
 import { uploadImageToSupabase } from "../../lib/supabase";
 import { isImageUrl } from "../../submit/form/form-helpers";
 import {
+  artistToJoinForm,
   emptyArtistJoinForm,
   emptyLinkedDraft,
+  formHasContent,
   formToArtist,
   isArtistJoinValid,
   loadJoinFormForGuest,
   loadJoinFormForUser,
+  loadRemoteArtistForUser,
   publishArtistRemote,
   recordArtistRegistration,
+  saveArtistDraftRemote,
   saveArtistJoinDraft,
   saveSubmittedArtist,
   type ArtistJoinForm,
@@ -160,7 +164,7 @@ function LoginToPublishModal({
           Log in to publish
         </h2>
         <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-          Your form is saved. Sign in or create an account, then return here and click Publish to publish your artist page.
+          Your form is saved. Sign in or create an account, then return here and click Submit for review.
         </p>
         <div className="flex flex-wrap gap-[12px]">
           <PrimaryButton type="button" onClick={onLogin}>
@@ -186,10 +190,10 @@ function PublishSuccessModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal>
       <div className="w-full max-w-[420px] border border-black bg-white p-[24px]">
         <h2 className="mb-[16px] text-black" style={{ fontFamily: "var(--font-inter)", fontSize: "16px", fontWeight: 500 }}>
-          Published
+          Submitted for review
         </h2>
         <p className="mb-[24px] text-black/80" style={{ fontFamily: "var(--font-inter)", fontSize: "14px", lineHeight: "20px" }}>
-          Your artist page is live in the artists directory. You can keep editing this form and click Publish again anytime to update it.
+          Your artist profile was sent to the editors. After approval it will appear in the artists directory. You can keep editing and submit again anytime.
         </p>
         <div className="flex flex-wrap gap-[12px]">
           <PrimaryButton href={`/artists/${slug}`}>View your page</PrimaryButton>
@@ -214,6 +218,7 @@ export default function ArtistJoinPage() {
   const [loginToPublishOpen, setLoginToPublishOpen] = useState(false);
   const [submitSuccessOpen, setSubmitSuccessOpen] = useState(false);
   const [submittedSlug, setSubmittedSlug] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -223,7 +228,13 @@ export default function ArtistJoinPage() {
         if (cancelled) return;
         setUser(current);
         setAuthReady(true);
-        setForm(current ? loadJoinFormForUser(current.id) : loadJoinFormForGuest());
+        let nextForm = current ? loadJoinFormForUser(current.id) : loadJoinFormForGuest();
+        if (current && !formHasContent(nextForm)) {
+          const remote = await loadRemoteArtistForUser(current.id);
+          if (remote) nextForm = artistToJoinForm(remote, true);
+        }
+        if (cancelled) return;
+        setForm(nextForm);
         setFormReady(true);
         if (current) {
           void recordArtistRegistration(current.id, current.email);
@@ -242,8 +253,17 @@ export default function ArtistJoinPage() {
       setUser(next);
       setAuthReady(true);
       if (next) {
-        setForm(loadJoinFormForUser(next.id));
-        setFormReady(true);
+        void (async () => {
+          let nextForm = loadJoinFormForUser(next.id);
+          if (!formHasContent(nextForm)) {
+            const remote = await loadRemoteArtistForUser(next.id);
+            if (remote) nextForm = artistToJoinForm(remote, true);
+          }
+          if (!cancelled) {
+            setForm(nextForm);
+            setFormReady(true);
+          }
+        })();
         void recordArtistRegistration(next.id, next.email);
         return;
       }
@@ -290,11 +310,21 @@ export default function ArtistJoinPage() {
     router.push("/login?returnTo=%2Fartists%2Fjoin");
   };
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     setSavingDraft(true);
+    setActionError(null);
     persistDraft(form);
-    setSavingDraft(false);
-    setDraftSavedOpen(true);
+    try {
+      if (user) {
+        const remote = await saveArtistDraftRemote(form, user.id, user.email);
+        if (!remote.ok && remote.error !== "Name is required to sync draft") {
+          setActionError(remote.error || "Draft saved on this device, but cloud sync failed.");
+        }
+      }
+      setDraftSavedOpen(true);
+    } finally {
+      setSavingDraft(false);
+    }
   };
 
   const handleImageUpload = async (file: File | undefined, kind: "photo" | "work") => {
@@ -321,18 +351,26 @@ export default function ArtistJoinPage() {
       return;
     }
     setSubmitting(true);
+    setActionError(null);
     try {
       const artist = formToArtist(form);
       if (!artist) return;
-      // Local directory update is the source of truth for the public page.
-      saveSubmittedArtist(artist, activeUser.id, activeUser.email);
+      // Keep a local copy, then require cloud sync so admin can review.
+      saveSubmittedArtist(artist, activeUser.id, activeUser.email, "pending_review");
       persistDraft(form);
+      const remote = await publishArtistRemote(artist, activeUser.id, activeUser.email);
+      if (!remote.ok) {
+        setActionError(
+          remote.error ||
+            "Could not submit for review. Please try again — your draft is still saved on this device."
+        );
+        return;
+      }
       setSubmittedSlug(artist.slug);
       setSubmitSuccessOpen(true);
-      // Remote sync is best-effort and must not block re-publish.
-      void publishArtistRemote(artist, activeUser.id, activeUser.email);
     } catch (e) {
       console.error("Artist submit failed", e);
+      setActionError("Could not submit for review. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -389,8 +427,8 @@ export default function ArtistJoinPage() {
           style={{ fontFamily: "var(--font-inter)" }}
         >
           {user
-            ? `Signed in as ${user.email || "artist"}. Fill in your profile, then click Publish. You can publish again anytime to update your page.`
-            : "Fill in your artist profile first. You will be asked to log in when you publish."}
+            ? `Signed in as ${user.email || "artist"}. Save Draft anytime. When ready, click Submit for review — an editor will publish your page.`
+            : "Fill in your artist profile first. You will be asked to log in when you submit for review."}
         </p>
 
         <div className="mb-[24px] flex gap-[16px] border-b border-black">
@@ -545,7 +583,7 @@ export default function ArtistJoinPage() {
           ) : null}
 
           <div className="mt-[36px] flex flex-wrap items-center gap-[16px]">
-            <SecondaryButton type="button" onClick={handleSaveDraft} disabled={savingDraft}>
+            <SecondaryButton type="button" onClick={() => void handleSaveDraft()} disabled={savingDraft}>
               {savingDraft ? "Saving" : "Save Draft"}
             </SecondaryButton>
             {form.activeTab !== 0 ? (
@@ -568,10 +606,15 @@ export default function ArtistJoinPage() {
               </PrimaryButton>
             ) : (
               <PrimaryButton type="button" disabled={submitting || !canSubmit} onClick={() => void handleSubmit()}>
-                {submitting ? "Publishing…" : "Publish"}
+                {submitting ? "Submitting…" : "Submit for review"}
               </PrimaryButton>
             )}
           </div>
+          {actionError ? (
+            <p className="mt-[16px] text-[14px] text-red-700" style={{ fontFamily: "var(--font-inter)" }}>
+              {actionError}
+            </p>
+          ) : null}
         </form>
       </div>
 
