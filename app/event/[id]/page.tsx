@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getSubmission, getActivities, type Activity } from "../../lib/storage";
 import { formatDisplayDateFromString } from "../../lib/calendar";
 import { artistSlugFromName } from "../../lib/artists";
 
-export default function EventDetailPage() {
+function EventDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -452,3 +452,18 @@ export default function EventDetailPage() {
   );
 }
 
+export default function EventDetailPageRoute() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <p className="text-black/50" style={{ fontFamily: "var(--font-inter)" }}>
+            Loading...
+          </p>
+        </div>
+      }
+    >
+      <EventDetailPage />
+    </Suspense>
+  );
+}

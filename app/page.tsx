@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getActivities, type Activity } from "./lib/storage";
 import { getCurrentUser, signOut, onAuthStateChange, type User } from "./lib/auth";
@@ -16,7 +16,7 @@ import {
 } from "./lib/activity-areas";
 import { artistSlugFromName } from "./lib/artists";
 
-export default function Home() {
+function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -957,5 +957,21 @@ const handleMenuClose = () => {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <p className="text-black/50" style={{ fontFamily: "var(--font-inter)" }}>
+            Loading…
+          </p>
+        </div>
+      }
+    >
+      <Home />
+    </Suspense>
   );
 }

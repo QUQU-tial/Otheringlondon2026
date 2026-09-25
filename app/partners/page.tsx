@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getActivities, type Activity } from "../lib/storage";
 import {
@@ -30,7 +30,7 @@ const areaBtnClass = (active: boolean) =>
     active ? "text-red-600" : "text-[#9A9A9A] hover:text-red-600"
   }`;
 
-export default function PartnersPage() {
+function PartnersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -441,5 +441,21 @@ export default function PartnersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PartnersPageRoute() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <p className="text-black/50" style={{ fontFamily: "var(--font-inter)" }}>
+            Loading…
+          </p>
+        </div>
+      }
+    >
+      <PartnersPage />
+    </Suspense>
   );
 }

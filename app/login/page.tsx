@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, getCurrentUser, signInWithGoogle } from "../lib/auth";
 import { BodyText, PrimaryButton, SecondaryButton } from "../components/othering";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -215,5 +215,21 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <p className="text-black/50" style={{ fontFamily: "var(--font-inter)" }}>
+            Loading…
+          </p>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

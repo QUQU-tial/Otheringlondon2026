@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signUp, getCurrentUser, isSignupDuplicateEmailError, signInWithGoogle } from "../lib/auth";
 import { BodyText, PrimaryButton, SecondaryButton } from "../components/othering";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -248,5 +248,21 @@ export default function SignupPage() {
         </div>
       ) : null}
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <p className="text-black/50" style={{ fontFamily: "var(--font-inter)" }}>
+            Loading…
+          </p>
+        </div>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }
