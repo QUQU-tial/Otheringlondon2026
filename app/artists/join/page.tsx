@@ -314,12 +314,36 @@ export default function ArtistJoinPage() {
     setSavingDraft(true);
     setActionError(null);
     persistDraft(form);
+
+    const artist = formToArtist(form);
+    if (!artist) {
+      setSavingDraft(false);
+      setActionError("Add your name before saving a draft.");
+      return;
+    }
+
+    // Always keep a local submission row so /admin/artists on this device can see it.
+    saveSubmittedArtist(artist, user?.id, user?.email, "draft");
+
     try {
-      if (user) {
-        const remote = await saveArtistDraftRemote(form, user.id, user.email);
-        if (!remote.ok && remote.error !== "Name is required to sync draft") {
-          setActionError(remote.error || "Draft saved on this device, but cloud sync failed.");
-        }
+      let activeUser = user;
+      if (!activeUser) {
+        activeUser = await getCurrentUser();
+        if (activeUser) setUser(activeUser);
+      }
+      if (!activeUser) {
+        setDraftSavedOpen(true);
+        setActionError(
+          "Draft saved on this device only. Log in, then Save Draft again so it appears in Admin for review."
+        );
+        return;
+      }
+      const remote = await saveArtistDraftRemote(form, activeUser.id, activeUser.email);
+      if (!remote.ok) {
+        setActionError(
+          remote.error ||
+            "Draft saved on this device, but cloud sync failed. Check Supabase policies, then try again."
+        );
       }
       setDraftSavedOpen(true);
     } finally {

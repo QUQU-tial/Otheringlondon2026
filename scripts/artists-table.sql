@@ -81,6 +81,11 @@ CREATE POLICY "Owners can read own artists"
   ON artists FOR SELECT
   USING (auth.uid() = owner_id);
 
+DROP POLICY IF EXISTS "Review queue is readable" ON artists;
+CREATE POLICY "Review queue is readable"
+  ON artists FOR SELECT
+  USING (status IN ('draft', 'pending_review', 'rejected'));
+
 DROP POLICY IF EXISTS "Admins can read all artists" ON artists;
 CREATE POLICY "Admins can read all artists"
   ON artists FOR SELECT

@@ -377,6 +377,47 @@ export function removeSubmittedArtistLocal(slug: string, ownerId?: string): void
   localStorage.setItem(ARTIST_SUBMISSIONS_KEY, JSON.stringify(next));
 }
 
+/** Convert join-form drafts in this browser into admin rows (same-device review). */
+export function loadLocalJoinDraftsAsAdminRecords(): AdminArtistRecord[] {
+  if (typeof window === "undefined") return [];
+  const rows: AdminArtistRecord[] = [];
+  const seen = new Set<string>();
+
+  const consider = (form: ArtistJoinForm | null, ownerId?: string) => {
+    if (!form || !formHasContent(form)) return;
+    const artist = formToArtist(form);
+    if (!artist || seen.has(artist.slug)) return;
+    seen.add(artist.slug);
+    rows.push(
+      toAdminRecord(
+        {
+          ...artist,
+          ownerId,
+          ownerEmail: "",
+          status: "draft",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        "user"
+      )
+    );
+  };
+
+  try {
+    consider(loadGuestArtistJoinDraft());
+    consider(parseArtistJoinForm(localStorage.getItem(ARTIST_JOIN_DRAFT_KEY)));
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(`${ARTIST_JOIN_DRAFT_KEY}:`)) continue;
+      const ownerId = key.slice(ARTIST_JOIN_DRAFT_KEY.length + 1);
+      consider(parseArtistJoinForm(localStorage.getItem(key)), ownerId || undefined);
+    }
+  } catch {
+    /* ignore */
+  }
+  return rows;
+}
+
 export function saveArtistJoinDraft(form: ArtistJoinForm, userId?: string | null): void {
   if (!userId) {
     saveGuestArtistJoinDraft(form);
@@ -694,23 +735,41 @@ export async function loadAdminArtistRecords(): Promise<AdminArtistRecord[]> {
     bySlug.set(artist.slug, artist);
   }
 
+  // Join-form drafts saved in this browser (even before cloud sync).
+  for (const draft of loadLocalJoinDraftsAsAdminRecords()) {
+    const prev = bySlug.get(draft.slug);
+    if (!prev || prev.source === "editorial") {
+      bySlug.set(draft.slug, draft);
+      continue;
+    }
+    // Don't overwrite a newer cloud/local submission with an older form draft.
+    if (new Date(draft.updatedAt).getTime() >= new Date(prev.updatedAt).getTime()) {
+      bySlug.set(draft.slug, {
+        ...draft,
+        ownerEmail: draft.ownerEmail || prev.ownerEmail,
+        ownerId: draft.ownerId || prev.ownerId,
+        status: prev.status === "published" || prev.status === "pending_review" ? prev.status : draft.status,
+      });
+    }
+  }
+
   const client = getSupabaseClient();
   if (client) {
     try {
+      // Prefer full list. Falls back to published + review-queue policies.
       const { data, error } = await client
         .from("artists")
         .select("*")
         .order("updated_at", { ascending: false });
       if (error) {
-        console.warn("[artists] admin load error (need admin role + RLS):", error.message);
-        // Fallback: published-only for non-admin sessions.
-        const published = await client
+        console.warn("[artists] admin load error:", error.message);
+        const fallback = await client
           .from("artists")
           .select("*")
-          .eq("status", "published")
+          .in("status", ["published", "draft", "pending_review", "rejected"])
           .order("updated_at", { ascending: false });
-        if (!published.error && published.data) {
-          for (const row of published.data) {
+        if (!fallback.error && fallback.data) {
+          for (const row of fallback.data) {
             const artist = rowToArtist(row as Record<string, unknown>);
             if (!artist || isLegacyMayaChenArtist(artist)) continue;
             bySlug.set(artist.slug, toAdminRecord(artist, "user"));
