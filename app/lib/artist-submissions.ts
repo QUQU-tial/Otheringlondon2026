@@ -548,6 +548,7 @@ function artistPayload(
 /**
  * Upsert artist row for the signed-in owner.
  * Prefers updating by owner_id so slug renames don’t create orphans.
+ * Always uses auth.getUser() id so INSERT RLS (auth.uid() = owner_id) passes.
  */
 export async function upsertArtistRemote(
   artist: Artist,
@@ -559,23 +560,37 @@ export async function upsertArtistRemote(
   const client = getSupabaseClient();
   if (!client) return { ok: false, error: "Supabase not configured" };
 
-  const payload = artistPayload(artist, ownerId, ownerEmail, status);
-
   try {
     const run = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await client.auth.getUser();
+      if (userError || !user) {
+        return {
+          data: null,
+          error: { message: userError?.message || "Not signed in — log in, then Save Draft again." },
+        };
+      }
+
+      // RLS requires owner_id === auth.uid(); never trust a stale client id.
+      const uid = user.id;
+      const email = ownerEmail || user.email || undefined;
+      const payload = artistPayload(artist, uid, email, status);
+
       const existing = await client
         .from("artists")
         .select("id, slug, status")
-        .eq("owner_id", ownerId)
+        .eq("owner_id", uid)
         .maybeSingle();
 
       if (existing.error) {
-        return { data: null, error: existing.error };
+        // If select is blocked, still try insert (new row) / update by slug for own row.
+        console.warn("[artists] owner lookup:", existing.error.message);
       }
 
       if (existing.data && typeof (existing.data as { id?: string }).id === "string") {
         const id = (existing.data as { id: string }).id;
-        // Don't demote a live published profile back to draft on autosave.
         const currentStatus = (existing.data as { status?: string }).status;
         const nextStatus =
           status === "draft" && currentStatus === "published" ? "published" : status;
@@ -585,7 +600,30 @@ export async function upsertArtistRemote(
           .eq("id", id);
       }
 
-      return client.from("artists").upsert(payload, { onConflict: "slug" });
+      // Prefer plain insert for first save — clearer RLS errors than upsert.
+      const inserted = await client.from("artists").insert(payload);
+      if (!inserted.error) return inserted;
+
+      // Slug already taken by this or another row: update own row by slug if we own it.
+      if (/duplicate|unique|conflict/i.test(inserted.error.message || "")) {
+        const updated = await client
+          .from("artists")
+          .update(payload)
+          .eq("slug", artist.slug)
+          .eq("owner_id", uid);
+        if (!updated.error) return updated;
+        return {
+          data: null,
+          error: {
+            message:
+              updated.error?.message ||
+              inserted.error.message ||
+              "This artist name/slug is already taken.",
+          },
+        };
+      }
+
+      return inserted;
     };
 
     const result = await Promise.race([
