@@ -1,6 +1,6 @@
 import type { Artist, ArtistLinkedItem, ArtistWork } from "./artists";
 import { artistSlugFromName, getEditorialArtists, limitArtistWorks } from "./artists";
-import { getSupabaseClient } from "./supabase";
+import { getSupabaseClient, sanitizeArtistImageUrl } from "./supabase";
 
 export const ARTIST_JOIN_DRAFT_KEY = "othering_artist_join_draft_v2";
 export const ARTIST_JOIN_GUEST_DRAFT_KEY = "othering_artist_join_draft_guest_v2";
@@ -524,19 +524,27 @@ function artistPayload(
   status: NonNullable<StoredArtist["status"]>
 ): Record<string, unknown> {
   const now = new Date().toISOString();
+  const photo = sanitizeArtistImageUrl(artist.photo ?? null);
+  const works = (artist.works ?? [])
+    .map((work) => {
+      const src = sanitizeArtistImageUrl(work.src);
+      return src ? { ...work, src } : null;
+    })
+    .filter((work): work is ArtistWork => !!work);
+
   const payload: Record<string, unknown> = {
     slug: artist.slug,
     name: artist.name,
     field: artist.field ?? null,
     birth: artist.birth ?? null,
-    photo: artist.photo ?? null,
+    photo,
     photo_alt: artist.photoAlt ?? artist.name,
     bio: artist.bio ?? "",
     cv: artist.cv ?? [],
     exhibitions: artist.exhibitions ?? [],
     press: artist.press ?? [],
     talks: artist.talks ?? [],
-    works: artist.works ?? [],
+    works,
     status,
     owner_id: ownerId,
     updated_at: now,

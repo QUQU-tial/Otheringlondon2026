@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { SubmitShell } from "../../components/SubmitShell";
 import { PrimaryButton, SecondaryButton } from "../../components/othering";
 import { getCurrentUser, onAuthStateChange, type User } from "../../lib/auth";
-import { uploadImageToSupabase } from "../../lib/supabase";
+import { uploadImageToSupabaseDetailed } from "../../lib/supabase";
 import { isImageUrl } from "../../submit/form/form-helpers";
 import {
   artistToJoinForm,
@@ -353,12 +353,25 @@ export default function ArtistJoinPage() {
 
   const handleImageUpload = async (file: File | undefined, kind: "photo" | "work") => {
     if (!file) return;
-    const url = await uploadImageToSupabase(file, "images/artists");
-    if (!url || !isImageUrl(url)) return;
+    setActionError(null);
+    const result = await uploadImageToSupabaseDetailed(file, "images/artists", {
+      allowDataUrlFallback: false,
+    });
+    if (!result.url || !isImageUrl(result.url)) {
+      setActionError(
+        result.error ||
+          "Image upload failed. Please try a smaller JPG/PNG (under 8MB), or ask the site admin to enable image storage."
+      );
+      return;
+    }
+    if (result.error) {
+      // Soft warning (e.g. fallback notice) — still keep the image if we have a URL.
+      setActionError(result.error);
+    }
     setForm((p) => {
-      if (kind === "photo") return { ...p, photo: url };
+      if (kind === "photo") return { ...p, photo: result.url };
       if (p.works.length >= 5) return p;
-      return { ...p, works: [...p.works, { src: url, alt: p.name || "Work" }] };
+      return { ...p, works: [...p.works, { src: result.url!, alt: p.name || "Work" }] };
     });
   };
 
